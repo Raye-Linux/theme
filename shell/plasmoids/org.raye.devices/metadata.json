@@ -1,0 +1,22 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Raye Linux"
+            }
+        ],
+        "Category": "System Information",
+        "Description": "Eject USB drives, memory cards and discs safely",
+        "Description[fr]": "Éjecter les clés USB, cartes mémoire et disques en toute sécurité",
+        "EnabledByDefault": true,
+        "Icon": "drive-removable-media",
+        "License": "GPL-3.0-or-later",
+        "Name": "Safely Remove Hardware and Eject Media",
+        "Name[fr]": "Retirer le périphérique en toute sécurité et éjecter le média",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-NotificationArea": "true",
+    "X-Plasma-NotificationAreaCategory": "Hardware"
+}

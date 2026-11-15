@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Emoji Selector
+Exec=org.kde.plasma.emojier
+Categories=Qt;KDE;Utility;
+OnlyShowIn=KDE;

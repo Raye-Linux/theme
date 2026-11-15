@@ -1,0 +1,67 @@
+# Raye boot menu. Only shown when another system is on the computer.
+#
+# Under Secure Boot GRUB loads no font from disk, only the Unifont built
+# into it: the entry titles are then drawn in Unifont, and everything
+# else is a picture made by art/grub.py. With Secure Boot off,
+# /etc/grub.d/06_raye_fonts loads the Inter fonts named below. A font
+# that isn't loaded falls back to Unifont, so every entry stays readable.
+# The block hangs off the middle of the screen: pictures do not scale.
+
+title-text: ""
+desktop-image: "background.png"
+desktop-image-scale-method: "stretch"
+desktop-color: "#0e0a16"
+# the editor and the command line need a fixed width font
+terminal-font: "GNU Unifont Regular 16"
+terminal-left: "0"
+terminal-top: "0"
+terminal-width: "100%"
+terminal-height: "100%"
+terminal-border: "0"
+
++ image {
+    left = 50%-110
+    top = 50%-290
+    file = "logo.png"
+}
+
+# Raye entries get the eye, other systems a screen (icons/<class>.png);
+# Advanced options and the firmware entry have no class, so no icon.
+# Wide enough for "…, with Linux 7.0.0-14-generic (recovery mode)" in
+# French and in Inter.
++ boot_menu {
+    left = 50%-360
+    top = 50%-84
+    width = 720
+    height = 260
+    item_font = "Inter Regular 20"
+    selected_item_font = "Inter SemiBold Regular 20"
+    item_color = "#b9a8d6"
+    selected_item_color = "#ffffff"
+    item_height = 44
+    item_spacing = 10
+    item_padding = 14
+    icon_width = 32
+    icon_height = 32
+    item_icon_space = 12
+    selected_item_pixmap_style = "select_*.png"
+    scrollbar = false
+}
+
+# fills up over the timeout, gone once a key is pressed
++ progress_bar {
+    id = "__timeout__"
+    left = 50%-100
+    top = 100%-118
+    width = 200
+    height = 28
+    show_text = false
+    bar_style = "timer_*.png"
+    highlight_style = "timer_fill_*.png"
+}
+
++ image {
+    left = 50%-65
+    top = 100%-80
+    file = "hint.png"
+}

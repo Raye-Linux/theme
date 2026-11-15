@@ -1,0 +1,7 @@
+# Sound defaults for every user (installed to /etc/xdg/plasmaparc).
+#
+# The volume keys' own sound is off: it played again at every repeat of a
+# held key. The Raye shell plays its own instead, once per press and once
+# when a held key lets go (rayeshellrc [Sound] VolumeChime).
+[General]
+AudioFeedback=false

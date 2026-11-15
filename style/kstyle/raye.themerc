@@ -1,0 +1,8 @@
+[Misc]
+Name=Raye
+Name[fr]=Raye
+ConfigPage=kstyle_config/rayestyleconfig
+Comment=Widget style for KDE Frameworks
+Comment[fr]=Style de composants graphiques pour KDE
+[KDE]
+WidgetStyle=Raye

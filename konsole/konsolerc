@@ -1,0 +1,24 @@
+# Raye defaults for the terminal: tabs on top like the terminal people
+# know, no menu bar, the Raye profile.
+[Desktop Entry]
+DefaultProfile=Raye.profile
+
+[KonsoleWindow]
+ShowMenuBarByDefault=false
+RememberWindowSize=true
+
+# No toolbars when Konsole is opened anyway: the window is the tabs and
+# the terminal, like Terminal. Konsole keeps which toolbars are shown in
+# the window state only, so this is the state of a window whose two
+# toolbars (mainToolBar, sessionToolbar) are hidden. On its first start
+# Konsole moves it to the user's own state file; after that the user's
+# choice wins. Made with QMainWindow::saveState() (Qt 6.10).
+[MainWindow]
+State=AAAA/wAAAAD9AAAAAAAAAAAAAAAAAAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAIAAAAWAG0AYQBpAG4AVABvAG8AbABCAGEAcgAAAAAA/////wAAAAAAAAAAAAAAHABzAGUAcwBzAGkAbwBuAFQAbwBvAGwAYgBhAHIAAAAAAP////8AAAAAAAAAAA==
+
+[TabBar]
+TabBarVisibility=AlwaysShowTabBar
+TabBarPosition=Top
+NewTabButton=true
+CloseTabButton=OnEachTab
+ExpandTabWidth=false

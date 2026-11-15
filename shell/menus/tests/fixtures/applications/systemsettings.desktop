@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=System Settings
+Exec=systemsettings
+Categories=Qt;KDE;Settings;
+OnlyShowIn=KDE;

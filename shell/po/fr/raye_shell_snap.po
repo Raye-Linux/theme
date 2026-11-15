@@ -1,0 +1,36 @@
+# French strings of Raye Snap (snap layouts, Windows arrow keys).
+msgid ""
+msgstr ""
+"Project-Id-Version: raye-shell\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Snap layouts"
+msgstr "Dispositions d’ancrage"
+
+msgid "Open snap layouts"
+msgstr "Ouvrir les dispositions d’ancrage"
+
+msgid "Open snap layouts under the pointer"
+msgstr "Ouvrir les dispositions d’ancrage sous le pointeur"
+
+msgid "Snap the window to the left"
+msgstr "Ancrer la fenêtre à gauche"
+
+msgid "Snap the window to the right"
+msgstr "Ancrer la fenêtre à droite"
+
+msgid "Maximize or snap the window up"
+msgstr "Agrandir la fenêtre ou l’ancrer en haut"
+
+msgid "Restore, minimize or snap the window down"
+msgstr "Restaurer, réduire la fenêtre ou l’ancrer en bas"
+
+msgid "Stretch the window to the full height"
+msgstr "Étirer la fenêtre sur toute la hauteur"
+
+msgid "Minimize all but the active window"
+msgstr "Réduire toutes les fenêtres sauf la fenêtre active"

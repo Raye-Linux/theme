@@ -1,0 +1,79 @@
+# Raye shell defaults (installed to /etc/xdg/rayeshellrc).
+#
+# Raye Settings writes the user's choices to ~/.config/rayeshellrc, which
+# wins over every key here; the shell reads both through ShellSettings
+# (org.raye.shell) and follows changes at once. Every key the shell reads
+# is listed here: Settings shows a row only when its key is in this file.
+# Lists are comma separated. Values not listed for a key fall back to its
+# default.
+
+[Taskbar]
+# center, left
+Alignment=center
+# box, iconlabel, icon, hidden
+Search=box
+TaskView=true
+Widgets=false
+AutoHide=false
+Badges=true
+Flashing=true
+AllDisplays=false
+# all, main-and-open, open
+MultiDisplayApps=all
+ShareWindow=false
+ShowDesktopCorner=true
+# always, full, never
+Combine=always
+# never, always, full
+SmallButtons=never
+RecentSearches=true
+EndTask=false
+Pinned=org.kde.dolphin.desktop,firefox.desktop,org.raye.store.desktop,org.raye.settings.desktop
+
+[Tray]
+HiddenMenu=true
+Shown=
+Hidden=
+
+[Start]
+# default, pins, recommendations
+Layout=default
+RecentApps=true
+MostUsed=false
+Recommended=true
+Folders=settings,files
+# category, grid, list
+AllView=category
+Pinned=org.kde.dolphin.desktop,firefox.desktop,org.raye.store.desktop,org.raye.settings.desktop,org.kde.konsole.desktop,org.kde.kate.desktop,org.kde.kcalc.desktop,org.kde.gwenview.desktop,org.kde.haruna.desktop,org.kde.elisa.desktop,org.raye.taskmanager.desktop
+# folders made of pins, written by the Start menu
+PinnedFolders=
+# why a restart is needed (a dot on the power button), empty when none
+RestartNeeded=
+
+[Clock]
+ShowSeconds=false
+ShowDate=true
+# auto, true, false
+Use24h=auto
+
+[Focus]
+# end of a focus session (ISO date and time), empty when off
+Until=
+
+[QuickSettings]
+Tiles=wifi,bluetooth,airplane,energysaver,nightlight,accessibility
+
+[Notifications]
+ToastSeconds=5
+LockBadges=true
+
+[Sound]
+# the short sound when the volume changes (keys, slider, wheel)
+VolumeChime=true
+
+[Search]
+# last searches, written by the shell
+Recent=
+
+[JumpLists]
+# <desktop id>=pinned file URLs, written by the shell

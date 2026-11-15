@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Unknown category
+Exec=example-unknown-category
+Categories=X-Something;

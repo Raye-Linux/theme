@@ -1,0 +1,182 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: raye-shell\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Open quick settings"
+msgstr "Ouvrir les paramètres rapides"
+
+msgid "Quick settings"
+msgstr "Paramètres rapides"
+
+msgid "Sound off"
+msgstr "Son coupé"
+
+msgid "Volume: %1%"
+msgstr "Volume : %1 %"
+
+msgid "Battery: %1%"
+msgstr "Batterie : %1 %"
+
+msgid "%1%"
+msgstr "%1 %"
+
+msgid "Wi-Fi"
+msgstr "Wi-Fi"
+
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+msgid "Airplane mode"
+msgstr "Mode avion"
+
+msgid "Energy saver"
+msgstr "Économie"
+
+msgid "Night light"
+msgstr "Veilleuse"
+
+msgid "Accessibility"
+msgstr "Accessibilité"
+
+msgid "Do not disturb"
+msgstr "Ne pas déranger"
+
+msgid "Mic off"
+msgstr "Micro coupé"
+
+msgid "Project"
+msgstr "Projeter"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Mobile hotspot"
+msgstr "Point d'accès"
+
+msgid "Brightness"
+msgstr "Luminosité"
+
+msgid "Volume"
+msgstr "Volume"
+
+msgid "Mute"
+msgstr "Couper le son"
+
+msgid "Unmute"
+msgstr "Rétablir le son"
+
+msgid "Previous"
+msgstr "Précédent"
+
+msgid "Next"
+msgstr "Suivant"
+
+msgid "Play"
+msgstr "Lecture"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Back"
+msgstr "Retour"
+
+msgid "Connected"
+msgstr "Connecté"
+
+msgid "Not connected"
+msgstr "Non connecté"
+
+msgid "No VPN connections yet"
+msgstr "Aucune connexion VPN pour l'instant"
+
+msgid "Power and battery settings"
+msgstr "Paramètres d'alimentation et de batterie"
+
+msgid "Edit quick settings"
+msgstr "Modifier les paramètres rapides"
+
+msgid "All settings"
+msgstr "Tous les paramètres"
+
+msgid "Done"
+msgstr "Terminé"
+
+msgid "Add %1"
+msgstr "Ajouter %1"
+
+msgid "Remove %1"
+msgstr "Retirer %1"
+
+msgid "Network and internet settings"
+msgstr "Paramètres réseau et Internet"
+
+msgid "Sound settings"
+msgstr "Paramètres du son"
+
+msgid "Ethernet"
+msgstr "Ethernet"
+
+msgid "Connecting…"
+msgstr "Connexion…"
+
+msgid "Connected · %1"
+msgstr "Connecté · %1"
+
+msgid "Secured"
+msgstr "Sécurisé"
+
+msgid "Open"
+msgstr "Ouvert"
+
+msgid "Connect"
+msgstr "Se connecter"
+
+msgid "Disconnect"
+msgstr "Se déconnecter"
+
+msgid "Enter the network security key"
+msgstr "Entrez la clé de sécurité réseau"
+
+msgid "Wi-Fi is turned off"
+msgstr "Le Wi-Fi est désactivé"
+
+msgid "No networks found"
+msgstr "Aucun réseau trouvé"
+
+msgid "More Bluetooth settings"
+msgstr "Plus de paramètres Bluetooth"
+
+msgid "Paired"
+msgstr "Associé"
+
+msgid "Bluetooth is turned off"
+msgstr "Le Bluetooth est désactivé"
+
+msgid "No paired devices"
+msgstr "Aucun appareil associé"
+
+msgid "Sound output"
+msgstr "Sortie audio"
+
+msgid "More volume settings"
+msgstr "Plus de paramètres de volume"
+
+msgid "No sound outputs found"
+msgstr "Aucune sortie audio trouvée"
+
+msgid "Go to settings"
+msgstr "Aller aux paramètres"
+
+msgid "No cable plugged in"
+msgstr "Aucun câble branché"
+
+msgid "On"
+msgstr "Activé"
+
+msgid "Off"
+msgstr "Désactivé"

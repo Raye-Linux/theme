@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "techoraye"
+            }
+        ],
+        "Id": "Raye-Strata",
+        "License": "CC-BY-SA-4.0",
+        "Name": "Strata",
+        "Name[fr]": "Strates"
+    }
+}

@@ -1,0 +1,50 @@
+# French strings of the taskbar apps.
+msgid ""
+msgstr ""
+"Project-Id-Version: raye-shell\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Running apps"
+msgstr "Applications en cours"
+
+msgid "Show more apps"
+msgstr "Afficher plus d’applications"
+
+msgid "Move the focus to the taskbar"
+msgstr "Placer le focus sur la barre des tâches"
+
+msgid "%1 new item"
+msgid_plural "%1 new items"
+msgstr[0] "%1 nouvel élément"
+msgstr[1] "%1 nouveaux éléments"
+
+msgid "Pin to taskbar"
+msgstr "Épingler à la barre des tâches"
+
+msgid "Unpin from taskbar"
+msgstr "Détacher de la barre des tâches"
+
+msgid "Close window"
+msgstr "Fermer la fenêtre"
+
+msgid "Close all windows"
+msgstr "Fermer toutes les fenêtres"
+
+msgid "Recent"
+msgstr "Récents"
+
+msgid "Tasks"
+msgstr "Tâches"
+
+msgid "End task"
+msgstr "Fin de tâche"
+
+msgid "Task Manager"
+msgstr "Gestionnaire des tâches"
+
+msgid "Taskbar settings"
+msgstr "Paramètres de la barre des tâches"

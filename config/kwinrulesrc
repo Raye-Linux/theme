@@ -1,0 +1,17 @@
+# Window rules for every user (installed to /etc/xdg/kwinrulesrc).
+#
+# A window opens centred on the screen in use, never where it was last left.
+# Wayland apps cannot place themselves; this is for the others, which can ask
+# for a position, and do, often the one they had when they closed. Rule 3 is
+# "apply initially": the first map only, so a Windows program that moves its
+# own window later still can. Type 1 is normal windows: apps place their
+# dialogs and tool windows next to the main one, and that stays theirs.
+[General]
+count=1
+rules=raye-new-windows
+
+[raye-new-windows]
+Description=New windows open centred
+ignoregeometry=true
+ignoregeometryrule=3
+types=1

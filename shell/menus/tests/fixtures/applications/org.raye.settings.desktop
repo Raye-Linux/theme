@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Settings
+Exec=org.raye.settings
+Categories=Qt;KDE;Settings;

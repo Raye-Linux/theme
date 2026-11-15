@@ -1,0 +1,9 @@
+[Unit]
+Description=Raye: watch the account's app entries
+
+[Path]
+PathChanged=%h/.local/share/applications
+MakeDirectory=yes
+
+[Install]
+WantedBy=default.target

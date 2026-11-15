@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "techoraye"
+            }
+        ],
+        "Id": "Raye-Lumen",
+        "License": "CC-BY-SA-4.0",
+        "Name": "Lumen",
+        "Name[fr]": "Lumen"
+    }
+}

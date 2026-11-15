@@ -1,0 +1,5 @@
+# Session defaults for every user (installed to /etc/xdg/ksmserverrc).
+# Every sign-in starts clean, as in Windows: the apps of the last session
+# are not opened again.
+[General]
+loginMode=emptySession

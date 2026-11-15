@@ -1,0 +1,5 @@
+[General]
+Name=Raye Linux
+LogoPath=/usr/share/icons/hicolor/256x256/apps/raye-eye.png
+Website=https://github.com/Raye-Linux
+Variant=Based on Ubuntu 26.04 LTS

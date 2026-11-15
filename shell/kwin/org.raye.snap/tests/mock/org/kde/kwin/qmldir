@@ -1,0 +1,9 @@
+module org.kde.kwin
+singleton Workspace 1.0 Workspace.qml
+singleton KWin 1.0 KWin.qml
+singleton Options 1.0 Options.qml
+ShortcutHandler 1.0 ShortcutHandler.qml
+DBusCall 1.0 DBusCall.qml
+WindowThumbnail 1.0 WindowThumbnail.qml
+FakeWindow 1.0 FakeWindow.qml
+FakeOutput 1.0 FakeOutput.qml

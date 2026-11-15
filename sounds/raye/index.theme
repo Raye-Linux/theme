@@ -1,0 +1,10 @@
+[Sound Theme]
+Name=Raye
+Comment=The sounds of Raye Linux
+Comment[fr]=Les sons de Raye Linux
+Inherits=freedesktop
+Directories=stereo
+Example=theme-demo
+
+[stereo]
+OutputProfile=stereo

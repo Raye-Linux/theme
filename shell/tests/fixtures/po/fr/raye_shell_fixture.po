@@ -1,0 +1,31 @@
+# French strings of the shell test fixtures.
+msgid ""
+msgstr ""
+"Project-Id-Version: raye-shell\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Load test passed"
+msgstr "Test de chargement réussi"
+
+msgid "%1 check ran"
+msgid_plural "%1 checks ran"
+msgstr[0] "%1 vérification faite"
+msgstr[1] "%1 vérifications faites"
+
+msgctxt "button that closes the test"
+msgid "Close"
+msgstr "Fermer"
+
+msgid "Never translated"
+msgstr ""
+
+#, fuzzy
+msgid "Only a guess"
+msgstr "Seulement une supposition"
+
+#~ msgid "Old string"
+#~ msgstr "Ancien texte"

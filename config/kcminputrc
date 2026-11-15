@@ -1,0 +1,7 @@
+# Pointer defaults for every user (installed to /etc/xdg/kcminputrc). A
+# user's own ~/.config/kcminputrc wins, so this only decides what a new
+# account starts with: the Raye pointer, as the look-and-feel says.
+
+[Mouse]
+cursorTheme=Raye
+cursorSize=24

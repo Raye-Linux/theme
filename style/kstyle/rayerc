@@ -1,0 +1,24 @@
+# Raye widget style and window decoration: system defaults, installed to
+# /etc/xdg/rayerc. A user's own ~/.config/rayerc (written by the Raye
+# style settings and the window decoration page) overrides any key here.
+
+[Style]
+# menus, combo box lists: acrylic, 88 % opaque over KWin's blur
+MenuOpacity=88
+# hover, press and check animations: Windows' ControlFast
+AnimationsDuration=167
+# thin scroll bars without arrow buttons
+ScrollBarAddLineButtons=0
+ScrollBarSubLineButtons=0
+# underlined access keys show while Alt is held
+MnemonicsMode=MN_AUTO
+# trees have no branch lines, like Windows
+ViewDrawTreeBranchLines=false
+
+[Windeco Exception 0]
+# Files draws its own title row with the tabs in it
+Enabled=true
+ExceptionPattern=org\\.kde\\.dolphin
+ExceptionType=0
+HideTitleBar=true
+Mask=0

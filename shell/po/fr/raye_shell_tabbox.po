@@ -1,0 +1,15 @@
+# French strings of the window switcher (Alt+Tab).
+msgid ""
+msgstr ""
+"Project-Id-Version: raye-shell\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "No open windows"
+msgstr "Aucune fenêtre ouverte"
+
+msgid "Close window"
+msgstr "Fermer la fenêtre"

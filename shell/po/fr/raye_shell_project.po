@@ -1,0 +1,30 @@
+# French strings of the Project panel.
+msgid ""
+msgstr ""
+"Project-Id-Version: raye-shell\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Project"
+msgstr "Projeter"
+
+msgid "PC screen only"
+msgstr "Écran du PC uniquement"
+
+msgid "Duplicate"
+msgstr "Dupliquer"
+
+msgid "Extend"
+msgstr "Étendre"
+
+msgid "Second screen only"
+msgstr "Deuxième écran uniquement"
+
+msgid "Connect another screen to use these."
+msgstr "Branchez un autre écran pour utiliser ces choix."
+
+msgid "Display settings"
+msgstr "Paramètres d'affichage"

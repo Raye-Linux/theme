@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+  <kcfgfile name=""/>
+  <group name="General">
+    <entry name="Source" type="Url">
+      <label>The GIF, mp4 or webm file</label>
+      <default>file:///usr/share/raye/wallpapers/motion/raye-strata.webm</default>
+    </entry>
+    <entry name="Still" type="Url">
+      <label>A picture shown while the file loads, and when it can't be read</label>
+      <default>file:///usr/share/raye/wallpapers/motion/raye-strata.jpg</default>
+    </entry>
+    <entry name="FillMode" type="Int">
+      <label>Qt Quick fill mode</label>
+      <default>2</default>
+    </entry>
+    <entry name="PauseCovered" type="Bool">
+      <label>Rest while a maximized or full-screen window covers the screen</label>
+      <default>true</default>
+    </entry>
+    <entry name="PauseOnBattery" type="Bool">
+      <label>Rest on battery</label>
+      <default>true</default>
+    </entry>
+    <entry name="MaxFps" type="Int">
+      <label>Most frames a second a GIF is drawn at</label>
+      <default>30</default>
+      <min>1</min>
+      <max>60</max>
+    </entry>
+  </group>
+</kcfg>

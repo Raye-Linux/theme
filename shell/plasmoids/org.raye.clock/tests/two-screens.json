@@ -1,0 +1,6 @@
+{
+    "screens": [
+        { "name": "laptop", "x": 0, "y": 0, "width": 1366, "height": 768 },
+        { "name": "monitor", "x": 1366, "y": 0, "width": 1920, "height": 1080 }
+    ]
+}

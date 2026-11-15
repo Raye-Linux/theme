@@ -1,0 +1,14 @@
+{
+    "KPlugin": {
+        "Description": "Window decoration using the Raye visual style for the Plasma Desktop",
+        "Description[fr]": "Décorations de fenêtres utilisant le style visuel Raye pour le bureau Plasma",
+        "EnabledByDefault": true,
+        "Name": "Raye",
+        "Name[fr]": "Raye"
+    },
+    "X-KDE-ConfigModule": "kcm_rayedecoration",
+    "org.kde.kdecoration3": {
+        "blur": false,
+        "recommendedBorderSize": "None"
+    }
+}

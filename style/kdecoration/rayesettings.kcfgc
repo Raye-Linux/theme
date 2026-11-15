@@ -1,0 +1,7 @@
+File=rayesettingsdata.kcfg
+ClassName=InternalSettings
+NameSpace=Raye
+Singleton=false
+Mutators=true
+GlobalEnums=true
+Notifiers=OutlineCloseButton

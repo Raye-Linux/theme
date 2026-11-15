@@ -1,0 +1,7 @@
+# Raye defaults: the screen locks when it turns off (powerdevilrc) and on
+# wake, like Windows. No separate idle timer of its own.
+
+[Daemon]
+Autolock=false
+LockOnResume=true
+LockGrace=5

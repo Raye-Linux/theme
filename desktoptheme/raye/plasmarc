@@ -1,0 +1,13 @@
+# Acrylic: the compositor's contrast effect behind see-through popups and
+# the taskbar. Mild, so the violet of the wallpaper stays and nothing glares.
+[ContrastEffect]
+enabled=true
+contrast=0.2
+intensity=1.1
+saturation=1.4
+
+[BlurBehindEffect]
+enabled=true
+
+[AdaptiveTransparency]
+enabled=true

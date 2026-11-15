@@ -1,0 +1,16 @@
+#!/bin/sh
+# Gives sddm its own face back.
+set -e
+
+FACE=/usr/share/sddm/faces/.face.icon
+
+case "$1" in
+    remove|purge|disappear|abort-install)
+        dpkg-divert --package sddm-theme-raye --remove --rename \
+            --divert "$FACE.sddm" "$FACE"
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

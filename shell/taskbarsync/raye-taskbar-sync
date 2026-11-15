@@ -1,0 +1,64 @@
+#!/bin/sh
+# Makes the taskbars match ~/.config/raye-taskbarrc ([Taskbar]
+# AllDisplays, MultiDisplayButtons): one taskbar per screen, or only the
+# main one. Raye Settings runs it after writing that file; KWin starts
+# raye-taskbar-sync.service (--settle) at login and whenever screens come,
+# go or change order. Running it again changes nothing that matches.
+#
+#   raye-taskbar-sync            apply now (exit 1 if Plasma is not there)
+#   raye-taskbar-sync --settle   wait for Plasma, let a screen change
+#                                settle, apply, then once more
+
+set -u
+script=${RAYE_TASKBAR_SCRIPT:-/usr/share/raye/taskbar/sync.js}
+pins=${RAYE_TASKBAR_PINS:-/usr/libexec/raye-taskbar-pins}
+app_icons=${RAYE_APP_ICONS:-/usr/libexec/raye-app-icons}
+lock=${XDG_RUNTIME_DIR:-/tmp}/raye-taskbar-sync.lock
+
+run_script() {
+    out=$(busctl --user call org.kde.plasmashell /PlasmaShell \
+        org.kde.PlasmaShell evaluateScript s "$(cat "$script")") || return 1
+    # every Start button gets the main one's pinned apps
+    starts=$(printf '%s' "$out" | grep -o 'raye-taskbar-starts:[0-9 ]*' | cut -d: -f2)
+    # shellcheck disable=SC2086
+    [ -z "$starts" ] || "$pins" $starts || echo "raye-taskbar-sync: pinned apps not all copied" >&2
+}
+
+apply() {
+    # entries a browser wrote without a working icon
+    "$app_icons" || true
+    [ -r "$script" ] || { echo "raye-taskbar-sync: $script missing" >&2; return 2; }
+    # one run at a time: Settings and KWin may ask together
+    (
+        flock -w 30 9 || exit 1
+        run_script
+    ) 9>"$lock"
+}
+
+plasma_up() {
+    [ "$(busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
+        org.freedesktop.DBus NameHasOwner s org.kde.plasmashell 2>/dev/null)" = "b true" ]
+}
+
+case "${1:-}" in
+"")
+    apply
+    ;;
+--settle)
+    i=0
+    while ! plasma_up; do
+        i=$((i + 1))
+        [ $i -gt 60 ] && { echo "raye-taskbar-sync: Plasma did not start" >&2; exit 1; }
+        sleep 1
+    done
+    # Plasma gives a new screen its desktop a moment after KWin has it
+    sleep 2
+    apply
+    sleep 3
+    apply
+    ;;
+*)
+    echo "usage: raye-taskbar-sync [--settle]" >&2
+    exit 2
+    ;;
+esac

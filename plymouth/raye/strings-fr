@@ -1,0 +1,24 @@
+# Words of the Raye boot screen, French.
+# key=text. A {name} part is filled in when the screen is drawn.
+password_title=Entrez le mot de passe de ce disque
+recovery_hint=Vous l'avez oublié ? Tapez plutôt votre clé de récupération à 48 chiffres.
+wrong_password=Ce mot de passe n'a pas fonctionné. Réessayez.
+caps_lock=Verr. Maj. activé
+keyboard=Clavier : {layout}
+tpm_title=Les paramètres de sécurité de ce PC ont changé
+tpm_line1=Tapez le mot de passe du disque ou la clé de récupération pour démarrer Raye.
+tpm_line2=Tout refonctionne seul après la prochaine mise à jour.
+shutdown=Arrêt en cours
+reboot=Redémarrage en cours
+updates=Installation des mises à jour  {n} %
+updates_note=N'éteignez pas votre PC
+finishing_updates=Fin des mises à jour
+prepare_updates=Préparation des mises à jour
+go_back=Retour à un état précédent
+go_back_failed=Impossible de revenir à ce point de restauration. Démarrage normal.
+firmware=Installation du micrologiciel
+firmware_note=N'éteignez pas votre PC. Cela peut prendre quelques minutes.
+firmware_of=sur
+upgrade=Mise à niveau de Raye  {n} %
+remove_usb=Vous pouvez retirer la clé USB maintenant
+fsck=Analyse et réparation du lecteur ({label})

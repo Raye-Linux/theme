@@ -1,0 +1,6 @@
+#!/bin/sh
+# agenda FROM TO: the first day back as JSON, half a second late for
+# November's grid (it starts in late October)
+[ "$1" = agenda ] || exit 2
+case $2 in 2026-10-*) sleep 0.5 ;; esac
+printf '["%s"]\n' "$2"

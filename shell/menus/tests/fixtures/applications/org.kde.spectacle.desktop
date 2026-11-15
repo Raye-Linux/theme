@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Spectacle
+Exec=org.kde.spectacle
+Categories=Qt;KDE;Utility;

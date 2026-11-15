@@ -1,0 +1,43 @@
+// fastfetch, the Raye way: the eye in violet next to the usual details.
+// The colours are the terminal's own palette, not fixed values: magenta
+// (35) for the lids and the labels, bright magenta (95) for the iris and
+// the title, yellow (33) for the ring round the pupil, black (30) for
+// the pupil. Raye Night draws them light and Raye Day dark (black stays
+// dark in both), so the eye and the labels read well on both.
+// brightColor off: fastfetch would make every key bold and bright.
+//
+// The logo is a text file: "file" says so, so fastfetch never tries it as
+// one of its own logos or as a picture first.
+//
+// Desktop, theme and terminal show what the person sees on screen: the
+// desktop is Raye, the theme is the colour scheme's own name ("Raye
+// Night"). The window manager and the terminal's program name are left
+// out, and so are the GTK themes (Raye ships none, GTK apps take the
+// colour scheme). Outside a desktop session the desktop line does not show.
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "type": "file",
+        "source": "/usr/share/raye/fetch/raye.txt",
+        "color": { "1": "35", "2": "95", "3": "33", "4": "30" },
+        "padding": { "top": 1, "right": 3 }
+    },
+    "display": {
+        "color": { "keys": "35", "title": "1;95" },
+        "brightColor": false,
+        "separator": "  "
+    },
+    "modules": [
+        "title", "separator",
+        "os", "host", "kernel", "uptime", "packages", "shell",
+        "display",
+        { "type": "de", "key": "Desktop", "format": "Raye" },
+        {
+            "type": "command", "key": "Theme",
+            "text": "s=$(kreadconfig6 --group General --key ColorScheme 2>/dev/null) && [ -n \"$s\" ] || exit 1; for d in \"${XDG_DATA_HOME:-$HOME/.local/share}\" /usr/share; do f=$d/color-schemes/$s.colors; [ -r \"$f\" ] && exec kreadconfig6 --file \"$f\" --group General --key Name; done; echo \"$s\""
+        },
+        "icons", "font",
+        "cpu", "gpu", "memory", "disk", "battery", "locale",
+        "break", "colors"
+    ]
+}

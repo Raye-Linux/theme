@@ -1,0 +1,16 @@
+{
+    "KPlugin": {
+        "Description": "Modify the appearance of window decorations",
+        "Description[fr]": "Modifier l'apparence des décorations de fenêtres",
+        "Icon": "preferences-system-windows",
+        "Name": "Raye Window Decoration",
+        "Name[fr]": "Décoration de fenêtre pour Raye",
+        "ServiceTypes": [
+            "KCModule"
+        ]
+    },
+    "X-KDE-Keywords": "raye,decoration",
+    "X-KDE-Keywords[fr]": "raye, décoration",
+    "X-KDE-ParentApp": "kcontrol",
+    "X-KDE-Weight": 60
+}

@@ -1,0 +1,19 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Raye Linux"
+            }
+        ],
+        "Category": "Date and Time",
+        "Description": "The time, the date and your notifications on the taskbar",
+        "Description[fr]": "L’heure, la date et vos notifications dans la barre des tâches",
+        "Icon": "preferences-desktop-notification-bell",
+        "License": "GPL-3.0-or-later",
+        "Name": "Clock and notifications",
+        "Name[fr]": "Horloge et notifications",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

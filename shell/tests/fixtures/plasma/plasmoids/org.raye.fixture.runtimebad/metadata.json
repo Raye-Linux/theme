@@ -1,0 +1,16 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [ { "Name": "Raye Linux" } ],
+        "Category": "System Information",
+        "Description": "Fails only once it runs",
+        "Description[fr]": "Échoue seulement une fois lancé",
+        "Icon": "raye-eye",
+        "Id": "org.raye.fixture.runtimebad",
+        "License": "GPL-2.0-or-later",
+        "Name": "Broken at run time",
+        "Name[fr]": "Cassé au lancement",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

@@ -1,0 +1,189 @@
+# French strings of the clock, the notification centre and the calendar.
+msgid ""
+msgstr ""
+"Project-Id-Version: raye-shell\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "%1 new notification"
+msgid_plural "%1 new notifications"
+msgstr[0] "%1 nouvelle notification"
+msgstr[1] "%1 nouvelles notifications"
+
+msgid "Do not disturb is on"
+msgstr "Ne pas déranger est activé"
+
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "Clear all"
+msgstr "Tout effacer"
+
+msgid "Turn on do not disturb"
+msgstr "Activer Ne pas déranger"
+
+msgid "Turn off do not disturb"
+msgstr "Désactiver Ne pas déranger"
+
+msgid "No new notifications"
+msgstr "Aucune nouvelle notification"
+
+msgid "Clear these notifications"
+msgstr "Effacer ces notifications"
+
+msgid "Now"
+msgstr "Maintenant"
+
+msgctxt "minutes ago, short"
+msgid "%1m"
+msgstr "%1 min"
+
+msgid "Yesterday"
+msgstr "Hier"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Clear"
+msgstr "Effacer"
+
+msgctxt "progress of a file copy"
+msgid "%1%"
+msgstr "%1 %"
+
+msgid "Show the calendar"
+msgstr "Afficher le calendrier"
+
+msgid "Hide the calendar"
+msgstr "Masquer le calendrier"
+
+msgid "Previous month"
+msgstr "Mois précédent"
+
+msgid "Next month"
+msgstr "Mois suivant"
+
+msgid "Less time"
+msgstr "Moins de temps"
+
+msgid "More time"
+msgstr "Plus de temps"
+
+msgid "%1 min"
+msgid_plural "%1 mins"
+msgstr[0] "%1 min"
+msgstr[1] "%1 min"
+
+msgctxt "time left of a focus session"
+msgid "Focus, %1 left"
+msgstr "Concentration, %1 restant"
+
+msgid "End session"
+msgstr "Terminer la session"
+
+msgid "Focus"
+msgstr "Concentration"
+
+msgid "Adjust date and time"
+msgstr "Ajuster la date et l’heure"
+
+msgid "Notification settings"
+msgstr "Paramètres de notification"
+
+msgid "Task Manager"
+msgstr "Gestionnaire des tâches"
+
+msgid "Taskbar settings"
+msgstr "Paramètres de la barre des tâches"
+
+msgid "Show desktop"
+msgstr "Afficher le bureau"
+
+msgid "System"
+msgstr "Système"
+
+msgid "Network"
+msgstr "Réseau"
+
+msgid "Devices"
+msgstr "Périphériques"
+
+msgid "Storage"
+msgstr "Stockage"
+
+msgid "Power"
+msgstr "Alimentation"
+
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+msgid "Accessibility"
+msgstr "Accessibilité"
+
+msgid "Passwords"
+msgstr "Mots de passe"
+
+msgid "Security"
+msgstr "Sécurité"
+
+msgid "Files"
+msgstr "Fichiers"
+
+msgid "Connected to %1"
+msgstr "Connecté à %1"
+
+msgid "Disconnected from %1"
+msgstr "Déconnecté de %1"
+
+msgid "More options"
+msgstr "Plus d’options"
+
+msgid "Hide"
+msgstr "Masquer"
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "See more"
+msgstr "Voir plus"
+
+msgid "Pause"
+msgstr "Suspendre"
+
+msgid "Resume"
+msgstr "Reprendre"
+
+msgid "Reply"
+msgstr "Répondre"
+
+msgid "Write a reply"
+msgstr "Écrire une réponse"
+
+msgid "Send"
+msgstr "Envoyer"
+
+msgid "Turn off notifications from %1"
+msgstr "Désactiver les notifications de %1"
+
+msgid "Today"
+msgstr "Aujourd’hui"
+
+msgid "Tomorrow"
+msgstr "Demain"
+
+msgid "Add an event"
+msgstr "Ajouter un événement"
+
+msgid "No events"
+msgstr "Aucun événement"
+
+msgid "All day"
+msgstr "Toute la journée"
+
+msgid "%1 more"
+msgid_plural "%1 more"
+msgstr[0] "%1 autre"
+msgstr[1] "%1 autres"

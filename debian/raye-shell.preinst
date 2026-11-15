@@ -1,0 +1,34 @@
+#!/bin/sh
+# The Raye on-screen displays (volume, brightness, caps lock) replace the
+# ones Plasma ships. The files sit in a QML module we cannot add to, so
+# the stock ones are moved aside to <file>.plasma and the package puts
+# links to /usr/share/raye/shell/osd/ in their place.
+#
+# The list is filled in at build time with the files the shell build
+# really installed: while shell/osd has not landed it is empty and
+# nothing is moved aside, so the stock displays keep working.
+set -e
+
+QML=/usr/lib/#DEB_HOST_MULTIARCH#/qt6/qml/org/kde/plasma/workspace/osd
+OSD="#RAYE_OSD#"
+# The Raye lock screen: its LockScreen.qml replaces the stock one in the
+# desktop shell's lock screen folder, the same way.
+LOCK=/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen
+LOCKFILES="#RAYE_LOCK#"
+
+case "$1" in
+    install|upgrade)
+        for f in $OSD; do
+            dpkg-divert --package raye-shell --add --rename \
+                --divert "$QML/$f.plasma" "$QML/$f"
+        done
+        for f in $LOCKFILES; do
+            dpkg-divert --package raye-shell --add --rename \
+                --divert "$LOCK/$f.plasma" "$LOCK/$f"
+        done
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

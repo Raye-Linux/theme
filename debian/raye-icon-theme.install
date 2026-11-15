@@ -1,0 +1,7 @@
+#!/bin/sh
+# Drawn by art/icons/*.py into icons/Raye and icons/Raye-Dark; optional
+# until they land. See debian/install-built.
+exec debian/install-built <<'LIST'
+? icons/Raye usr/share/icons
+? icons/Raye-Dark usr/share/icons
+LIST

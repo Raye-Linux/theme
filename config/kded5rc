@@ -1,0 +1,5 @@
+# Background modules of the desktop (installed to /etc/xdg/kded5rc; kded6
+# still reads the old name).
+# The yearly "donate to KDE" notification.
+[Module-donationmessage]
+autoload=false

@@ -1,0 +1,2 @@
+module org.raye.shell
+singleton UpdateState 1.0 UpdateState.qml

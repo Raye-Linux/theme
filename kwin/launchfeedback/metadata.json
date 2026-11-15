@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Category": "Appearance",
+        "Description": "A turning ring beside the pointer while an app starts",
+        "Description[fr]": "Un anneau qui tourne à côté du pointeur pendant qu'une appli démarre",
+        "EnabledByDefault": true,
+        "Name": "Launch feedback",
+        "Name[fr]": "Démarrage des applis"
+    },
+    "org.kde.kwin.effect": {
+        "internal": true
+    }
+}

@@ -1,0 +1,99 @@
+# French strings of the USB icon of the tray.
+msgid ""
+msgstr ""
+"Project-Id-Version: raye-shell\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Safely Remove Hardware and Eject Media"
+msgstr "Retirer le périphérique en toute sécurité et éjecter le média"
+
+msgid "No devices to eject"
+msgstr "Aucun appareil à éjecter"
+
+msgctxt "@info a kind of device"
+msgid "USB drive"
+msgstr "Clé USB"
+
+msgctxt "@info a kind of device"
+msgid "Memory card"
+msgstr "Carte mémoire"
+
+msgctxt "@info a kind of device"
+msgid "Disc"
+msgstr "Disque"
+
+msgctxt "@info a kind of device"
+msgid "Removable drive"
+msgstr "Lecteur amovible"
+
+msgctxt "@info size and kind of a device: 7.5 GB USB drive"
+msgid "%1 %2"
+msgstr "%2 de %1"
+
+msgctxt "@action:inmenu"
+msgid "Eject %1"
+msgstr "Éjecter %1"
+
+msgctxt "@action:inmenu"
+msgid "Open %1 in Files"
+msgstr "Ouvrir %1 dans Fichiers"
+
+msgctxt "@action:inmenu"
+msgid "Open in Files"
+msgstr "Ouvrir dans Fichiers"
+
+msgctxt "@title notification"
+msgid "Safe to remove hardware"
+msgstr "Le matériel peut être retiré en toute sécurité"
+
+msgctxt "@info notification"
+msgid "The '%1' device can now be safely removed from the computer."
+msgstr "Le périphérique « %1 » peut être retiré de l’ordinateur en toute sécurité."
+
+msgctxt "@title notification"
+msgid "Problem ejecting USB device"
+msgstr "Problème lors de l’éjection du périphérique USB"
+
+msgctxt "@title notification"
+msgid "Problem ejecting memory card"
+msgstr "Problème lors de l’éjection de la carte mémoire"
+
+msgctxt "@title notification"
+msgid "Problem ejecting disc"
+msgstr "Problème lors de l’éjection du disque"
+
+msgctxt "@title notification"
+msgid "Problem ejecting device"
+msgstr "Problème lors de l’éjection du périphérique"
+
+msgctxt "@info notification"
+msgid "This device is currently in use. Close any programs or windows that might be using the device, and then try again."
+msgstr "Ce périphérique est en cours d’utilisation. Fermez les programmes ou fenêtres qui pourraient l’utiliser, puis réessayez."
+
+msgctxt "@info notification: the apps keeping a device busy"
+msgid "In use by: %1"
+msgstr "Utilisé par : %1"
+
+msgctxt "@title notification: a USB drive was plugged in"
+msgid "%1 (%2)"
+msgstr "%1 (%2)"
+
+msgctxt "@info notification"
+msgid "Select to choose what happens with removable drives."
+msgstr "Sélectionnez pour choisir ce qui se passe avec les lecteurs amovibles."
+
+msgctxt "@action:button notification"
+msgid "Open folder to view files"
+msgstr "Ouvrir le dossier et afficher les fichiers"
+
+msgctxt "@action:button notification"
+msgid "Take no action"
+msgstr "Ne rien faire"
+
+msgctxt "@title notification source"
+msgid "Devices"
+msgstr "Périphériques"

@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [ { "Name": "techoraye" } ],
+        "Description": "The Raye Linux desktop, light",
+        "Description[fr]": "Le bureau de Raye Linux, clair",
+        "Id": "org.raye.day.desktop",
+        "License": "GPL-3.0-or-later",
+        "Name": "Raye Day",
+        "Name[fr]": "Raye Jour",
+        "Version": "0.2"
+    },
+    "X-Plasma-APIVersion": "2"
+}

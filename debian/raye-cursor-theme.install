@@ -1,0 +1,7 @@
+#!/bin/sh
+# Drawn by art/cursors.py into cursors/Raye and cursors/Raye-Dark;
+# optional until they land. See debian/install-built.
+exec debian/install-built <<'LIST'
+? cursors/Raye usr/share/icons
+? cursors/Raye-Dark usr/share/icons
+LIST

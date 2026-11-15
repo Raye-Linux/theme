@@ -1,0 +1,197 @@
+#!/usr/bin/make -f
+#
+# raye-theme is mostly files that are copied as they are (debian/*.install).
+# The compiled parts are separate CMake trees in the repo; each one is
+# built into debian/build/<tree> and installed into debian/tmp, where the
+# .install lists of raye-style, raye-shell and raye-polkit-agent pick up
+# what is there (see debian/install-built).
+
+include /usr/share/dpkg/architecture.mk
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+# the QML load tests of the trees run without a display
+export QT_QPA_PLATFORM = offscreen
+# ctest prints "No tests were found!!!" and exits 0. A package whose
+# tests stop being registered -- a renamed tests/ folder, a find_package
+# that quietly goes missing, BUILD_TESTING flipped -- then BUILDS GREEN
+# with nothing run, and the only trace is one line in an 8 MB log.
+# Measured in the resolute chroot: bare ctest on an empty tree exits 0,
+# with this set it exits 8. iso/tools/tests/test_ctest_no_tests_guard.py
+# fails if any debian/rules that runs dh_auto_test loses this line.
+export CTEST_NO_TESTS_ACTION = error
+# the token tests import tokens/generate.py: write no bytecode into the tree
+export PYTHONDONTWRITEBYTECODE = 1
+
+# Every CMake tree of the repo. A tree is built as soon as it has a
+# CMakeLists.txt, unless it is named in RAYE_TREES_NOT_READY: a tree goes
+# there while its own package is still being written, and comes out when
+# its build and its tests pass. Building with
+#   RAYE_TREES_NOT_READY= dpkg-buildpackage -b -us -uc
+# builds every tree that exists.
+#   style         Qt style and window decoration      -> raye-style
+#   qml           org.raye.ui QML module (C++ part)   -> raye-style
+#   shell         taskbar, Start and the rest          -> raye-shell
+#   session/polkit  admin prompt                       -> raye-polkit-agent
+#   kwin/launchfeedback  ring beside the pointer while an app starts -> raye-shell
+RAYE_TREES := style qml shell session/polkit kwin/launchfeedback
+RAYE_TREES_NOT_READY ?=
+TREES := $(filter-out $(RAYE_TREES_NOT_READY),\
+	$(patsubst %/CMakeLists.txt,%,$(wildcard $(addsuffix /CMakeLists.txt,$(RAYE_TREES)))))
+
+ifneq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+TESTING = -DBUILD_TESTING=OFF
+else
+TESTING = -DBUILD_TESTING=ON
+endif
+# the org.raye.Snap relay of Raye Snap ships with raye-shell
+TESTING += -DRAYE_SHELL_SNAP_RELAY=ON
+
+QMLDIR = usr/lib/$(DEB_HOST_MULTIARCH)/qt6/qml
+OSD_STOCK = $(QMLDIR)/org/kde/plasma/workspace/osd
+OSD_RAYE = usr/share/raye/shell/osd
+# the stock OSD files raye-shell may put its own in place of
+OSD_FILES = qmldir Osd.qml OsdItem.qml
+# the stock lock screen folder: raye-shell puts its own LockScreen.qml
+# there (the stock one is moved aside, see raye-shell.preinst)
+LOCKSCREEN = usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen
+
+INTER = /usr/share/fonts/opentype/inter
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	set -e; for t in $(TREES); do \
+		dh_auto_configure --buildsystem=cmake+ninja --sourcedirectory=$$t \
+			--builddirectory=debian/build/$$(echo $$t | tr / -) -- $(TESTING); \
+	done
+
+override_dh_auto_build:
+	set -e; for t in $(TREES); do \
+		dh_auto_build --buildsystem=cmake+ninja --sourcedirectory=$$t \
+			--builddirectory=debian/build/$$(echo $$t | tr / -); \
+	done
+	# GRUB can only draw its own bitmap font format. grub-mkfont names a
+	# face by its bold flag alone, so SemiBold needs its family given.
+	mkdir -p grub/raye/fonts
+	grub-mkfont -s 20 -o grub/raye/fonts/inter-regular-20.pf2 $(INTER)/Inter-Regular.otf
+	grub-mkfont -n "Inter SemiBold" -s 20 -o grub/raye/fonts/inter-semibold-20.pf2 $(INTER)/Inter-SemiBold.otf
+
+# The colour schemes, the terminal schemes and the QML tokens are
+# generated from tokens/raye-tokens.json and committed. The tests check
+# they are current, so a value changed by hand in an output never ships.
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	python3 -m pytest -q -p no:cacheprovider tokens/
+	# tests/ whole, never a list of folders. The list that used to be
+	# here named plymouth, apps, lookandfeel, colors and config -- and
+	# tests/terminal/ existed, with 20 tests, named by nobody: the launcher
+	# runs `pytest tests/` and saw them, the package build did not, so the
+	# gate that decides whether the ISO ships was the one missing them. An
+	# enumerated list goes stale the first time a folder is added, and says
+	# nothing when it does. tests/test_pytest_reaches_every_folder.py fails
+	# if this line ever goes back to naming folders.
+	python3 -m pytest -q -p no:cacheprovider tests/ grub/tests/ art/
+	# 355 QML checks that NOTHING ran until 2026-11-06. No CMakeLists
+	# registers lockscreen/, sddm/ or signin/ -- they are plain QML, with
+	# no tree to hang a ctest on -- and the one place that could have run
+	# them, the suite table of iso/tools, carried a frozen "qmltestrunner
+	# is not installed". They take org.raye.signin out of the repository,
+	# so they need no build: the package build is exactly where they
+	# belong. Each script finds the runner itself and exits 77 when there
+	# is none; sh turns that into a non-zero, which is what we want here --
+	# the build chroot HAS qmltestrunner, and silence would mean it did not.
+	sh tests/test_find_qmltestrunner.sh
+	sh lockscreen/tests/run-tests.sh
+	sh sddm/tests/run-tests.sh
+	sh signin/tests/run-tests.sh
+	sh session/polkit/tests/run-tests.sh
+	sh session/tests/test-first-login.sh
+	sh wallpaper-animated/tests/run-tests.sh
+	sh debian/check-stock-names
+	set -e; for t in $(TREES); do \
+		dh_auto_test --buildsystem=cmake+ninja --sourcedirectory=$$t \
+			--builddirectory=debian/build/$$(echo $$t | tr / -); \
+	done
+endif
+
+# A tree whose parts have not landed yet installs nothing, and CMake
+# then writes no install target at all.
+override_dh_auto_install:
+	set -e; for t in $(TREES); do \
+		b=debian/build/$$(echo $$t | tr / -); \
+		if ! ninja -C $$b -t targets | grep -q '^install:'; then \
+			echo "$$t installs nothing yet"; continue; \
+		fi; \
+		dh_auto_install --buildsystem=cmake+ninja --sourcedirectory=$$t \
+			--builddirectory=$$b --destdir=debian/tmp; \
+	done
+	# Until the QML module has its own CMake tree (for its C++ part), its
+	# QML files are copied as they are: the module files only, never C++
+	# sources or tests that land next to them.
+	set -e; if [ ! -e qml/CMakeLists.txt ] && [ -d qml/org/raye/ui ]; then \
+		d=debian/tmp/$(QMLDIR)/org/raye/ui; mkdir -p $$d; \
+		for f in qml/org/raye/ui/qmldir qml/org/raye/ui/*.qml; do \
+			if [ -e "$$f" ]; then install -m644 "$$f" $$d/; fi; \
+		done; \
+	fi
+	# The sign-in module (signin/, read by the sign-in and lock screens)
+	# and the Raye lock screen (lockscreen/) are plain QML: copied as they
+	# are, never their tests.
+	set -e; d=debian/tmp/$(QMLDIR)/org/raye/signin; mkdir -p $$d; \
+	for f in signin/org/raye/signin/qmldir signin/org/raye/signin/*.qml; do \
+		install -m644 "$$f" $$d/; \
+	done
+	set -e; d=debian/tmp/$(LOCKSCREEN); mkdir -p $$d; \
+	for f in lockscreen/*.qml lockscreen/*.js; do \
+		install -m644 "$$f" $$d/; \
+	done
+	set -e; for n in 16 22 24 32 48 64 96 128 256 512; do \
+		install -Dm644 assets/icons/raye-eye-$$n.png \
+			debian/raye-theme/usr/share/icons/hicolor/$${n}x$${n}/apps/raye-eye.png; \
+	done
+
+# A tree that was built must give its package its main file: an empty
+# package from a built tree means an install list that no longer
+# matches the tree.
+override_dh_install:
+	dh_install
+	# dh_install cannot rename, and this name is the one sddm looks for
+	install -Dm644 assets/signin/face-512.png debian/sddm-theme-raye/usr/share/sddm/faces/.face.icon
+	# Plasma refuses look-and-feel files reached through a link that
+	# leaves the package folder, so Day gets real copies of Night's parts.
+	# The default layout is not among them any more: it belongs to the
+	# desktop's own shell package (raye/desktop), not to a look.
+	set -e; d=debian/raye-theme/usr/share/plasma/look-and-feel/org.raye.day.desktop/contents; \
+	for p in splash logout; do \
+		if [ -L $$d/$$p ]; then rm $$d/$$p; \
+			cp -a lookandfeel/org.raye.night.desktop/contents/$$p $$d/$$p; fi; \
+	done
+ifneq (,$(filter style,$(TREES)))
+	ls debian/raye-style/usr/lib/*/qt6/plugins/styles/raye*.so
+	ls debian/raye-style/usr/lib/*/qt6/plugins/org.kde.kdecoration3/org.raye.decoration.so
+endif
+ifneq (,$(filter session/polkit,$(TREES)))
+	ls debian/raye-polkit-agent/usr/lib/systemd/user/raye-polkit-agent.service
+endif
+
+# raye-shell puts links to its OSD files in place of the stock ones; the
+# maintainer scripts move the stock files aside first. Both use the list
+# of files the shell build really installed.
+RAYE_OSD = $(strip $(foreach f,$(OSD_FILES),$(if $(wildcard debian/raye-shell/$(OSD_RAYE)/$(f)),$(f))))
+
+override_dh_link:
+	dh_link
+	set -e; for f in $(RAYE_OSD); do \
+		dh_link -praye-shell $(OSD_RAYE)/$$f $(OSD_STOCK)/$$f; \
+	done
+
+# Same for the lock screen: its LockScreen.qml takes the stock one's name.
+RAYE_LOCK = $(if $(wildcard debian/raye-shell/$(LOCKSCREEN)/LockScreen.qml),LockScreen.qml)
+
+override_dh_installdeb:
+	dh_installdeb -DRAYE_OSD="$(RAYE_OSD)" -DRAYE_LOCK="$(RAYE_LOCK)"
+
+override_dh_auto_clean:
+	rm -rf debian/build
+	rm -rf grub/raye/fonts

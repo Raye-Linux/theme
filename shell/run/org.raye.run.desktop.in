@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Name=Run
+Name[fr]=Exécuter
+Comment=Open a program, folder, document or website by its name
+Comment[fr]=Ouvrir un programme, un dossier, un document ou un site web par son nom
+Exec=@KDE_INSTALL_FULL_BINDIR@/raye-run
+Icon=system-run
+Categories=Qt;KDE;System;
+Keywords=run;command;open;
+Keywords[fr]=exécuter;commande;ouvrir;
+StartupNotify=false
+X-KDE-Wayland-Interfaces=zwlr_layer_shell_v1
+# Win+R, like Windows. Found by the shortcut daemon in the applications
+# folder, for new and existing users alike.
+X-KDE-Shortcuts=Meta+R

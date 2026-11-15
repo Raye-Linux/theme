@@ -1,0 +1,18 @@
+# Raye defaults (installed to /etc/xdg/klaunchrc): while an app starts,
+# the Raye busy ring turns beside the pointer (raye_launchfeedback, from
+# raye-shell) and the taskbar button shows its loading state, as in
+# Windows. KWin's own feedback, the app icon stuck next to the pointer,
+# stays off. Both stop as soon as the app's window shows, at most 10 s
+# later.
+
+[FeedbackStyle]
+BusyCursor=false
+TaskbarButton=true
+
+[BusyCursorSettings]
+Bouncing=false
+Blinking=false
+Timeout=10
+
+[TaskbarButtonSettings]
+Timeout=10

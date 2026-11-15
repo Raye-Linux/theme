@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "techoraye"
+            }
+        ],
+        "Id": "Raye-Ridge",
+        "License": "CC-BY-SA-4.0",
+        "Name": "Ridge",
+        "Name[fr]": "Crêtes"
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "techoraye"
+            }
+        ],
+        "Id": "Raye-Dune",
+        "License": "CC-BY-SA-4.0",
+        "Name": "Dune",
+        "Name[fr]": "Dune"
+    }
+}

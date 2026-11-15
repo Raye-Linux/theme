@@ -1,0 +1,22 @@
+#!/bin/sh
+# The Raye Qt style, the window decoration and their settings (style/),
+# and the org.raye.ui QML module (qml/). Every line is optional: the
+# style tree is built only once debian/rules lists it as ready, and the
+# QML module grows package by package. See debian/install-built.
+exec debian/install-built <<'LIST'
+? usr/lib/*/qt6/plugins/styles/raye*.so
+? usr/lib/*/qt6/plugins/kstyle_config/raye*.so
+? usr/lib/*/qt6/plugins/org.kde.kdecoration3/org.raye.decoration.so
+? usr/lib/*/qt6/plugins/org.kde.kdecoration3.kcm/kcm_rayedecoration.so
+? usr/lib/*/qt6/plugins/plasma/kcms/*/kcm_raye*.so
+? usr/lib/*/qt6/qml/org/raye/ui
+? usr/bin/raye-style-settings
+? usr/share/applications/kcm_rayedecoration.desktop
+? usr/share/applications/rayestyleconfig.desktop
+? usr/share/icons/hicolor/*/apps/raye-style-settings.*
+? usr/share/kstyle/themes/raye.themerc
+? etc/xdg/rayerc
+? etc/xdg/rayedecorationrc
+? usr/share/locale/*/LC_MESSAGES/raye_style*.mo
+? usr/share/locale/*/LC_MESSAGES/raye_decoration*.mo
+LIST

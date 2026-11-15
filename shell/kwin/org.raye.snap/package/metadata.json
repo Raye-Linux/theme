@@ -1,0 +1,22 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Raye Linux"
+            }
+        ],
+        "Description": "Snap layouts, the snap bar, snap assist and the Windows arrow keys",
+        "Description[fr]": "Dispositions d’ancrage, barre d’ancrage, assistant d’ancrage et touches fléchées de Windows",
+        "EnabledByDefault": true,
+        "Icon": "window",
+        "Id": "org.raye.snap",
+        "License": "GPL-3.0-or-later",
+        "Name": "Raye Snap",
+        "Name[fr]": "Ancrage Raye",
+        "Version": "1.0"
+    },
+    "X-KDE-ConfigModule": "kcm_kwin4_genericscripted",
+    "X-Plasma-API": "declarativescript",
+    "X-Plasma-MainScript": "ui/main.qml"
+}

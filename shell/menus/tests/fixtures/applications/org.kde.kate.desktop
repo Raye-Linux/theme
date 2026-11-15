@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Kate
+Exec=org.kde.kate
+Categories=Qt;KDE;Utility;TextEditor;Development;

@@ -1,0 +1,16 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [ { "Name": "Raye Linux" } ],
+        "Category": "System Information",
+        "Description": "Strings without French",
+        "Description[fr]": "Textes sans français",
+        "Icon": "raye-eye",
+        "Id": "org.raye.fixture.badi18n",
+        "License": "GPL-2.0-or-later",
+        "Name": "Bad strings",
+        "Name[fr]": "Textes faux",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

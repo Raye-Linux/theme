@@ -1,0 +1,16 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Raye Linux"
+            }
+        ],
+        "Description": "Keeps the pinned apps of every taskbar the same, and applies taskbar settings at once",
+        "Description[fr]": "Garde les mêmes applis épinglées sur toutes les barres des tâches et applique leurs réglages tout de suite",
+        "Icon": "pin",
+        "License": "GPL-3.0-or-later",
+        "Name": "Raye taskbar pins",
+        "Name[fr]": "Épingles des barres des tâches Raye",
+        "Version": "1.0"
+    }
+}

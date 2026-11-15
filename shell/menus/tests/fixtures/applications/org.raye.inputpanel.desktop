@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Emoji and clipboard
+Exec=org.raye.inputpanel
+Categories=Qt;KDE;Utility;
+NoDisplay=true

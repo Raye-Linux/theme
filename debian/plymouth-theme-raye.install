@@ -1,0 +1,3 @@
+plymouth/raye usr/share/plymouth/themes
+initramfs/raye-plymouth usr/share/initramfs-tools/hooks
+plymouth/systemd/plymouth-quit.service.d usr/lib/systemd/system

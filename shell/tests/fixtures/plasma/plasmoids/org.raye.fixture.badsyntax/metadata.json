@@ -1,0 +1,16 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [ { "Name": "Raye Linux" } ],
+        "Category": "System Information",
+        "Description": "Does not compile",
+        "Description[fr]": "Ne compile pas",
+        "Icon": "raye-eye",
+        "Id": "org.raye.fixture.badsyntax",
+        "License": "GPL-2.0-or-later",
+        "Name": "Bad syntax",
+        "Name[fr]": "Syntaxe fausse",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

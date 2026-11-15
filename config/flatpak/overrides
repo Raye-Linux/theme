@@ -1,0 +1,10 @@
+# Raye's look inside Flatpak apps, applied to every app by the Store's
+# package (one "flatpak override" option a line).
+#
+# GTK 3 and 4 apps read the Raye colours, Raye's title bar buttons and
+# the GTK settings the desktop writes for the account.
+--filesystem=xdg-config/gtk-3.0:ro
+--filesystem=xdg-config/gtk-4.0:ro
+# Fonts: Raye's rules (Inter, Cascadia Mono), copied there at login by
+# /etc/xdg/plasma-workspace/env/raye-apps-look.sh.
+--filesystem=xdg-config/fontconfig:ro

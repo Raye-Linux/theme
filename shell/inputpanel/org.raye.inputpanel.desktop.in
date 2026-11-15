@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Application
+Name=Emoji and clipboard
+Name[fr]=Émojis et presse-papiers
+Comment=Emoji, kaomoji, symbols and the clipboard history
+Comment[fr]=Émojis, kaomojis, symboles et historique du presse-papiers
+Exec=@KDE_INSTALL_FULL_BINDIR@/raye-inputpanel
+Icon=face-smile
+NoDisplay=true
+StartupNotify=false
+Actions=Emoji;Clipboard;
+X-KDE-Wayland-Interfaces=org_kde_kwin_fake_input,zwlr_layer_shell_v1
+
+[Desktop Action Emoji]
+Name=Emoji
+Name[fr]=Émojis
+Exec=@KDE_INSTALL_FULL_BINDIR@/raye-inputpanel --emoji
+
+[Desktop Action Clipboard]
+Name=Clipboard history
+Name[fr]=Historique du presse-papiers
+Exec=@KDE_INSTALL_FULL_BINDIR@/raye-inputpanel --clipboard

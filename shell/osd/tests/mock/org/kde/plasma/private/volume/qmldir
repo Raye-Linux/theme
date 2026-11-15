@@ -1,0 +1,3 @@
+module org.kde.plasma.private.volume
+singleton PreferredDevice 1.0 PreferredDevice.qml
+VolumeFeedback 1.0 VolumeFeedback.qml

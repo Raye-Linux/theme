@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Terminal (root)
+Name[fr]=Terminal (root)
+Comment=A terminal running as root
+Comment[fr]=Un terminal qui s'exécute en tant que root
+Icon=utilities-terminal
+Exec=konsole -e sudo -i
+NoDisplay=true

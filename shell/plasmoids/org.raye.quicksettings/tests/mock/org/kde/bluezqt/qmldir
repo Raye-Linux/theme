@@ -1,0 +1,3 @@
+module org.kde.bluezqt
+singleton Manager 1.0 Manager.qml
+DevicesModel 1.0 DevicesModel.qml

@@ -1,0 +1,64 @@
+#!/bin/sh
+# The Raye look. Lines with "? " name parts that land later (see
+# debian/install-built); the others must be in the tree.
+exec debian/install-built <<'LIST'
+lookandfeel/org.raye.night.desktop usr/share/plasma/look-and-feel
+? lookandfeel/org.raye.day.desktop usr/share/plasma/look-and-feel
+wallpaper/Raye usr/share/wallpapers
+wallpaper/Raye-Strata usr/share/wallpapers
+wallpaper/Raye-Ridge usr/share/wallpapers
+wallpaper/Raye-Paper usr/share/wallpapers
+wallpaper/Raye-Dune usr/share/wallpapers
+wallpaper/Raye-Lumen usr/share/wallpapers
+wallpaper-animated/org.raye.animated usr/share/plasma/wallpapers
+wallpaper-animated/motion usr/share/raye/wallpapers
+assets/logo/raye-eye.png usr/share/pixmaps
+assets/logo/raye-logo.png usr/share/raye
+assets/logo/raye-logo-night.png usr/share/raye
+assets/signin usr/share/raye
+config/kdeglobals etc/xdg
+config/kded5rc etc/xdg
+config/kconf_update/raye-accent-repair.upd usr/share/kconf_update
+config/kconf_update/raye-accent-repair.sh usr/share/kconf_update
+tokens/accent.py usr/share/raye/tokens
+tokens/generate.py usr/share/raye/tokens
+tokens/raye-tokens.json usr/share/raye/tokens
+config/ksplashrc etc/xdg
+config/kscreenlockerrc etc/xdg
+config/powerdevilrc etc/xdg
+config/kcm-about-distrorc etc/xdg
+? config/kwinrc etc/xdg
+config/kwinrulesrc etc/xdg
+config/ksmserverrc etc/xdg
+config/kcminputrc etc/xdg
+config/klaunchrc etc/xdg
+? config/gtk-3.0 etc/xdg
+? config/gtk-4.0 etc/xdg
+? config/fonts/50-raye-fonts.conf etc/fonts/conf.d
+config/plasma-workspace/env/raye-apps-look.sh etc/xdg/plasma-workspace/env
+session/raye-first-login.sh etc/xdg/plasma-workspace/env
+config/flatpak/overrides usr/share/raye-store/flatpak
+config/mime/raye-documents.xml usr/share/mime/packages
+colors/editor/RayeNight.theme usr/share/org.kde.syntax-highlighting/themes
+colors/editor/RayeDay.theme usr/share/org.kde.syntax-highlighting/themes
+? kwin/effects/raye_popups usr/share/kwin-wayland/effects
+? kwin/effects/raye_maximize usr/share/kwin-wayland/effects
+sddm/breeze/theme.conf.user usr/share/sddm/themes/breeze
+config/sddm-raye.conf etc/sddm.conf.d
+config/kglobalshortcutsrc usr/share/raye
+config/raye-shortcut-defaults usr/libexec
+config/systemd/user/plasma-kglobalaccel.service.d usr/lib/systemd/user
+fetch/raye.txt usr/share/raye/fetch
+fetch/config.jsonc etc/xdg/fastfetch
+colors/RayeNight.colors usr/share/color-schemes
+colors/RayeDay.colors usr/share/color-schemes
+konsole/RayeNight.colorscheme usr/share/konsole
+konsole/RayeDay.colorscheme usr/share/konsole
+konsole/Raye.profile usr/share/konsole
+konsole/konsolerc etc/xdg
+desktoptheme/raye usr/share/plasma/desktoptheme
+config/plasmarc etc/xdg
+config/plasmaparc etc/xdg
+session/raye-tray-defaults usr/libexec
+session/raye-tray-defaults.desktop etc/xdg/autostart
+LIST

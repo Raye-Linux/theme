@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=A game
+Exec=example-game
+Categories=Game;ArcadeGame;

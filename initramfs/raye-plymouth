@@ -1,0 +1,299 @@
+#!/bin/sh
+# Raye boot screen in the initramfs. The plymouth hook copies the theme
+# first; this one then:
+#   - writes raye.script from raye.script.in with the words of the system
+#     language (strings-en, strings-fr) and the keyboard layout line,
+#   - copies Inter, so the script draws real text,
+#   - drops tpm.png when the TPM opens the disk (the script cannot read
+#     files, but it can tell whether a picture loads), and a boot script
+#     that tells the screen when the TPM did not open it,
+#   - adds a boot script that copies the theme to /run, where plymouthd
+#     looks first: the shutdown screen then speaks the same language.
+#
+#   raye-plymouth render <en|fr> [keyboard name]
+# prints the script for one language (the English one is shipped as the
+# fallback raye.script; the tests use it too).
+PREREQ="plymouth"
+prereqs() { echo "$PREREQ"; }
+case "$1" in
+prereqs) prereqs; exit 0 ;;
+esac
+
+# the tests point this at a fake system
+root="${RAYE_PLYMOUTH_ROOT:-}"
+theme=/usr/share/plymouth/themes/raye
+src="$root$theme"
+inter="$root/usr/share/fonts/opentype/inter"
+
+# render <lang> <keyboard name>: the script on stdout
+render() {
+    case "$1" in
+    "" | *[!a-z]*) strings="$src/strings-en" ;;
+    *) strings="$src/strings-$1" ;;
+    esac
+    [ -r "$strings" ] || strings="$src/strings-en"
+    awk -v kb="$2" '
+    function esc(v,    i, c, o) {
+        o = ""
+        for (i = 1; i <= length(v); i++) {
+            c = substr(v, i, 1)
+            if (c == "\\" || c == "\"") o = o "\\"
+            if (c >= " " || c == "\t") o = o c
+        }
+        return o
+    }
+    # a {name} part splits a text in two: key_a before it, key_b after
+    function part(k, side,    base, v, s, e) {
+        base = substr(k, 1, length(k) - 2)
+        if (!(base in t)) return "\001"
+        v = t[base]
+        s = index(v, "{"); e = index(v, "}")
+        if (s == 0 || e < s) return side == "a" ? v : ""
+        return side == "a" ? substr(v, 1, s - 1) : substr(v, e + 1)
+    }
+    function value(k,    v) {
+        if (k == "keyboard_line") {
+            if (kb == "" || !("keyboard" in t)) return ""
+            return part("keyboard_a", "a") kb part("keyboard_b", "b")
+        }
+        if (k in t) return t[k]
+        if (k ~ /_a$/) return part(k, "a")
+        if (k ~ /_b$/) return part(k, "b")
+        return "\001"
+    }
+    FNR == NR {
+        if ($0 ~ /^#/ || index($0, "=") == 0) next
+        t[substr($0, 1, index($0, "=") - 1)] = substr($0, index($0, "=") + 1)
+        next
+    }
+    {
+        line = $0; out = ""
+        while (match(line, /@[a-z0-9_]+@/)) {
+            k = substr(line, RSTART + 1, RLENGTH - 2)
+            v = value(k)
+            if (v == "\001") { print "raye-plymouth: no text for " k > "/dev/stderr"; bad = 1; v = "" }
+            out = out substr(line, 1, RSTART - 1) esc(v)
+            line = substr(line, RSTART + RLENGTH)
+        }
+        print out line
+    }
+    END { exit bad }
+    ' "$strings" "$src/raye.script.in"
+}
+
+if [ "$1" = render ]; then
+    render "${2:-en}" "$3"
+    exit $?
+fi
+
+dest="${DESTDIR}${theme}"
+# The plymouth hook copies the default theme only: nothing to do when it
+# is not this one.
+[ -r "$dest/raye.plymouth" ] && [ -r "$src/raye.script.in" ] || exit 0
+
+lang=en
+if [ -r "$root/etc/default/locale" ]; then
+    syslang=$(sed -n 's/^LANG="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$root/etc/default/locale" | head -n 1)
+    case "$syslang" in
+    fr*) lang=fr ;;
+    esac
+fi
+
+# "French (Canada)": the name of the first layout, as the keyboard
+# settings show it, in the system language when a translation is there
+kbvalue() {
+    sed -n "s/^$1=\"\{0,1\}\([^\"]*\)\"\{0,1\}$/\1/p" "$root/etc/default/keyboard" | head -n 1
+}
+kbname=""
+if [ -r "$root/etc/default/keyboard" ] && [ -r "$root/usr/share/X11/xkb/rules/evdev.lst" ]; then
+    layout=$(kbvalue XKBLAYOUT | cut -d, -f1)
+    variant=$(kbvalue XKBVARIANT | cut -d, -f1)
+    case "$layout$variant" in
+    *[!A-Za-z0-9_-]*) layout="" ;;
+    esac
+    if [ -n "$layout" ]; then
+        kbname=$(awk -v l="$layout" -v v="$variant" '
+        /^! / { sec = $2; next }
+        sec == "layout" && $1 == l && lay == "" { sub(/^[ \t]*[^ \t]+[ \t]+/, ""); lay = $0 }
+        sec == "variant" && v != "" && $1 == v && $2 == l ":" && var == "" {
+            sub(/^[ \t]*[^ \t]+[ \t]+[^ \t]+[ \t]+/, ""); var = $0 }
+        END { print (var != "" ? var : lay) }' "$root/usr/share/X11/xkb/rules/evdev.lst")
+    fi
+    if [ -n "$kbname" ] && [ "$lang" != en ] && command -v gettext >/dev/null 2>&1; then
+        kbname=$(LC_ALL="$syslang" LANGUAGE="$lang" gettext -d xkeyboard-config -- "$kbname" 2>/dev/null || echo "$kbname")
+    fi
+fi
+
+# a failed render keeps the English script the plymouth hook copied
+if render "$lang" "$kbname" > "$dest/raye.script.new"; then
+    mv "$dest/raye.script.new" "$dest/raye.script"
+else
+    rm -f "$dest/raye.script.new"
+fi
+rm -f "$dest/raye.script.in" "$dest"/strings-*
+
+# Inter for Image.Text; the plymouth hook already put fontconfig and
+# the label plugin in place
+for f in Inter-Regular.otf Inter-SemiBold.otf; do
+    if [ -r "$inter/$f" ]; then
+        mkdir -p "${DESTDIR}/usr/share/fonts/opentype/inter"
+        cp "$inter/$f" "${DESTDIR}/usr/share/fonts/opentype/inter/$f"
+    fi
+done
+# grey antialiasing: coloured fringes on a light-on-dark boot screen look
+# cheap, and the screen has no known subpixel order this early
+mkdir -p "${DESTDIR}/etc/fonts/conf.d"
+cat > "${DESTDIR}/etc/fonts/conf.d/10-raye-plymouth.conf" <<'EOF'
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+  <match target="font">
+    <edit name="rgba" mode="assign"><const>none</const></edit>
+    <edit name="antialias" mode="assign"><bool>true</bool></edit>
+    <edit name="hintstyle" mode="assign"><const>hintslight</const></edit>
+  </match>
+</fontconfig>
+EOF
+fc-cache -s -y "${DESTDIR}" >/dev/null 2>&1 || true
+
+# tell the boot screen when the TPM opens the disk, so it waits for the
+# chip instead of flashing the password field
+rm -f "$dest/tpm.png"
+tpm=0
+if [ -r "$root/etc/crypttab" ]; then
+    if grep -v '^[[:space:]]*#' "$root/etc/crypttab" | grep -q 'tpm2-device'; then
+        tpm=1
+    elif command -v clevis >/dev/null 2>&1; then
+        for source in $(grep -v '^[[:space:]]*#' "$root/etc/crypttab" | awk '{ print $2 }'); do
+            case "$source" in
+            UUID=*) dev=$(blkid -U "${source#UUID=}" 2>/dev/null) ;;
+            /dev/*) dev=$source ;;
+            *) dev="" ;;
+            esac
+            [ -n "$dev" ] || continue
+            if clevis luks list -d "$dev" 2>/dev/null | grep -q tpm2; then
+                tpm=1
+                break
+            fi
+        done
+    fi
+fi
+if [ "$tpm" = 1 ] && [ -r "$dest/tpm-marker.png" ]; then
+    cp "$dest/tpm-marker.png" "$dest/tpm.png"
+fi
+
+# clevis tries the TPM in the background while cryptsetup asks for the
+# password, and on a failure only tries again later: nothing tells the
+# boot screen. This boot script watches it and does, so the screen can
+# wait for the chip as long as it works and ask as soon as it does not.
+if [ "$tpm" = 1 ]; then
+    mkdir -p "${DESTDIR}/scripts/init-premount"
+    cat > "${DESTDIR}/scripts/init-premount/raye-plymouth-tpm" <<'EOF'
+#!/bin/sh
+# Tells the Raye boot screen when the TPM did not open the disk (see the
+# raye-plymouth initramfs hook): the password still asked for 2 s after
+# an unseal ended means the chip said no.
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in
+prereqs) prereqs; exit 0 ;;
+esac
+proc=${RAYE_PROC:-/proc}
+tick=${RAYE_TICK:-0.2}
+# 2 s and 3 min, in ticks
+patience=${RAYE_PATIENCE:-10}
+ticks=${RAYE_TICKS:-900}
+
+# by process name: read is built in, so a tick forks nothing
+running() {
+    for f in "$proc"/[0-9]*/comm; do
+        read -r name < "$f" 2>/dev/null || continue
+        for want in "$@"; do
+            case "$name" in
+            $want) return 0 ;;
+            esac
+        done
+    done
+    return 1
+}
+
+watch() {
+    tried=0
+    since=0
+    n=0
+    while [ $n -lt "$ticks" ]; do
+        n=$((n + 1))
+        # clevis decrypt runs clevis-decrypt, then clevis-decrypt-tpm2
+        if running "clevis-decrypt*"; then
+            tried=1
+            since=0
+        elif [ $tried = 1 ]; then
+            # plymouth ask-for-password, or askpass without a boot screen
+            if running plymouth askpass; then
+                since=$((since + 1))
+                if [ $since -ge "$patience" ]; then
+                    plymouth display-message --text=raye:tpm-failed
+                    return 0
+                fi
+            else
+                # opened: the next disk, if any, starts over
+                tried=0
+                since=0
+            fi
+        fi
+        sleep "$tick"
+    done
+}
+
+watch < /dev/null > /dev/null 2>&1 &
+# init-bottom stops it: past the initramfs a plymouth run by anything
+# else would look like the password still asked
+echo $! > /run/raye-plymouth-tpm.pid
+exit 0
+EOF
+    chmod 755 "${DESTDIR}/scripts/init-premount/raye-plymouth-tpm"
+fi
+
+# The shutdown screen comes from the installed system, not from here.
+# plymouthd reads /run/plymouth/plymouthd.defaults and
+# /run/plymouth/themes before the copies under /usr, and the /run of the
+# initramfs stays when the system starts: copy the theme there with its
+# paths moved, so shutting down speaks the language of this boot.
+sed "s|$theme|/run/plymouth/themes/raye|g" "$dest/raye.plymouth" > "$dest/run.plymouth"
+{
+    if [ -r "$root/usr/share/plymouth/plymouthd.defaults" ]; then
+        grep -v '^[[:space:]]*Theme[[:space:]]*=' "$root/usr/share/plymouth/plymouthd.defaults"
+    else
+        echo '[Daemon]'
+    fi
+    echo 'Theme=raye'
+} > "$dest/run.defaults"
+
+mkdir -p "${DESTDIR}/scripts/init-bottom"
+cat > "${DESTDIR}/scripts/init-bottom/raye-plymouth" <<'EOF'
+#!/bin/sh
+# Keep the Raye boot screen in /run for the shutdown screen (see the
+# raye-plymouth initramfs hook), and stop the TPM watch.
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in
+prereqs) prereqs; exit 0 ;;
+esac
+if [ -r /run/raye-plymouth-tpm.pid ]; then
+    read -r pid < /run/raye-plymouth-tpm.pid
+    kill "$pid" 2>/dev/null
+    rm -f /run/raye-plymouth-tpm.pid
+fi
+# The root disk is open: a password question the TPM beat is over, even
+# though nothing told the screen (it showed it during offline updates).
+plymouth display-message --text=raye:disk-open 2>/dev/null || true
+theme=/usr/share/plymouth/themes/raye
+[ -r "$theme/run.plymouth" ] || exit 0
+mkdir -p /run/plymouth/themes/raye
+cp "$theme"/* /run/plymouth/themes/raye/ 2>/dev/null
+mv /run/plymouth/themes/raye/run.plymouth /run/plymouth/themes/raye/raye.plymouth
+rm -f /run/plymouth/themes/raye/run.defaults /run/plymouth/themes/raye/tpm.png
+cp "$theme/run.defaults" /run/plymouth/plymouthd.defaults
+exit 0
+EOF
+chmod 755 "${DESTDIR}/scripts/init-bottom/raye-plymouth"

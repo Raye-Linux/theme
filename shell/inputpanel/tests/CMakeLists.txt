@@ -1,0 +1,7 @@
+foreach(_test emojidict chargroups clipboardstore placement)
+    add_executable(tst_${_test} tst_${_test}.cpp)
+    target_link_libraries(tst_${_test} raye-inputpanel-core Qt6::Test)
+    target_compile_definitions(tst_${_test} PRIVATE DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../data")
+    add_test(NAME inputpanel-${_test} COMMAND tst_${_test})
+    set_tests_properties(inputpanel-${_test} PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+endforeach()

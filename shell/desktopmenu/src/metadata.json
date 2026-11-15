@@ -1,0 +1,16 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Raye Linux"
+            }
+        ],
+        "Description": "The right-click menu of the desktop and the taskbar",
+        "Description[fr]": "Le menu du clic droit du Bureau et de la barre des tâches",
+        "Icon": "view-more-symbolic",
+        "License": "GPL-3.0-or-later",
+        "Name": "Raye menu",
+        "Name[fr]": "Menu Raye",
+        "Version": "1.0"
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Description": "Metadata with mistakes",
+        "Id": "org.raye.fixture.other",
+        "Name": "Bad metadata"
+    }
+}

@@ -1,0 +1,6 @@
+[Theme]
+name=raye
+
+# Plasma's own tooltips (tray icons) wait as long as the shell's
+[PlasmaToolTips]
+Delay=500

@@ -1,0 +1,70 @@
+#!/usr/bin/python3
+"""Gives every Start button the pinned apps of the main one, in its order.
+
+    raye-taskbar-pins <main Start id> <other Start id>...
+
+Plasma shares the pinned apps of all Start menus (activity manager links
+of "org.kde.plasma.favorites.applications"), but each Start button keeps
+its own order in kactivitymanagerd-statsrc, under
+"Favorites-org.kde.plasma.kickoff.favorites.instance-<id>-<activity>".
+raye-taskbar-sync runs this with the ids sync.js reports, so the Start
+menu of every taskbar shows the same apps in the same order. A Start menu
+reads the order when Plasma starts it.
+"""
+
+import configparser
+import os
+import subprocess
+import sys
+
+CLIENT = "org.kde.plasma.kickoff.favorites.instance-%s"
+STATSRC = "kactivitymanagerd-statsrc"
+
+
+def client(applet_id):
+    return CLIENT % applet_id
+
+
+def orderings(groups, main, others):
+    """groups: {group name: ordering} of kactivitymanagerd-statsrc.
+    Returns {group name: ordering} to write for the `others` clients."""
+    prefix = "Favorites-%s-" % main
+    out = {}
+    for name, value in groups.items():
+        if not name.startswith(prefix):
+            continue
+        suffix = name[len(prefix):]
+        for other in others:
+            target = "Favorites-%s-%s" % (other, suffix)
+            if groups.get(target) != value:
+                out[target] = value
+    return out
+
+
+def read_orderings(path):
+    parser = configparser.ConfigParser(interpolation=None, strict=False)
+    parser.optionxform = str
+    try:
+        parser.read(path, encoding="utf-8")
+    except configparser.Error:
+        return {}
+    return {name: parser[name]["ordering"] for name in parser.sections()
+            if "ordering" in parser[name]}
+
+
+def main(argv):
+    ids = [a for a in argv if a.isdigit()]
+    if len(ids) < 2:
+        return 0
+    config = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
+    groups = read_orderings(os.path.join(config, STATSRC))
+    failed = False
+    for group, value in orderings(groups, client(ids[0]), [client(i) for i in ids[1:]]).items():
+        r = subprocess.run(["kwriteconfig6", "--file", STATSRC, "--group", group,
+                            "--key", "ordering", value])
+        failed = failed or r.returncode != 0
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

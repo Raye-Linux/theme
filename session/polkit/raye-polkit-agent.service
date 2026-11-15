@@ -1,0 +1,13 @@
+[Unit]
+Description=Raye root access prompt
+PartOf=graphical-session.target
+After=plasma-core.target
+
+[Service]
+Type=dbus
+BusName=org.raye.PolkitAgent
+ExecStart=/usr/libexec/raye-polkit-agent
+Slice=background.slice
+TimeoutStopSec=5sec
+Restart=on-failure
+RestartSec=2s

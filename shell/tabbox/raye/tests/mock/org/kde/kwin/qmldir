@@ -1,0 +1,3 @@
+module org.kde.kwin
+TabBoxSwitcher 3.0 TabBoxSwitcher.qml
+WindowThumbnail 3.0 WindowThumbnail.qml

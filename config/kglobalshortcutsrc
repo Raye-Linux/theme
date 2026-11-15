@@ -1,0 +1,56 @@
+# Raye defaults: the shortcuts people know from Windows. Plasma already
+# has Win+L (lock), Win+D (desktop), Win+V (clipboard) and Win+arrows
+# (snap), so only the missing ones are set here.
+#
+# The shortcut daemon never reads /etc/xdg: raye-shortcut-defaults copies
+# these into each account's file before it starts. Entries under
+# [services] are the active shortcut only; KWin's are
+# "active,default,name".
+
+[kwin]
+Overview=Meta+W\tMeta+Tab,Meta+W,Toggle Overview
+
+[services][org.raye.settings.desktop]
+_launch=Meta+I
+
+[services][org.kde.dolphin.desktop]
+_launch=Meta+E
+
+[services][org.kde.spectacle.desktop]
+RectangularRegionScreenShot=Meta+Shift+S\tMeta+Shift+Print
+# Spectacle also takes Win+R for recording a region; Win+R is Run here,
+# so recording keeps only Win+Shift+R
+RecordRegion=Meta+Shift+R
+
+# Win+R: the Run box (its .desktop asks for it too)
+[services][org.raye.run.desktop]
+_launch=Meta+R
+
+# Ctrl+Shift+Esc: Raye's Task Manager, which raye-base installs
+[services][org.raye.taskmanager.desktop]
+_launch=Ctrl+Shift+Esc
+
+# Win+. and Win+; open the Raye emoji panel, like Windows 11. Plasma's
+# emoji selector keeps only its long chord.
+[services][org.raye.inputpanel.desktop]
+Emoji=Meta+.\tMeta+;
+
+[services][org.kde.plasma.emojier.desktop]
+_launch=Meta+Ctrl+Alt+Shift+Space
+
+# Win+P opens the Raye Project panel. The stock display switcher asks for
+# the same key in its own file, so it has to let go of it here.
+[services][org.raye.project.desktop]
+_launch=Meta+P\tDisplay
+
+[services][org.kde.kscreen.desktop]
+ShowOSD=none
+
+# Win+A opens quick settings and Win+Q search, as in Windows. Plasma's
+# activity switcher held both keys and left the Raye actions with none:
+# "none,<key>" takes the key back while the switcher still holds it.
+[plasmashell]
+next activity=none,Meta+A,Walk through activities
+manage activities=none,Meta+Q,Show Activity Switcher
+raye-quick-settings=Meta+A,Meta+A,Open quick settings
+raye-search-q=Meta+Q,Meta+Q,Open Search (second shortcut)

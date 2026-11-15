@@ -1,0 +1,98 @@
+#!/bin/sh
+# Moves the taskbars from Plasma's stock applets to Raye's own taskbar
+# (Start, apps, tray, clock), keeping the pinned apps of the taskbar and
+# of Start, the alignment, the screens, the size and auto-hide. The panels before the switch are saved
+# first; --back puts them back.
+#
+#   raye-taskbar-switch          switch now (Plasma must be running)
+#   raye-taskbar-switch --back   restore the taskbars saved by the last switch
+
+set -eu
+script=${RAYE_TASKBAR_SWITCH_SCRIPT:-/usr/share/raye/taskbar/switch.js}
+sync=${RAYE_TASKBAR_SYNC:-/usr/libexec/raye-taskbar-sync}
+config=${XDG_CONFIG_HOME:-$HOME/.config}
+saved=${XDG_STATE_HOME:-$HOME/.local/state}/raye/taskbar-before-switch
+files="plasma-org.kde.plasma.desktop-appletsrc plasmashellrc rayeshellrc"
+
+# evaluate MODE [START_ORDER]
+evaluate() {
+    busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell \
+        evaluateScript s "var RAYE_SWITCH_MODE = \"$1\"; var RAYE_START_ORDER = \"${2:-}\";
+$(cat "$script")"
+}
+
+value() {
+    printf '%s' "$1" | sed -n "s/.*$2: \([^\\\\\"]*\).*/\1/p" | head -n1
+}
+
+case "${1:-}" in
+--back)
+    [ -d "$saved" ] || { echo "raye-taskbar-switch: nothing saved" >&2; exit 1; }
+    systemctl --user stop plasma-plasmashell.service
+    for f in $files; do
+        if [ -e "$saved/$f" ]; then
+            cp -p "$saved/$f" "$config/$f"
+        elif [ -e "$saved/$f.absent" ]; then
+            rm -f "$config/$f"
+        fi
+    done
+    systemctl --user start plasma-plasmashell.service
+    echo "raye-taskbar-switch: taskbars put back"
+    exit 0
+    ;;
+"") ;;
+*)
+    echo "usage: raye-taskbar-switch [--back]" >&2
+    exit 2
+    ;;
+esac
+
+out=$(evaluate read)
+case "$out" in
+*"nothing to switch"*)
+    echo "raye-taskbar-switch: no stock taskbar here" >&2
+    exit 0
+    ;;
+esac
+pins=$(value "$out" raye-taskbar-pins)
+alignment=$(value "$out" raye-taskbar-alignment)
+start=$(value "$out" raye-taskbar-start)
+# the stock Start menu keeps its favourites in the activity manager, their
+# order in this file
+startpins=
+case "$start" in
+'' | *[!0-9]*) ;;
+*)
+    order=$(kreadconfig6 --file kactivitymanagerd-statsrc \
+        --group "Favorites-org.kde.plasma.kickoff.favorites.instance-$start-global" --key ordering)
+    order=$(printf '%s' "$order" | tr -cd 'A-Za-z0-9._+:/,-')
+    [ -n "$order" ] && startpins=$(value "$(evaluate start "$order")" raye-start-pins)
+    ;;
+esac
+
+mkdir -p "$saved"
+for f in $files; do
+    rm -f "$saved/$f" "$saved/$f.absent"
+    if [ -e "$config/$f" ]; then
+        cp -p "$config/$f" "$saved/$f"
+    else
+        : > "$saved/$f.absent"
+    fi
+done
+
+# the Raye taskbar reads both from rayeshellrc, before it is made
+[ -n "$pins" ] && kwriteconfig6 --notify --file rayeshellrc --group Taskbar --key Pinned "$pins"
+[ -n "$alignment" ] && kwriteconfig6 --notify --file rayeshellrc --group Taskbar --key Alignment "$alignment"
+[ -n "$startpins" ] && kwriteconfig6 --notify --file rayeshellrc --group Start --key Pinned "$startpins"
+
+out=$(evaluate apply)
+case "$out" in
+*"switched"*) ;;
+*)
+    echo "$out" >&2
+    exit 1
+    ;;
+esac
+# the other screens get their copy of the new taskbar
+[ -x "$sync" ] && "$sync" || true
+echo "raye-taskbar-switch: done (taskbar: $pins; Start: ${startpins:-unchanged}; alignment: $alignment)"

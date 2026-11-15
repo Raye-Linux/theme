@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Authors": [ { "Name": "techoraye" } ],
+        "Description": "The Raye look for the taskbar, Start, quick settings and every popup",
+        "Description[fr]": "L'apparence Raye de la barre des tâches, de Démarrer, des paramètres rapides et de chaque fenêtre contextuelle",
+        "Id": "raye",
+        "License": "GPL-3.0-or-later",
+        "Name": "Raye",
+        "Name[fr]": "Raye",
+        "Version": "0.2"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

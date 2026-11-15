@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Raye Snap's settings, kept in kwinrc [Script-org.raye.snap]. Raye
+     Settings writes them (System > Multitasking); SnapLayoutsOnHover is read
+     by the window decoration, the rest by the script. -->
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+  <group name="">
+    <entry name="SnapLayoutsOnHover" type="Bool">
+      <label>Show snap layouts when the pointer rests on a window's Maximize button</label>
+      <default>true</default>
+    </entry>
+    <entry name="SnapBar" type="Bool">
+      <label>Show snap layouts when a window is dragged to the top of the screen</label>
+      <default>true</default>
+    </entry>
+    <entry name="SnapAssist" type="Bool">
+      <label>After snapping a window, show what can go next to it</label>
+      <default>true</default>
+    </entry>
+    <entry name="ResizePartner" type="Bool">
+      <label>Resizing a snapped window resizes the window next to it</label>
+      <default>true</default>
+    </entry>
+  </group>
+</kcfg>

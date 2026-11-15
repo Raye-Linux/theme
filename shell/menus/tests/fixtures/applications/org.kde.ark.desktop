@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Ark
+Exec=org.kde.ark
+Categories=Qt;KDE;Utility;Archiving;Compression;X-KDE-Utilities-File;

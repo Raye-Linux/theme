@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Everyday files the stock list does not know. Without a type here they
+     show as "Unknown" with a blank page. -->
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <!-- the stock list has no French name for this one -->
+  <mime-type type="application/octet-stream">
+    <comment xml:lang="fr">Fichier</comment>
+  </mime-type>
+  <mime-type type="application/onenote">
+    <comment>OneNote notebook</comment>
+    <comment xml:lang="fr">Bloc-notes OneNote</comment>
+    <generic-icon name="x-office-document"/>
+    <glob pattern="*.one"/>
+    <glob pattern="*.onetoc2"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-access">
+    <comment>Access database</comment>
+    <comment xml:lang="fr">Base de données Access</comment>
+    <generic-icon name="x-office-spreadsheet"/>
+    <glob pattern="*.accdb"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-outlook">
+    <comment>Outlook message</comment>
+    <comment xml:lang="fr">Message Outlook</comment>
+    <generic-icon name="x-office-document"/>
+    <glob pattern="*.msg"/>
+  </mime-type>
+  <mime-type type="application/x-cmd">
+    <comment>Windows command script</comment>
+    <comment xml:lang="fr">Script de commandes Windows</comment>
+    <sub-class-of type="text/plain"/>
+    <generic-icon name="text-x-script"/>
+    <glob pattern="*.cmd"/>
+  </mime-type>
+  <mime-type type="application/x-webloc">
+    <comment>Website link</comment>
+    <comment xml:lang="fr">Lien vers un site web</comment>
+    <generic-icon name="text-html"/>
+    <glob pattern="*.webloc"/>
+  </mime-type>
+  <mime-type type="application/x-maff">
+    <comment>Saved web page</comment>
+    <comment xml:lang="fr">Page web enregistrée</comment>
+    <generic-icon name="text-html"/>
+    <glob pattern="*.maff"/>
+  </mime-type>
+</mime-info>

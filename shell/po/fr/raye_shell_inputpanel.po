@@ -1,0 +1,177 @@
+# French strings of the emoji and clipboard panel (raye-inputpanel).
+msgid ""
+msgstr ""
+"Project-Id-Version: raye-shell\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Emoji and clipboard"
+msgstr "Émojis et presse-papiers"
+
+msgid "Emoji"
+msgstr "Émojis"
+
+msgid "Kaomoji"
+msgstr "Kaomojis"
+
+msgid "Symbols"
+msgstr "Symboles"
+
+msgid "Clipboard history"
+msgstr "Historique du presse-papiers"
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "Search emoji"
+msgstr "Rechercher des émojis"
+
+msgid "Results"
+msgstr "Résultats"
+
+msgid "Most recently used"
+msgstr "Récemment utilisés"
+
+msgid "Smileys and emotion"
+msgstr "Smileys et émotions"
+
+msgid "People"
+msgstr "Personnes"
+
+msgid "Animals and nature"
+msgstr "Animaux et nature"
+
+msgid "Food and drink"
+msgstr "Nourriture et boissons"
+
+msgid "Travel and places"
+msgstr "Voyages et lieux"
+
+msgid "Activities"
+msgstr "Activités"
+
+msgid "Objects"
+msgstr "Objets"
+
+msgid "Flags"
+msgstr "Drapeaux"
+
+msgid "Skin tone"
+msgstr "Teint"
+
+msgid "Default"
+msgstr "Par défaut"
+
+msgid "Light"
+msgstr "Clair"
+
+msgid "Medium-light"
+msgstr "Moyennement clair"
+
+msgid "Medium"
+msgstr "Moyen"
+
+msgid "Medium-dark"
+msgstr "Moyennement foncé"
+
+msgid "Dark"
+msgstr "Foncé"
+
+msgid "No emoji found"
+msgstr "Aucun émoji trouvé"
+
+msgid "Emoji couldn't be loaded."
+msgstr "Les émojis n’ont pas pu être chargés."
+
+msgid "Emoji you use show up here."
+msgstr "Les émojis que vous utilisez apparaîtront ici."
+
+msgid "Happy"
+msgstr "Joie"
+
+msgid "Greetings"
+msgstr "Salutations"
+
+msgid "Love"
+msgstr "Amour"
+
+msgid "Sad"
+msgstr "Tristesse"
+
+msgid "Angry"
+msgstr "Colère"
+
+msgid "Surprised"
+msgstr "Surprise"
+
+msgid "Shrug"
+msgstr "Bof"
+
+msgid "Animals"
+msgstr "Animaux"
+
+msgid "Classic"
+msgstr "Classiques"
+
+msgid "Punctuation"
+msgstr "Ponctuation"
+
+msgid "Currency"
+msgstr "Devises"
+
+msgid "Latin"
+msgstr "Latin"
+
+msgid "Shapes"
+msgstr "Formes"
+
+msgid "Math"
+msgstr "Maths"
+
+msgid "Arrows"
+msgstr "Flèches"
+
+msgid "Greek"
+msgstr "Grec"
+
+msgid "Other"
+msgstr "Autres"
+
+msgid "Clear all"
+msgstr "Tout effacer"
+
+msgid "Pin"
+msgstr "Épingler"
+
+msgid "Unpin"
+msgstr "Désépingler"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "Nothing here yet"
+msgstr "Rien pour l’instant"
+
+msgid "Copy something and it will show up here."
+msgstr "Copiez quelque chose, il apparaîtra ici."
+
+msgid "Clipboard history isn't available right now."
+msgstr "L’historique du presse-papiers n’est pas disponible pour le moment."
+
+msgid "Open on the clipboard history"
+msgstr "Ouvrir sur l’historique du presse-papiers"
+
+msgid "Open on the emoji"
+msgstr "Ouvrir sur les émojis"
+
+msgid "Open on the kaomoji"
+msgstr "Ouvrir sur les kaomojis"
+
+msgid "Open on the symbols"
+msgstr "Ouvrir sur les symboles"
+
+msgid "Paste what you picked into the window you were typing in"
+msgstr "Coller ce que vous avez choisi dans la fenêtre où vous écriviez"

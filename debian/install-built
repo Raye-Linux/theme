@@ -1,0 +1,37 @@
+#!/bin/sh
+# Filters an install list read on stdin, for the executable
+# debian/*.install files.
+#
+# Most parts of the theme land one by one, but the package lists name
+# them all up front. A line that starts with "? " is kept only when its
+# pattern matches something, in debian/tmp (what the CMake trees
+# installed) or in the source tree; a line without it is kept as is, so
+# dh_install still fails when a file that must ship is missing.
+#
+# Each skipped line is named on stderr, so the build log says what a
+# package does not carry yet.
+set -e
+
+while IFS= read -r line; do
+    case "$line" in
+        ''|'#'*) continue ;;
+        '? '*) ;;
+        *) printf '%s\n' "$line"; continue ;;
+    esac
+    line=${line#\? }
+    pattern=${line%% *}
+    found=
+    for dir in debian/tmp .; do
+        for f in "$dir"/$pattern; do
+            if [ -e "$f" ] || [ -L "$f" ]; then
+                found=1
+                break 2
+            fi
+        done
+    done
+    if [ -n "$found" ]; then
+        printf '%s\n' "$line"
+    else
+        echo "install-built: nothing matches $pattern yet, skipped" >&2
+    fi
+done

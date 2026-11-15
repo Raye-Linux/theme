@@ -1,0 +1,24 @@
+{
+    "KPackageStructure": "KWin/Effect",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Raye Linux"
+            },
+            {
+                "Email": "vlad.zahorodnii@kde.org",
+                "Name": "Vlad Zahorodnii"
+            }
+        ],
+        "Category": "Appearance",
+        "Description": "Menus and tooltips fade in with a short slide, and close at once",
+        "Description[fr]": "Les menus et les info-bulles apparaissent en fondu avec un léger glissement, et se ferment aussitôt",
+        "EnabledByDefault": true,
+        "Id": "raye_popups",
+        "License": "GPL",
+        "Name": "Raye popups",
+        "Name[fr]": "Menus surgissants Raye"
+    },
+    "X-KDE-Ordering": 60,
+    "X-Plasma-API": "javascript"
+}

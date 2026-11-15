@@ -1,0 +1,3 @@
+grub/raye usr/share/grub/themes
+grub/50-raye-theme.cfg etc/default/grub.d
+grub/06_raye_fonts etc/grub.d

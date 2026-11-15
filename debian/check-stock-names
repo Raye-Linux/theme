@@ -1,0 +1,45 @@
+#!/bin/sh
+# Raye's lock screen and session end screen stand in for Plasma's, and the
+# greeters only find them by name: the properties they write, the signals
+# they connect, the numbers of the shutdown types. None of it is checked at
+# run time. A Plasma update that renames one leaves a screen that loads and
+# does nothing, so the build stops here instead.
+set -eu
+
+root=${RAYE_STOCK_ROOT:-}
+fails=0
+
+need() { # file word...
+    file=$1
+    shift
+    for word in "$@"; do
+        if ! grep -qF -- "$word" "$file"; then
+            echo "check-stock-names: $file no longer has \"$word\"" >&2
+            fails=1
+        fi
+    done
+}
+
+lock=$root/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen/LockScreen.qml
+# raye-shell moves the stock file aside; it is the stock names we are after
+[ ! -e "$lock.plasma" ] || lock=$lock.plasma
+logout=$root/usr/share/plasma/look-and-feel/org.kde.breeze.desktop/contents/logout/Logout.qml
+enum=$root/usr/include/kworkspace6/kworkspace.h
+
+for f in "$lock" "$logout" "$enum"; do
+    if [ ! -e "$f" ]; then
+        echo "check-stock-names: $f is not there" >&2
+        fails=1
+    fi
+done
+[ "$fails" = 0 ] || exit 1
+
+need "$lock" viewVisible suspendToRamSupported suspendToDiskSupported \
+    suspendToRam suspendToDisk clearPassword notification
+need "$logout" logoutRequested haltRequested haltUpdateRequested suspendRequested \
+    rebootRequested rebootUpdateRequested cancelRequested lockScreenRequested \
+    sdtype maysd canLogout spdMethods softwareUpdatePending screenGeometry
+need "$enum" "ShutdownTypeDefault = -1" "ShutdownTypeNone = 0" "ShutdownTypeReboot = 1" \
+    "ShutdownTypeHalt = 2" "ShutdownTypeLogout = 3"
+
+[ "$fails" = 0 ]

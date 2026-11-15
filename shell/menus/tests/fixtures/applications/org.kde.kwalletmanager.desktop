@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=KWalletManager
+Exec=org.kde.kwalletmanager
+Categories=Qt;KDE;System;Security;

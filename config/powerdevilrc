@@ -1,0 +1,15 @@
+# Raye defaults: lock the screen just before it turns off, so the lock
+# follows "Turn my screen off after". Once locked, the screen goes dark
+# after one minute, as on Windows. The timeouts stay Plasma's defaults.
+
+[AC][Display]
+LockBeforeTurnOffDisplay=true
+TurnOffDisplayIdleTimeoutWhenLockedSec=60
+
+[Battery][Display]
+LockBeforeTurnOffDisplay=true
+TurnOffDisplayIdleTimeoutWhenLockedSec=60
+
+[LowBattery][Display]
+LockBeforeTurnOffDisplay=true
+TurnOffDisplayIdleTimeoutWhenLockedSec=60

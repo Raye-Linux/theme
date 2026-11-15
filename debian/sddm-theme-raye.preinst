@@ -1,0 +1,18 @@
+#!/bin/sh
+# The sign-in screen draws the face of an account that has none from this
+# file, and sddm owns the path: its stock face is moved aside for ours, so
+# the sign-in and lock screens show the same picture.
+set -e
+
+FACE=/usr/share/sddm/faces/.face.icon
+
+case "$1" in
+    install|upgrade)
+        dpkg-divert --package sddm-theme-raye --add --rename \
+            --divert "$FACE.sddm" "$FACE"
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

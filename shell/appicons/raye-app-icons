@@ -1,0 +1,258 @@
+#!/usr/bin/python3
+"""Gives every app entry in the account's own folder an icon that works.
+
+Two things write entries that point at nothing:
+
+- a browser in a sandbox installing a site as an app. It writes the path
+  of the icon as it sees it (~/.var/app/<id>/data/icons/...), which is
+  not there outside the sandbox, though the same icon also landed in
+  ~/.local/share/icons. The taskbar button of that app is then empty.
+- a browser making itself the default. It registers a made-up entry
+  (userapp-<name>-XXXXXX.desktop) with no icon at all.
+
+raye-app-icons.path runs this when ~/.local/share/applications changes,
+raye-taskbar-sync at login. An entry that works is never rewritten.
+"""
+
+import glob
+import os
+import shlex
+import subprocess
+import sys
+
+GROUP = "[Desktop Entry]"
+ICON_TYPES = (".png", ".svg", ".svgz", ".xpm")
+LAST_RESORT = "application-x-executable"
+# Programs in these folders have nothing to do with each other
+SHARED_BIN = {"/bin", "/sbin", "/usr/bin", "/usr/sbin", "/usr/local/bin", "/usr/local/sbin"}
+
+
+def read_entry(text):
+    """The keys of the [Desktop Entry] group."""
+    keys = {}
+    inside = False
+    for line in text.splitlines():
+        if line.startswith("["):
+            inside = line.strip() == GROUP
+        elif inside and "=" in line and not line.startswith("#"):
+            key, value = line.split("=", 1)
+            keys.setdefault(key.strip(), value.strip())
+    return keys
+
+
+def with_icon(text, icon):
+    """text with Icon= of the [Desktop Entry] group set to icon."""
+    lines = text.split("\n")
+    inside = False
+    header = None
+    for at, line in enumerate(lines):
+        if line.startswith("["):
+            inside = line.strip() == GROUP
+            if inside:
+                header = at
+        elif inside and line.split("=", 1)[0].strip() == "Icon":
+            lines[at] = "Icon=" + icon
+            return "\n".join(lines)
+    if header is None:
+        return text
+    lines.insert(header + 1, "Icon=" + icon)
+    return "\n".join(lines)
+
+
+class Icons:
+    """Which icon names exist. Looks in the folders the themes list in
+    their index.theme instead of reading every icon file: the big themes
+    hold hundreds of thousands."""
+
+    def __init__(self, data_dirs):
+        self.data_dirs = data_dirs
+        self.dirs = None
+        self.known = {}
+
+    def _theme_dirs(self, theme):
+        listed = []
+        index = os.path.join(theme, "index.theme")
+        try:
+            with open(index, encoding="utf-8") as f:
+                for line in f:
+                    key, _, value = line.partition("=")
+                    if key.strip() in ("Directories", "ScaledDirectories"):
+                        listed += [d.strip() for d in value.split(",") if d.strip()]
+        except (OSError, UnicodeDecodeError):
+            pass
+        if listed:
+            return [os.path.join(theme, d) for d in listed]
+        # no index (a browser's own ~/.local/share/icons/hicolor): look at it all
+        return [root for root, _, _ in os.walk(theme, followlinks=True)]
+
+    def _load(self):
+        self.dirs = []
+        for base in self.data_dirs:
+            top = os.path.join(base, "icons")
+            self.dirs.append(top)
+            try:
+                themes = sorted(os.scandir(top), key=lambda e: e.name)
+            except OSError:
+                themes = []
+            for theme in themes:
+                if theme.is_dir():
+                    self.dirs += self._theme_dirs(theme.path)
+            self.dirs.append(os.path.join(base, "pixmaps"))
+        self.dirs = [d for d in dict.fromkeys(self.dirs) if os.path.isdir(d)]
+
+    def has(self, name):
+        if "/" in name or not name:
+            return False
+        if name not in self.known:
+            if self.dirs is None:
+                self._load()
+            self.known[name] = any(os.path.exists(os.path.join(d, name + ext))
+                                   for d in self.dirs for ext in ICON_TYPES)
+        return self.known[name]
+
+
+def program_of(exec_line):
+    try:
+        words = shlex.split(exec_line)
+    except ValueError:
+        return []
+    return [w for w in words if not w.startswith("%")]
+
+
+def flatpak_app(words):
+    """The app of "flatpak run [options] <app>", or ""."""
+    if not words or os.path.basename(words[0]) != "flatpak" or "run" not in words:
+        return ""
+    for word in words[words.index("run") + 1:]:
+        if not word.startswith("-"):
+            return word
+    return ""
+
+
+def program_home(path):
+    """(real file, its folder unless the folder is shared by everything)."""
+    found = path if os.path.isabs(path) else ""
+    if not found:
+        for folder in os.environ.get("PATH", "/usr/bin:/bin").split(os.pathsep):
+            if os.path.exists(os.path.join(folder, path)):
+                found = os.path.join(folder, path)
+                break
+    if not found:
+        return "", ""
+    real = os.path.realpath(found)
+    folder = os.path.dirname(real)
+    return real, "" if folder in SHARED_BIN else folder
+
+
+def same_program_icon(words, data_dirs, icons):
+    """The icon of a system entry that runs the same program."""
+    real, home = program_home(words[0])
+    if not real:
+        return ""
+    for base in data_dirs:
+        for path in sorted(glob.glob(os.path.join(base, "applications", "*.desktop"))):
+            try:
+                with open(path, encoding="utf-8") as f:
+                    keys = read_entry(f.read())
+            except (OSError, UnicodeDecodeError):
+                continue
+            other = program_of(keys.get("Exec", ""))
+            icon = keys.get("Icon", "")
+            if not other or not icon or not icons.has(icon):
+                continue
+            other_real, other_home = program_home(other[0])
+            if other_real == real or (home and other_home == home):
+                return icon
+    return ""
+
+
+def working(icon, icons):
+    if not icon:
+        return False
+    return os.path.exists(icon) if os.path.isabs(icon) else icons.has(icon)
+
+
+def icon_for(keys, data_dirs, icons):
+    """The icon this entry should have instead of the one it has."""
+    current = keys.get("Icon", "")
+    if os.path.isabs(current):
+        stem = os.path.splitext(os.path.basename(current))[0]
+        if icons.has(stem):
+            return stem
+    words = program_of(keys.get("Exec", ""))
+    candidates = [keys.get("X-Flatpak-Part-Of", ""), keys.get("X-Flatpak", ""), flatpak_app(words)]
+    for name in candidates:
+        if name and icons.has(name):
+            return name
+    if words:
+        icon = same_program_icon(words, data_dirs, icons)
+        if icon:
+            return icon
+        program = os.path.basename(words[0])
+        names = [program]
+        for tail in ("-bin", ".bin", "-stable"):
+            if program.endswith(tail):
+                names.append(program[: -len(tail)])
+        names.append(keys.get("Name", "").lower())
+        for name in names:
+            if name and icons.has(name):
+                return name
+    return LAST_RESORT
+
+
+def write_keeping_mode(path, text):
+    mode = os.stat(path).st_mode & 0o7777
+    tmp = path + ".raye-tmp"
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, mode)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(text)
+    os.chmod(tmp, mode)
+    os.replace(tmp, path)
+
+
+def fix_all(folders, data_dirs):
+    """Fixes the entries of folders; returns the files it changed."""
+    icons = Icons(data_dirs)
+    changed = []
+    for folder in folders:
+        for path in sorted(glob.glob(os.path.join(glob.escape(folder), "*.desktop"))):
+            if os.path.islink(path):
+                continue
+            try:
+                with open(path, encoding="utf-8") as f:
+                    text = f.read()
+                keys = read_entry(text)
+                if keys.get("Type", "Application") != "Application" or GROUP not in text:
+                    continue
+                if working(keys.get("Icon", ""), icons):
+                    continue
+                write_keeping_mode(path, with_icon(text, icon_for(keys, data_dirs, icons)))
+                changed.append(path)
+            except (OSError, UnicodeDecodeError) as e:
+                print("raye-app-icons: %s: %s" % (path, e), file=sys.stderr)
+    return changed
+
+
+def main():
+    home = os.path.expanduser("~")
+    data_home = os.environ.get("XDG_DATA_HOME") or os.path.join(home, ".local/share")
+    system = os.environ.get("XDG_DATA_DIRS") or "/usr/local/share:/usr/share"
+    data_dirs = [data_home] + [d for d in system.split(":") if d]
+    # flatpak exports, when the service runs without the session's list
+    for extra in (os.path.join(data_home, "flatpak/exports/share"), "/var/lib/flatpak/exports/share"):
+        if extra not in data_dirs:
+            data_dirs.append(extra)
+    changed = fix_all([os.path.join(data_home, "applications")], data_dirs)
+    if changed:
+        print("raye-app-icons: fixed %d entries" % len(changed))
+        # the taskbar and Start read the app list from this cache
+        try:
+            subprocess.run(["kbuildsycoca6"], stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL, timeout=60, check=False)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.raye.Snap
+Exec=@RAYE_SNAP_RELAY@

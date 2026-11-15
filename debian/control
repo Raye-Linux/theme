@@ -1,0 +1,237 @@
+Source: raye-theme
+Section: x11
+Priority: optional
+Maintainer: techoraye <190692880+techoraye@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13),
+               bluedevil <!nocheck>,
+               cmake,
+               dbus-daemon <!nocheck>,
+               extra-cmake-modules,
+               fonts-inter,
+               gettext,
+               grub-common,
+               libkdecorations3-dev,
+               libkf6colorscheme-dev,
+               libkf6config-dev,
+               libkf6coreaddons-dev,
+               libkf6globalaccel-dev,
+               libkf6guiaddons-dev,
+               libkf6i18n-dev,
+               libkf6iconthemes-dev,
+               libkf6kcmutils-dev,
+               libkf6kio-dev,
+               libkf6package-dev,
+               libkf6service-dev,
+               libkf6style-dev,
+               libkf6windowsystem-dev,
+               libkirigami-dev,
+               libkscreen-dev,
+               liblayershellqtinterface-dev,
+               libplasma-dev,
+               libplasmaactivitiesstats-dev,
+               libpolkit-agent-1-dev,
+               kwin-dev,
+# KWinConfig.cmake asks for these and kwin-dev does not depend on them
+               libdrm-dev,
+               libwayland-dev,
+               ninja-build,
+               plasma-integration,
+               plasma-desktop <!nocheck>,
+               plasma-nm <!nocheck>,
+               plasma-pa <!nocheck>,
+               plasma-workspace <!nocheck>,
+               plasma-workspace-dev,
+               powerdevil <!nocheck>,
+               python3,
+               python3-pytest,
+               qml-qt6,
+# The QML modules the 355 QML checks of lockscreen/, sddm/, signin/ and
+# session/polkit load. They happen to arrive with plasma-workspace today,
+# and a test that depends on another package's dependency list is a test
+# that breaks the day that list is tidied.
+# python3-pil and python3-numpy are <!nocheck>, and the build could not
+# be made without them. debian/rules broadened its test step to `pytest
+# tests/ grub/tests/ art/` on 2026-11-06 08:24 (61cad14, "the package build
+# named its test folders, and missed 346 tests") -- a correct change, and the
+# first one to put art/ inside the gate that decides whether the ISO ships.
+#
+# art/signin.py imports PIL at module level, so without it pytest dies
+# COLLECTING art/test_signin.py:
+#     ModuleNotFoundError: No module named 'PIL'
+#     Interrupted: 1 error during collection
+# and an interrupted collection runs nothing: 0 of art/'s 326 checks, not 13.
+# Measured 2026-11-07 -- it is what stopped the image build, 36 minutes in.
+#
+# numpy is the same gate, quieter: art/test_sounds.py does
+# `pytest.importorskip("numpy")` at module level, so without it those 12
+# checks SKIP instead of failing -- and they are real assertions about the
+# waveforms (finite samples, peak under 1.0, DC offset, fade-out). Twelve
+# tests silently absent from the release gate is exactly what 61cad14 was
+# written to stop, so adding PIL alone would have left the job half done.
+               python3-numpy <!nocheck>,
+               python3-pil <!nocheck>,
+               qml6-module-qtmultimedia <!nocheck>,
+               qml6-module-qttest <!nocheck>,
+               qml6-module-qtquick <!nocheck>,
+               qml6-module-qtquick-controls <!nocheck>,
+               qml6-module-qtquick-effects <!nocheck>,
+               qml6-module-qtquick-shapes <!nocheck>,
+               qml6-module-qtquick-templates <!nocheck>,
+               qml6-module-qtquick-virtualkeyboard <!nocheck>,
+               qml6-module-qtquick-window <!nocheck>,
+               qt6-base-dev,
+               qt6-declarative-dev,
+               qt6-declarative-dev-tools,
+               qt6-svg-dev,
+# qt6-svg-dev does not bring the SVG image plugin, and without it
+# art/icons/test_render.py cannot draw a single icon
+               qt6-svg-plugins <!nocheck>
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Vcs-Git: https://github.com/Raye-Linux/theme.git
+
+Package: raye-theme
+Architecture: all
+# raye-desktop-layout is a virtual package that ONLY Raye's build of
+# plasma-desktop declares (raye/desktop, patches/plasma-desktop/0003). It is
+# named here, and not plasma-desktop-data, because Ubuntu's own build of that
+# package satisfies the real name and ships no layout at all: the dependency
+# has to be one that the stock archive cannot answer.
+#
+# Without it, `apt install raye-theme` on an upstream plasma-desktop gave a
+# first login with NO TASKBAR -- worse than the upstream bar the Raye layout
+# replaces. This look-and-feel deliberately ships no layouts/ of its own (see
+# tests/lookandfeel/test_no_layout.py), so the layout it needs must come from
+# the desktop's shell package, and apt has to refuse rather than hand over a
+# desktop that cannot draw its own bar.
+Depends: breeze,
+         fonts-cascadia-code,
+         fonts-inter,
+         libglib2.0-bin,
+         plasma-workspace,
+         plymouth-theme-raye,
+         python3,
+         qml6-module-org-kde-plasma-plasma5support,
+         qml6-module-qtcore,
+         qml6-module-qtmultimedia,
+         raye-desktop-layout,
+         raye-shell,
+         ${misc:Depends}
+Description: Raye Linux desktop look
+ The Raye look for Plasma: dark colours with a violet accent, the Inter
+ font, six wallpapers and two animated ones, the eye logo on the Start
+ button, a centred taskbar, the login splash and the login screen
+ background.
+ .
+ It carries the Raye Night and Raye Day colour schemes, which every
+ other piece of the desktop follows.
+
+Package: raye-style
+Architecture: any
+Depends: qml6-module-org-kde-kirigami,
+         ${misc:Depends},
+         ${shlibs:Depends}
+Description: Raye Linux widget style and window decoration
+ The way buttons, fields, menus, scroll bars and title bars are drawn in
+ Raye: rounded corners, thin strokes, soft shadows and short animations,
+ on the Raye colours.
+ .
+ It also holds the Raye building blocks that Raye's own windows are made
+ of, so every Raye application looks the same.
+
+Package: raye-icon-theme
+Architecture: all
+Depends: breeze-icon-theme,
+         hicolor-icon-theme,
+         papirus-icon-theme,
+         ${misc:Depends}
+Description: Raye Linux icons
+ The Raye icon set: folders and places, file types, drives, applications,
+ the Settings categories and the small monoline icons in the taskbar
+ tray. A light and a dark variant.
+
+Package: raye-cursor-theme
+Architecture: all
+Depends: ${misc:Depends}
+Description: Raye Linux mouse pointers
+ The Raye pointers: a white arrow with a dark outline, a violet busy
+ ring, and the resize, text and hand shapes that go with them, at every
+ size a high resolution screen needs.
+
+Package: raye-sound-theme
+Architecture: all
+Depends: sound-theme-freedesktop,
+         ${misc:Depends}
+Description: Raye Linux sounds
+ The short sounds Raye plays: signing in, a notification, plugging a
+ drive in or out, a low battery, an error, the volume changing and
+ emptying the bin. Nothing plays while the computer starts.
+
+Package: raye-shell
+Architecture: any
+# libcanberra-pulse: the volume sound goes to a sink by its index, which
+# the ALSA backend alone cannot do
+Depends: plasma-workspace (>= 4:6.6),
+         plasma-nm,
+         plasma-pa,
+         libcanberra-pulse,
+         bluedevil,
+         powerdevil,
+         kwin-wayland,
+         raye-style,
+         qml6-module-qtcore,
+         ${misc:Depends},
+         ${shlibs:Depends}
+Breaks: plasma-workspace (>= 4:6.7~),
+        plasma-desktop (>= 4:6.7~),
+        kwin-wayland (>= 4:6.7~)
+Description: Raye Linux desktop shell
+ The taskbar, the Start menu, quick settings, the clock and its
+ notifications, the window switcher and the on-screen displays for
+ volume and brightness.
+
+Package: plymouth-theme-raye
+Architecture: all
+Depends: fonts-inter,
+         plymouth,
+         plymouth-label,
+         ${misc:Depends}
+Description: Raye Linux boot screen
+ The Raye eye on the night background while the computer starts, with a
+ password prompt for encrypted disks.
+
+Package: grub-theme-raye
+Architecture: all
+Depends: grub-common,
+         ${misc:Depends}
+Description: Raye Linux boot menu
+ The Raye look for the boot menu, which only shows up when another
+ system such as Windows is installed next to Raye.
+
+Package: sddm-theme-raye
+Architecture: all
+Depends: fonts-inter,
+         qml6-module-qtquick-controls,
+         qml6-module-qtquick-effects,
+         qml6-module-qtquick-layouts,
+         qml6-module-qtquick-virtualkeyboard,
+         raye-theme,
+         sddm,
+         ${misc:Depends}
+Description: Raye Linux sign-in screen
+ The Raye lock and sign-in screen shown when the computer starts: the
+ time on the night picture, then the account picture, the password
+ field and the buttons to change user, keyboard and network.
+
+Package: raye-polkit-agent
+Architecture: any
+Depends: fonts-inter,
+         qml6-module-qtquick,
+         qml6-module-qtquick-templates,
+         raye-theme,
+         ${misc:Depends},
+         ${shlibs:Depends}
+Description: Raye Linux root access prompt
+ The window that asks for permission when an application wants to change
+ the system as root: it names the application and who made it, and asks
+ for the password of a sudo user before anything happens.

@@ -1,0 +1,11 @@
+{
+    "KPackageStructure": "Plasma/Shell",
+    "KPlugin": {
+        "Description": "Throw-away shell package to try the Raye lock screen in the greeter's testing mode",
+        "Id": "org.raye.locktest",
+        "Name": "Raye lock screen test",
+        "Version": "1.0"
+    },
+    "X-KDE-ParentApp": "org.kde.plasmashell",
+    "X-Plasma-APIVersion": "2"
+}

@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=A video editor
+Exec=example-video-editor
+Categories=AudioVideo;AudioVideoEditing;

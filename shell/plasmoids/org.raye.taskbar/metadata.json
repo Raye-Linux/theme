@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [ { "Name": "Raye Linux" } ],
+        "Category": "Windows and Tasks",
+        "Description": "Pinned apps and open windows on the taskbar",
+        "Description[fr]": "Applications épinglées et fenêtres ouvertes dans la barre des tâches",
+        "Icon": "preferences-system-windows",
+        "Id": "org.raye.taskbar",
+        "License": "GPL-3.0-or-later",
+        "Name": "Taskbar apps",
+        "Name[fr]": "Applications de la barre des tâches",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-Provides": [ "org.kde.plasma.multitasking" ]
+}

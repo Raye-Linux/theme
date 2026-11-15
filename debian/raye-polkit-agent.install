@@ -1,0 +1,10 @@
+#!/bin/sh
+# The Raye admin prompt (session/polkit): the agent, its user unit, and the
+# two drop-ins that start it with Plasma in place of Plasma's own agent.
+# See debian/install-built.
+exec debian/install-built <<'LIST'
+usr/libexec/raye-polkit-agent
+usr/lib/systemd/user/raye-polkit-agent.service
+usr/lib/systemd/user/plasma-polkit-agent.service.d/raye-polkit-agent.conf
+usr/lib/systemd/user/plasma-workspace.target.d/raye-polkit-agent.conf
+LIST

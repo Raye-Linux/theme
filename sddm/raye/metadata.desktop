@@ -1,0 +1,15 @@
+[SddmGreeterTheme]
+Name=Raye
+Name[fr]=Raye
+Description=The Raye lock and sign-in screen
+Description[fr]=L'écran de verrouillage et de connexion de Raye
+Author=techoraye
+License=GPL-3.0-or-later
+Type=sddm-theme
+Version=1.0
+Screenshot=preview.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=raye
+Theme-API=2.0
+QtVersion=6

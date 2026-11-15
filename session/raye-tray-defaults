@@ -1,0 +1,89 @@
+#!/bin/sh
+# First login: tidy the tray like the one people know. Network, sound and
+# battery stay in sight; the rest goes under the arrow.
+#
+# Every login: the phone item (KDE Connect) is only in the tray once a
+# phone is paired. Loading it starts the phone service, which then stays
+# in memory and scans the network and Bluetooth for nothing. Without a
+# paired phone the service starts when "Your phone" is opened instead,
+# and the item comes back at the next login after a phone is paired.
+#
+# Done from inside the running session because Plasma builds the tray
+# after the default layout has run, so the layout script cannot reach
+# its settings.
+
+set -u
+state=${XDG_STATE_HOME:-$HOME/.local/state}/raye
+done_file=$state/tray-defaults-done
+phone_file=$state/tray-phone
+paired=${XDG_CONFIG_HOME:-$HOME/.config}/kdeconnect/trusted_devices
+
+if [ -e "$paired" ]; then
+    phone=shown
+else
+    phone=hidden
+fi
+tidy=yes
+[ -e "$done_file" ] && tidy=no
+[ "$tidy" = no ] && [ "$(cat "$phone_file" 2>/dev/null)" = "$phone" ] && exit 0
+
+script='
+var tidy = '$([ "$tidy" = yes ] && echo true || echo false)';
+var phone = "'$phone'";
+var hide = ["org.kde.plasma.brightness", "org.kde.kscreen",
+            "org.kde.plasma.clipboard", "org.kde.plasma.keyboardlayout",
+            "org.kde.plasma.devicenotifier", "org.kde.plasma.printmanager",
+            "org.kde.plasma.cameraindicator"].join(",");
+var all = panels();
+for (var i = 0; i < all.length; ++i) {
+    var trays = all[i].widgets("org.kde.plasma.systemtray");
+    for (var j = 0; j < trays.length; ++j) {
+        // Plasma 6.6 keeps the tray settings on the tray itself; older
+        // ones on a containment of its own, named by the tray
+        var box = trays[j];
+        box.currentConfigGroup = [];
+        var inner = box.readConfig("SystrayContainmentId");
+        if (inner) {
+            box = desktopById(inner);
+            if (!box)
+                continue;
+        }
+        box.currentConfigGroup = ["General"];
+        if (tidy)
+            box.writeConfig("hiddenItems", hide);
+        var items = box.readConfig("extraItems");
+        if (typeof items == "string")
+            items = items.length ? items.split(",") : [];
+        // nothing written yet means the tray still uses its own defaults:
+        // an empty list here would empty the tray
+        if (items && items.length) {
+            var at = items.indexOf("org.kde.kdeconnect");
+            var changed = true;
+            if (phone == "hidden" && at >= 0 && items.length > 1)
+                items.splice(at, 1);
+            else if (phone == "shown" && at < 0)
+                items.push("org.kde.kdeconnect");
+            else
+                changed = false;
+            if (changed)
+                box.writeConfig("extraItems", items.join(","));
+        }
+        box.reloadConfig();
+    }
+}'
+
+# plasmashell may still be starting: give it up to a minute
+i=0
+while [ $i -lt 30 ]; do
+    if gdbus call --session --dest org.kde.plasmashell --object-path /PlasmaShell \
+            --method org.kde.PlasmaShell.evaluateScript "$script" >/dev/null 2>&1; then
+        mkdir -p "$state"
+        touch "$done_file"
+        echo "$phone" > "$phone_file"
+        exit 0
+    fi
+    i=$((i + 1))
+    sleep 2
+done
+echo "raye-tray-defaults: plasmashell did not answer, will try at next login" >&2
+exit 1

@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/Wallpaper",
+    "KPlugin": {
+        "Authors": [ { "Name": "techoraye" } ],
+        "Description": "A video or an animated GIF that rests when you can't see it",
+        "Description[fr]": "Une vidéo ou un GIF animé qui s'arrête quand on ne le voit pas",
+        "Icon": "preferences-desktop-wallpaper",
+        "Id": "org.raye.animated",
+        "License": "GPL-3.0-or-later",
+        "Name": "Animated",
+        "Name[fr]": "Animé"
+    },
+    "X-KDE-ParentApp": "org.kde.plasmashell"
+}

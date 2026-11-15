@@ -1,0 +1,758 @@
+# Raye boot screen.
+#
+# The eye in its place, the progress ring under it, and no text while the
+# computer starts. Words only when there is something to say: the disk
+# password, shutting down, restarting, updates.
+#
+# raye.script.in is the template: the initramfs hook (raye-plymouth)
+# puts the words of strings-en or strings-fr in place of the keys between
+# at signs and writes raye.script. Change the words there, not in
+# raye.script.
+#
+# Everything a function keeps has to live in global.*: a plain variable
+# set in a function is local to it, and a sprite goes away with it.
+
+# ---- words ----
+T_PASSWORD = "@password_title@";
+T_HINT = "@recovery_hint@";
+T_WRONG = "@wrong_password@";
+T_CAPS = "@caps_lock@";
+T_KEYBOARD = "@keyboard_line@";
+T_TPM = "@tpm_title@";
+T_TPM_1 = "@tpm_line1@";
+T_TPM_2 = "@tpm_line2@";
+T_SHUTDOWN = "@shutdown@";
+T_REBOOT = "@reboot@";
+T_UPDATES_A = "@updates_a@";
+T_UPDATES_B = "@updates_b@";
+T_NOTE = "@updates_note@";
+T_FINISHING = "@finishing_updates@";
+T_PREPARE = "@prepare_updates@";
+T_GO_BACK = "@go_back@";
+T_GO_BACK_FAILED = "@go_back_failed@";
+T_FIRMWARE = "@firmware@";
+T_FIRMWARE_NOTE = "@firmware_note@";
+T_FIRMWARE_OF = "@firmware_of@";
+T_UPGRADE_A = "@upgrade_a@";
+T_UPGRADE_B = "@upgrade_b@";
+T_REMOVE_USB = "@remove_usb@";
+T_FSCK_A = "@fsck_a@";
+T_FSCK_B = "@fsck_b@";
+
+# ---- look (theme tokens) ----
+FONT_TITLE = "Inter Semi-Bold 20px";
+FONT_LARGE = "Inter 18px";
+FONT_BODY = "Inter 14px";
+# text #f3eaff, secondary #b9a8d6, error #ff6b8a
+fun text(str, font, kind) {
+    if (kind == "secondary") return Image.Text(str, 0.725, 0.659, 0.839, 1, font);
+    if (kind == "error") return Image.Text(str, 1.0, 0.420, 0.541, 1, font);
+    return Image.Text(str, 0.953, 0.918, 1.0, 1, font);
+}
+
+# 60 refreshes a second, the rate of most screens. A plymouth without
+# SetRefreshRate stays at 50: every time below is counted in FPS.
+if (Plymouth.SetRefreshRate) {
+    Plymouth.SetRefreshRate(60);
+    FPS = 60;
+} else {
+    FPS = 50;
+}
+# moves of the eye and the field take 250 ms
+MOVE = Math.Int(FPS / 4 + 0.5);
+
+# the night gradient, under the picture in case it does not load
+Window.SetBackgroundTopColor(0.055, 0.039, 0.090);
+Window.SetBackgroundBottomColor(0.102, 0.063, 0.157);
+
+# The screens are read again every frame: the firmware screen hands
+# over to the graphics driver after the theme has started, often at
+# another size, and a second screen can come and go. A new set of
+# screens means a new layout.
+#
+# plymouth puts every screen in the middle of one canvas as big as the
+# biggest of them, and draws each sprite on all of them. So a picture in
+# the middle of the canvas is in the middle of every screen, and the
+# layout is sized for the smallest one so that it fits there too.
+# Window.GetX() and GetY() without a screen number give the offset of
+# the smallest screen on some plymouth versions instead of 0, which put
+# everything at the bottom right of a laptop with a bigger monitor
+# plugged in: read the screens one by one.
+MAX_SCREENS = 8;
+
+fun screen_key() {
+    key = "";
+    for (i = 0; i < MAX_SCREENS; i++) {
+        sw = Window.GetWidth(i);
+        if (sw) key = key + Window.GetX(i) + "," + Window.GetY(i) + "," + sw + "x" + Window.GetHeight(i) + ";";
+    }
+    return key + Window.GetWidth() + "x" + Window.GetHeight();
+}
+
+fun read_screens() {
+    global.screen_key_now = screen_key();
+    n = 0;
+    for (i = 0; i < MAX_SCREENS; i++) {
+        sw = Window.GetWidth(i);
+        sh = Window.GetHeight(i);
+        if (sw && sh) {
+            sx = Window.GetX(i);
+            sy = Window.GetY(i);
+            if (n == 0) {
+                left = sx; top = sy; right = sx + sw; bottom = sy + sh;
+                small_w = sw; small_h = sh;
+            } else {
+                left = Math.Min(left, sx);
+                top = Math.Min(top, sy);
+                right = Math.Max(right, sx + sw);
+                bottom = Math.Max(bottom, sy + sh);
+                small_w = Math.Min(small_w, sw);
+                small_h = Math.Min(small_h, sh);
+            }
+            n++;
+        }
+    }
+    if (n == 0) {
+        # no numbered screens: one canvas, starting at 0
+        left = 0; top = 0;
+        right = Window.GetWidth(); bottom = Window.GetHeight();
+        small_w = right; small_h = bottom;
+    }
+    global.canvas_x = left;
+    global.canvas_y = top;
+    global.canvas_w = right - left;
+    global.canvas_h = bottom - top;
+    global.cx = (left + right) / 2;
+    global.cy = (top + bottom) / 2;
+    global.w = small_w;
+    global.h = small_h;
+}
+bg.image = Image("background.png");
+
+# eye.png has the almond in its middle; EYE_WIDTH is the share of the
+# picture it takes (art/plymouth.py prints it), EYE_HALF how far its rim
+# goes above and under the middle.
+EYE_WIDTH = 0.4291;
+EYE_HALF = 0.0964;
+
+# Eye, ring and words are one block, and the block sits in the middle of
+# each screen: its height changes with what is shown, so it glides to its
+# new place. block_top is the top of the almond.
+GAP_RING_SHARE = 0.075;
+GAP_LINE = 28;
+GAP_NOTE = 11;
+global.block_top = 0;
+global.top_from = 0;
+global.top_to = 0;
+global.top_t = MOVE;
+
+# ---- the progress ring ----
+# One arc on a faint track that grows, shrinks and turns all the time,
+# like the ring Windows shows: RING_FRAMES pictures of one loop, drawn
+# by art/plymouth.py, one per refresh. They come in a few sizes; layout()
+# takes the one closest to 4.6 % of the short side of the smallest
+# screen, so it is never scaled and stays sharp.
+RING_SIZES[0] = 36;
+RING_SIZES[1] = 48;
+RING_SIZES[2] = 64;
+RING_SIZES[3] = 96;
+RING_FRAMES = 120;
+RING_COLS = 12;
+global.ring_size = 0;
+global.ring_on = 1;
+# set when the screen is handed over to the sign-in screen: plymouthd
+# leaves its last picture up, and a ring stopped mid-turn looks frozen
+global.handoff = 0;
+
+fun pick_ring(want) {
+    best = RING_SIZES[0];
+    for (i = 1; i < 4; i++) {
+        # closest by ratio, not by pixels
+        if (Math.Abs(RING_SIZES[i] / want - 1) < Math.Abs(best / want - 1))
+            best = RING_SIZES[i];
+    }
+    return best;
+}
+
+# the frames sit on a grid in one picture: cut them apart once
+fun load_ring(size) {
+    if (size == global.ring_size) return;
+    global.ring_size = size;
+    sheet = Image("ring-" + size + ".png");
+    side = sheet.GetWidth() / RING_COLS;
+    for (i = 0; i < RING_FRAMES; i++) {
+        row = Math.Int(i / RING_COLS);
+        global.ring_frame[i] = sheet.Crop((i - row * RING_COLS) * side, row * side, side, side);
+    }
+    global.ring_side = side;
+    global.ring_track = Sprite(Image("ring-" + size + "-track.png"));
+    global.ring = Sprite(global.ring_frame[0]);
+    global.ring_shown = 1;
+}
+
+fun place_ring() {
+    x = Math.Int(cx - global.ring_side / 2);
+    y = Math.Int(global.RING_Y - global.ring_side / 2);
+    global.ring_track.SetPosition(x, y, 4);
+    global.ring.SetPosition(x, y, 5);
+}
+
+fun draw_ring(t) {
+    on = global.ring_on && !global.handoff;
+    if (global.ring_shown != on) {
+        global.ring_shown = on;
+        global.ring_track.SetOpacity(on);
+        global.ring.SetOpacity(on);
+    }
+    # hidden: leave the picture alone, nothing to redraw
+    if (!on) return;
+    global.ring.SetImage(global.ring_frame[t - Math.Int(t / RING_FRAMES) * RING_FRAMES]);
+}
+
+fun place_eye() {
+    global.eye.sprite.SetPosition(Math.Int(cx - global.eye.size / 2), Math.Int(global.eye_y - global.eye.size / 2), 2);
+    global.glow.sprite.SetPosition(Math.Int(cx - global.glow.size / 2), Math.Int(global.eye_y - global.glow.size / 2), 1);
+}
+
+# Text is drawn on its line box: the baseline is at 78 % of it, and g, p,
+# y and friends go down to 95 %. What counts is where the ink ends.
+DESCENDERS = "gjpqyQ(),;";
+fun ink_bottom(str, img) {
+    s = String(str);
+    for (i = 0; i < s.Length(); i++) {
+        c = s.CharAt(i);
+        for (j = 0; j < DESCENDERS.Length(); j++)
+            if (c == DESCENDERS.CharAt(j)) return img.GetHeight() * 0.95;
+    }
+    return img.GetHeight() * 0.78;
+}
+
+# what is under the almond: the ring, then the status words
+fun block_height() {
+    bottom = 2 * global.eye_half;
+    with_ring = global.ring_on && !global.handoff;
+    if (with_ring) bottom = bottom + global.gap_ring + 2 * global.ring_ink;
+    if (global.status.line_image) {
+        y = bottom + GAP_LINE;
+        if (!with_ring) y = bottom + global.gap_ring;
+        global.status.line_dy = y;
+        bottom = y + ink_bottom(global.status_line, global.status.line_image);
+        y = y + global.status.line_image.GetHeight() + GAP_NOTE;
+    } else {
+        y = bottom + GAP_LINE;
+        if (!with_ring) y = bottom + global.gap_ring;
+    }
+    if (global.status.note_image) {
+        global.status.note_dy = y;
+        bottom = y + ink_bottom(global.status_note, global.status.note_image);
+    }
+    return bottom;
+}
+
+fun block_target() {
+    height = block_height();
+    if (global.asking) return global.ask_top;
+    # after a password, the eye stays up while the disk checks it
+    if (global.home_at) return global.top_to;
+    return Math.Int(cy - height / 2 + 0.5);
+}
+
+fun place_block() {
+    top = global.block_top;
+    global.eye_y = top + global.eye_half;
+    place_eye();
+    global.RING_Y = top + 2 * global.eye_half + global.gap_ring + global.ring_ink;
+    place_ring();
+    if (global.status.line)
+        global.status.line.SetPosition(Math.Int(cx - global.status.line_image.GetWidth() / 2),
+            Math.Int(top + global.status.line_dy), 5);
+    if (global.status.note)
+        global.status.note.SetPosition(Math.Int(cx - global.status.note_image.GetWidth() / 2),
+            Math.Int(top + global.status.note_dy), 5);
+}
+
+# glide there, from wherever the block is now
+fun move_block() {
+    to = block_target();
+    if (to == global.top_to && global.top_t >= MOVE) return;
+    global.top_from = global.block_top;
+    global.top_to = to;
+    global.top_t = 0;
+}
+
+fun snap_block() {
+    global.top_to = block_target();
+    global.top_from = global.top_to;
+    global.block_top = global.top_to;
+    global.top_t = MOVE;
+    place_block();
+}
+
+fun layout() {
+    read_screens();
+    global.short = Math.Min(global.w, global.h);
+    # no screen yet: the next frame tries again
+    if (global.short < 1) return;
+
+    # the picture covers the whole canvas, so every screen
+    if (bg.image) {
+        global.bg.sprite = Sprite(bg.image.Scale(global.canvas_w, global.canvas_h));
+        global.bg.sprite.SetPosition(global.canvas_x, global.canvas_y, -10);
+    }
+
+    # an even size keeps the almond on the middle pixel
+    global.eye.size = Math.Int(global.short * 0.174 / EYE_WIDTH / 2) * 2;
+    global.eye.sprite = Sprite(Image("eye.png").Scale(global.eye.size, global.eye.size));
+    global.eye_half = global.eye.size * EYE_HALF;
+    global.glow.size = Math.Int(global.eye.size * 0.9 / 2) * 2;
+    global.glow.sprite = Sprite(Image("glow.png").Scale(global.glow.size, global.glow.size));
+
+    # the ring under the eye, about 50 px across on a 1080p screen. Its
+    # faint track is half a pixel wider than ring_size.
+    load_ring(pick_ring(global.short * 0.046));
+    global.RING_R = global.ring_size / 2;
+    global.ring_ink = global.RING_R + 0.5;
+    global.gap_ring = Math.Int(global.short * GAP_RING_SHARE + 0.5);
+
+    snap_block();
+}
+layout();
+
+# ---- status line under the ring (shutdown, updates, messages) ----
+# kept while the password field is up, drawn again when it goes
+fun set_status(line, note) {
+    global.status_line = line;
+    global.status_note = note;
+    draw_status();
+}
+fun draw_status() {
+    global.status.line = NULL;
+    global.status.note = NULL;
+    global.status.line_image = NULL;
+    global.status.note_image = NULL;
+    line = global.status_line;
+    note = global.status_note;
+    if (!global.asking) {
+        if (line != "") {
+            global.status.line_image = text(line, FONT_LARGE, "text");
+            global.status.line = Sprite(global.status.line_image);
+        }
+        if (note != "") {
+            global.status.note_image = text(note, FONT_BODY, "secondary");
+            global.status.note = Sprite(global.status.note_image);
+        }
+    }
+    move_block();
+    place_block();
+}
+
+# what the screen says for the current mode, with a progress number
+global.mode = Plymouth.GetMode();
+global.progress = 0;
+global.status_line = "";
+global.status_note = "";
+global.finishing = 0;
+# set by raye:mode:boot, reboot or shutdown: the install is over
+global.updates_over = 0;
+# "2:3" while the second of three devices is written, "" for one
+global.fw_step = "";
+fun firmware_line() {
+    if (global.fw_step == "") return T_FIRMWARE;
+    s = String(global.fw_step);
+    i = 0;
+    while (i < s.Length() && s.CharAt(i) != ":") i++;
+    return T_FIRMWARE + "  " + s.SubString(0, i) + " " + T_FIRMWARE_OF + " " + s.SubString(i + 1, s.Length());
+}
+fun mode_status() {
+    # the daemon hands the number over as text ("37"): draw it as it comes
+    n = global.progress;
+    if (global.mode == "shutdown") set_status(T_SHUTDOWN, "");
+    else if (global.mode == "reboot") set_status(T_REBOOT, "");
+    else if (global.mode == "prepare") set_status(T_PREPARE, T_NOTE);
+    else if (global.mode == "updates") set_status(T_UPDATES_A + n + T_UPDATES_B, T_NOTE);
+    else if (global.mode == "system-upgrade") set_status(T_UPGRADE_A + n + T_UPGRADE_B, T_NOTE);
+    # no number: fwupd tells nothing while it writes
+    else if (global.mode == "firmware-upgrade") set_status(firmware_line(), T_FIRMWARE_NOTE);
+    else set_status("", "");
+}
+mode_status();
+
+fun system_update(progress) {
+    # a number apt wrote just before it ended can come after the install
+    # is over; it put the update words back up before the sign-in screen
+    if (global.updates_over) return;
+    global.progress = progress;
+    if (global.mode != "system-upgrade" && global.mode != "firmware-upgrade")
+        global.mode = "updates";
+    # "Finishing updates" stays while dpkg ends what a cut left half done;
+    # the first number from apt puts the percentage back
+    if (global.finishing) {
+        global.finishing = 0;
+        global.showing_message = 0;
+    }
+    if (!global.showing_message) mode_status();
+}
+Plymouth.SetSystemUpdateFunction(system_update);
+
+# ---- messages ----
+# cryptsetup, fsck, systemd and friends send technical lines here.
+# None of it shows here: it stays in the journal.
+# Only Raye's own keys get through:
+#   raye:remove-usb            live system, after an install
+#   raye:fsck:<drive name>     a drive check that takes a while
+#   raye:finishing-updates     an update cut short is being finished
+#   raye:go-back               the boot menu entry that goes back to a restore point
+#   raye:go-back-failed        that restore point could not be restored
+#   raye:firmware-step:<i>:<n> device i of n is being written
+#   raye:mode:<mode>           updates, system-upgrade or firmware-upgrade
+#                              without plymouth change-mode, which reads
+#                              the script again from the installed system
+#                              (English) once the disk is up
+#   raye:mode:prepare          on the way down to a restart that installs
+#                              updates
+#   raye:mode:boot             the updates are in and the start-up goes
+#                              on to the sign-in screen: words away
+#   raye:clear                 puts back what the mode says
+#   raye:tpm-failed            the TPM did not open the disk (from the
+#                              initramfs, see the hook): ask at once
+#   raye:disk-open             the initramfs is done: forget its question
+#   raye:handoff               the sign-in screen takes over next: the
+#                              ring goes, the eye stays
+# hide-message with any raye: key does the same where plymouthd passes
+# it on (24.004 does not call the script for it).
+fun starts(str, prefix) {
+    return String(str).SubString(0, String(prefix).Length()) == prefix;
+}
+fun message(str) {
+    if (str == "raye:remove-usb") {
+        global.showing_message = 1;
+        global.finishing = 0;
+        set_status(T_REMOVE_USB, "");
+    } else if (str == "raye:finishing-updates") {
+        global.showing_message = 1;
+        global.finishing = 1;
+        set_status(T_FINISHING, T_NOTE);
+    } else if (str == "raye:go-back") {
+        global.showing_message = 1;
+        global.finishing = 0;
+        set_status(T_GO_BACK, T_NOTE);
+    } else if (str == "raye:go-back-failed") {
+        global.showing_message = 1;
+        global.finishing = 0;
+        set_status(T_GO_BACK_FAILED, "");
+    } else if (starts(str, "raye:mode:")) {
+        global.mode = String(str).SubString(10, String(str).Length());
+        global.updates_over = (global.mode == "boot" || global.mode == "reboot" || global.mode == "shutdown");
+        # sent once the disk is up: no question from the initramfs waits
+        global.pending = 0;
+        global.showing_message = 0;
+        global.finishing = 0;
+        global.fw_step = "";
+        mode_status();
+    } else if (starts(str, "raye:firmware-step:")) {
+        global.fw_step = String(str).SubString(19, String(str).Length());
+        if (!global.showing_message) mode_status();
+    } else if (str == "raye:clear") {
+        hide_message(str);
+    } else if (str == "raye:tpm-failed") {
+        global.tpm_failed = 1;
+    } else if (str == "raye:disk-open") {
+        forget_password();
+    } else if (str == "raye:handoff") {
+        hand_off();
+    } else if (starts(str, "raye:fsck:")) {
+        global.showing_message = 1;
+        global.finishing = 0;
+        set_status(T_FSCK_A + String(str).SubString(10, String(str).Length()) + T_FSCK_B, "");
+    }
+}
+fun hide_message(str) {
+    if (starts(str, "raye:")) {
+        global.showing_message = 0;
+        global.finishing = 0;
+        mode_status();
+    }
+}
+fun quiet(str) {
+}
+fun hand_off() {
+    global.handoff = 1;
+    draw_ring(global.t);
+    # without the ring the eye alone is the block
+    move_block();
+}
+Plymouth.SetDisplayMessageFunction(message);
+Plymouth.SetHideMessageFunction(hide_message);
+Plymouth.SetUpdateStatusFunction(quiet);
+
+# ---- disk password ----
+# Drawn like a disk recovery screen, the Raye way: the eye moves
+# up, a title, the field with bullets, the keyboard layout and the
+# recovery key hint. A wrong password shakes the field and says so.
+FIELD = Image("field.png");
+BULLET = Image("bullet.png");
+MAX_BULLETS = 23;
+
+# tpm.png is there when the TPM opens this disk (see the hook). The chip
+# and the key derivation take a few seconds, longer on a slow machine:
+# the ring keeps turning and the field waits until the initramfs says
+# the TPM said no (raye:tpm-failed), 20 s at most. A key shows it at
+# once. Without the TPM, ask straight away.
+if (Image("tpm.png")) WAIT = 20 * FPS;
+else WAIT = 0;
+global.tpm = WAIT > 0;
+global.tpm_failed = 0;
+
+global.asking = 0;
+global.pending = 0;
+global.typed = 0;
+global.answered = 0;
+global.wrong = 0;
+global.shake_t = -100;
+global.home_at = 0;
+
+fun text_sprite(name, str, font, kind, y) {
+    global.ask[name] = NULL;
+    if (str == "") return 0;
+    img = text(str, font, kind);
+    global.ask[name] = Sprite(img);
+    global.ask[name].SetPosition(Math.Int(cx - img.GetWidth() / 2), Math.Int(y), 10);
+    global.ask_bottom = y + ink_bottom(str, img);
+    return img.GetHeight();
+}
+
+# The password screen: the eye, then a title, the field, and the lines
+# under it, all centred as one block. Laid out once from 0 to know its
+# height, then for real.
+fun build_field(title) {
+    global.ask_title = title;
+    global.ring_on = 0;
+    global.asking = 1;
+    draw_status();
+    lay_field(title, 0);
+    height = 2 * global.eye_half + 32 + global.ask_bottom;
+    global.ask_top = Math.Int(cy - height / 2 + 0.5);
+    lay_field(title, global.ask_top + 2 * global.eye_half + 32);
+    move_block();
+}
+
+fun lay_field(title, top) {
+    tpm = global.tpm && !global.question;
+    if (tpm && title == T_PASSWORD) title = T_TPM;
+    global.title_y = top;
+
+    text_sprite("title", title, FONT_TITLE, "text", top);
+    y = top + 40;
+    if (tpm) {
+        text_sprite("tpm1", T_TPM_1, FONT_BODY, "secondary", y);
+        text_sprite("tpm2", T_TPM_2, FONT_BODY, "secondary", y + 22);
+        y = y + 52;
+    }
+    global.field_x = Math.Int(cx - FIELD.GetWidth() / 2);
+    global.field_y = Math.Int(y + 4);
+    global.ask.box = Sprite(FIELD);
+    global.ask.box.SetPosition(global.field_x, global.field_y, 10);
+    global.ask_bottom = global.field_y + FIELD.GetHeight();
+
+    y = global.field_y + FIELD.GetHeight() + 12;
+    global.note_y = y;
+    y = y + 28;
+    if (!global.question) {
+        if (text_sprite("keyboard", T_KEYBOARD, FONT_BODY, "secondary", y)) y = y + 24;
+        text_sprite("hint", T_HINT, FONT_BODY, "secondary", y);
+    }
+    global.ask_bottom = global.ask_bottom - top;
+}
+
+# the line under the field: the error wins over Caps Lock
+fun update_note() {
+    str = "";
+    kind = "error";
+    if (global.wrong) str = T_WRONG;
+    else if (Plymouth.GetCapslockState()) {
+        str = T_CAPS;
+        kind = "secondary";
+    }
+    if (str != global.note_text) {
+        global.note_text = str;
+        text_sprite("note", str, FONT_BODY, kind, global.note_y);
+    }
+}
+
+fun draw_bullets(count, entry) {
+    shown = Math.Min(count, MAX_BULLETS);
+    global.shown = shown;
+    off = global.shake;
+    if (global.question) {
+        if (entry != global.entry_text) {
+            global.entry_text = entry;
+            global.ask.entry = NULL;
+            if (entry != "") {
+                global.ask.entry_image = text(entry, FONT_BODY, "text");
+                global.ask.entry = Sprite(global.ask.entry_image);
+            }
+        }
+        if (global.ask.entry)
+            global.ask.entry.SetPosition(global.field_x + 12 + off,
+                global.field_y + 20 - global.ask.entry_image.GetHeight() / 2, 11);
+        return;
+    }
+    for (i = 0; i < MAX_BULLETS; i++) {
+        if (i < shown) {
+            if (!global.bullet[i]) global.bullet[i] = Sprite(BULLET);
+            global.bullet[i].SetPosition(global.field_x + 14 + i * 14 + off,
+                global.field_y + 19 - BULLET.GetHeight() / 2, 11);
+        } else {
+            global.bullet[i] = NULL;
+        }
+    }
+}
+
+fun show_field(title, count, entry) {
+    global.home_at = 0;
+    if (!global.asking) build_field(title);
+    # the first key after a wrong password clears the error
+    if (count > 0 && global.wrong) global.wrong = 0;
+    global.typed = count > 0 || entry != "";
+    draw_bullets(count, entry);
+    update_note();
+}
+
+fun hide_field() {
+    global.ask = NULL;
+    for (i = 0; i < MAX_BULLETS; i++) global.bullet[i] = NULL;
+    global.asking = 0;
+    global.question = 0;
+    global.note_text = "";
+    global.entry_text = "";
+    global.ring_on = 1;
+    draw_status();
+}
+
+fun eye_home() {
+    global.home_at = 0;
+    move_block();
+}
+
+fun display_password(prompt, count) {
+    global.question = 0;
+    # asked again soon after the user typed and pressed Enter: it was
+    # wrong. Later, it is the next disk asking.
+    if (global.answered && global.home_at && !global.asking && count == 0) {
+        global.answered = 0;
+        global.wrong = 1;
+        global.shake_t = global.t;
+        global.pending = 0;
+        show_field(T_PASSWORD, 0, "");
+        return;
+    }
+    if (global.asking || count > 0) {
+        global.pending = 0;
+        show_field(T_PASSWORD, count, "");
+    } else if (!global.pending) {
+        global.pending = 1;
+        global.pending_since = global.t;
+    }
+}
+
+# The disk is open (the initramfs ends, or the updates screen came): a
+# question cryptsetup left behind when the TPM got there first is over.
+# Without this the field turned up in the middle of an offline update.
+fun forget_password() {
+    global.pending = 0;
+    global.answered = 0;
+    global.wrong = 0;
+    if (!global.asking) return;
+    hide_field();
+    eye_home();
+}
+
+fun display_question(prompt, entry) {
+    global.pending = 0;
+    if (!global.asking) global.question = 1;
+    show_field(prompt, String(entry).Length(), entry);
+}
+
+fun display_normal() {
+    # Enter after typing: remember it, a second ask means a wrong password
+    if (global.asking && global.typed) global.answered = 1;
+    else global.answered = 0;
+    global.pending = 0;
+    global.wrong = 0;
+    if (!global.asking) return;
+    # the eye stays up while the disk checks the password, so a wrong
+    # one does not make it bounce; it goes home after 4 s
+    if (global.answered) global.home_at = global.t + 4 * FPS;
+    hide_field();
+    if (!global.answered) eye_home();
+}
+Plymouth.SetDisplayPasswordFunction(display_password);
+Plymouth.SetDisplayQuestionFunction(display_question);
+Plymouth.SetDisplayNormalFunction(display_normal);
+
+# ---- every frame ----
+# entrance curve of the tokens, cubic-bezier(0, 0, 0, 1): close enough
+fun ease(p) {
+    q = 1 - Math.Clamp(p, 0, 1);
+    return 1 - q * q * q * q;
+}
+
+global.t = 0;
+global.shake = 0;
+# a new screen size: lay everything out again, the password field too
+fun relayout() {
+    global.home_at = 0;
+    layout();
+    if (global.asking) {
+        global.ask = NULL;
+        global.asking = 0;
+        global.note_text = "";
+        build_field(global.ask_title);
+    } else {
+        draw_status();
+    }
+    snap_block();
+}
+
+fun refresh() {
+    global.t++;
+    t = global.t;
+    if (screen_key() != global.screen_key_now)
+        relayout();
+
+    if (global.home_at && t >= global.home_at && !global.asking) {
+        global.answered = 0;
+        eye_home();
+    }
+    if (global.pending && (global.tpm_failed || t - global.pending_since >= WAIT))
+        show_field(T_PASSWORD, 0, "");
+
+    if (global.top_t < MOVE) {
+        global.top_t++;
+        global.block_top = global.top_from + (global.top_to - global.top_from) * ease(global.top_t / MOVE);
+        place_block();
+    }
+    # the glow breathes with the ring. It is big and slow: redrawing it
+    # every third refresh looks the same and costs a third
+    if (t - Math.Int(t / 3) * 3 == 0)
+        global.glow.sprite.SetOpacity(0.55 + 0.35 * (0.5 + 0.5 * Math.Sin(t / RING_FRAMES * 2 * Math.Pi)));
+    draw_ring(t);
+
+    if (global.asking) {
+        # wrong password: 6 px, twice, in 250 ms
+        s = (t - global.shake_t) / MOVE;
+        if (s >= 0 && s < 1) global.shake = 6 * Math.Sin(s * 4 * Math.Pi);
+        else global.shake = 0;
+        global.ask.box.SetX(global.field_x + global.shake);
+        draw_bullets(global.shown, global.entry_text);
+        update_note();
+    }
+}
+Plymouth.SetRefreshFunction(refresh);
+# a quit that keeps the picture up (--retain-splash) should not keep a
+# ring that stopped turning, nor an eye stopped on its way
+fun quit() {
+    hand_off();
+    snap_block();
+}
+Plymouth.SetQuitFunction(quit);

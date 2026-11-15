@@ -1,0 +1,7 @@
+#!/bin/sh
+# The Raye login screen (sddm/raye). Optional until it lands; see
+# debian/install-built.
+exec debian/install-built <<'LIST'
+? sddm/raye usr/share/sddm/themes
+? sddm/sddm-theme-raye.conf etc/sddm.conf.d
+LIST

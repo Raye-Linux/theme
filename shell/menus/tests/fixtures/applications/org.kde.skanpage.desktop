@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Skanpage
+Exec=org.kde.skanpage
+Categories=Qt;KDE;Graphics;Scanning;

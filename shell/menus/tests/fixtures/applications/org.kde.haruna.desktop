@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Haruna
+Exec=org.kde.haruna
+Categories=Qt;KDE;AudioVideo;Player;Video;TV;

@@ -1,0 +1,217 @@
+raye-theme (0.5.6~beta1) resolute; urgency=medium
+
+  * When a notification goes, the ones left slide down to their place
+    above the taskbar instead of staying where they were.
+  * In light mode the taskbar is light and its text dark: the search box,
+    the clock and the date can be read again.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Sun, 15 Nov 2026 00:29:17 +0000
+
+raye-theme (0.5.2~beta1) resolute; urgency=medium
+
+  * The boot screen says "Preparing updates" on the way down to a restart
+    that installs them, and never puts the update words back once the
+    install is over.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Fri, 13 Nov 2026 20:46:35 +0000
+
+raye-theme (0.5.1~beta1) resolute; urgency=medium
+
+  * Crisp snapping, smooth taskbar drags, tidy menus, movable Task Manager.
+  * The notification centre opens straight at its place on either screen,
+    with the whole calendar, and many notifications no longer crash it.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Fri, 13 Nov 2026 16:45:00 +0000
+
+raye-theme (0.5~beta1) resolute; urgency=medium
+
+  * The snap preview shows the dragged window itself, and Escape no
+    longer snaps a window dragged over the snap bar.
+  * Quick settings on a cable say Ethernet and keep the Wi-Fi list
+    folded; a PC without a Wi-Fi card shows no Wi-Fi at all.
+  * The boot and update screen sits in the middle of every screen, and
+    stays up until the sign-in screen draws.
+  * No disk password screen during updates when the TPM already opened
+    the disk.
+  * Ctrl+Alt+Del and the lock screen offer Update and restart and Update
+    and shut down when Raye Update has updates ready.
+  * The password prompt asks for root access, and the Win+X menu has
+    Terminal (root).
+  * Start sends Uninstall of a Windows program to Settings.
+  * Accounts that picked an accent color get the new greys too.
+  * The clock's calendar no longer shows another month's events after
+    flipping months quickly, and the animated wallpaper no longer stays
+    stopped after a long rest.
+  * The boot screen has words for going back to a restore point.
+  * In French, Quick settings is now "Paramètres rapides" everywhere.
+  * The notification center and the calendar always fit on the screen,
+    768 px laptops and second screens included: the day's events step
+    aside first, and the list scrolls.
+  * No more duplicate notification pop-ups in the top left corner during
+    the first session.
+  * The Run box knows Raye's Windows commands again.
+  * No more glow around the app in use, quick settings tiles, today's
+    date, the volume bar or Alt+Tab.
+  * A short sound plays when you change the volume with the keys, the
+    quick settings slider or the wheel on the sound icon. Holding a key or
+    dragging gives one sound at the end, not a burst, and a muted output
+    stays silent.
+  * Start rises smoothly from its very first frame, even when the window
+    is slow to appear, and pressing Start while it closes brings it back.
+  * Search results show up about 40 ms sooner as you type.
+  * Moving along the taskbar, the next tooltip shows right away; tray
+    tooltips wait half a second like the rest.
+  * The volume sound actually plays (raye-shell pulls libcanberra-pulse),
+    once per key press instead of twice.
+  * Start is ready before you open it: its panel and everything on it
+    rise together, with no empty grey frame first, and it opens just as
+    fast after a long time closed.
+  * Opening Start again right after closing it no longer uses the
+    closing motion.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Thu, 12 Nov 2026 20:42:05 +0000
+
+raye-theme (0.3~beta1) resolute; urgency=medium
+
+  * Quick settings: the arrow on Wi-Fi or Ethernet, Bluetooth and volume
+    opens a small page in the panel, a click in the middle toggles with
+    a short fill, and a right-click offers Go to settings. The panel
+    keeps one height, so it never slides under the taskbar.
+  * Calmer Raye Night and Raye Day: neutral greys, with the violet kept
+    for buttons, links and selection marks. The glow under the open app
+    follows your accent.
+  * Six new wallpapers, three dark and three light (Raye Day starts on
+    Lumen), and two animated ones. An animated wallpaper pauses under
+    maximized or full-screen windows and on battery, and after 30
+    seconds of rest it lets its video go and shows the still picture.
+  * Icons use neutral paper, graphite and metal instead of lilac greys,
+    and folders are less pastel. The first sign-in screen turns through
+    graphite tones.
+  * Icons in GTK apps and Firefox are drawn again: back, menu, search,
+    add, refresh and the status icons no longer show up empty or as
+    blobs.
+  * Window buttons are drawn as shapes, so GTK apps and Firefox show
+    minimize and close again.
+  * New pointers: a smoother busy ring, shaded pointers in both styles,
+    a real fist when you grab, a pointer for places that refuse a drop,
+    and every pointer name web pages ask for. Dragging shows the plain
+    arrow, a plus to copy and a shortcut arrow to link.
+  * Snapping a window shows where it will land under the window, not
+    over it, and dragging to a screen edge or the top draws the same
+    preview. The snap bar no longer flickers between layouts.
+  * The clock's calendar shows a dot on days with events and lists the
+    chosen day's events, with Add an event.
+  * Task Manager is pinned by default in place of System Monitor.
+  * Run opens Control Panel with "control" and Registry Editor with
+    "regedit".
+  * Files draws its own title row, with its tabs in it.
+  * The boot picture stays up until the sign-in screen, without a ring
+    stopped mid-turn, and says "Installing firmware" with the ring
+    turning instead of a percentage that stands still.
+  * Background helpers no longer load the graphics driver at sign-in,
+    about 130 MB less memory at idle. The KDE donation reminder is off.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Wed, 11 Nov 2026 13:00:33 +0000
+
+raye-theme (0.2~beta2) resolute; urgency=medium
+
+  * A Raye ring turns next to the pointer while an app starts.
+  * Dragging a window to the top of the screen shows where it will snap.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Sun, 08 Nov 2026 14:30:10 +0000
+
+raye-theme (0.2~beta1) resolute; urgency=medium
+
+  * The start screen shows the update percentage again after "Finishing
+    updates".
+  * Quick settings: a pill on the taskbar, before the clock, that opens
+    Wi-Fi, sound, brightness, Do not disturb and more; Win+P opens the
+    Project panel.
+  * Start shows your folders, most used apps and an All view; Win+X opens
+    the quick link menu on the screen in use.
+  * Notifications are drawn by the clock with plain sender names, and Esc
+    closes quick settings and the notification centre.
+  * Ctrl+Shift+Esc opens the Raye Task Manager, and Ctrl+Alt+Del has its own
+    Raye screen.
+  * A minimized window keeps its taskbar button.
+  * Apps saved from a browser keep a real icon, and a file of no known type
+    is a blank page instead of a question mark.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Sun, 08 Nov 2026 11:07:43 +0000
+
+raye-theme (0.1~dev7) resolute; urgency=medium
+
+  * Ctrl + wheel on the desktop resizes the icons, the Windows habit Plasma
+    does not have: measured on Plasma 6.6.6, the Folder view containment
+    handles no wheel event at all. It is done through Plasma's own
+    containment actions rather than a patched copy of the containment, so
+    nothing of Plasma's is forked. The desktop is found by what it is -- the
+    containment whose plugin is a Folder view -- never by its number, which
+    Plasma hands out as it makes them.
+  * The desktop layout is tested for the first time: it is the script every
+    new account runs, and the wheel block sits last and inside a try, so a
+    failure there can never cost someone their taskbar.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Wed, 04 Nov 2026 11:10:00 -0500
+
+raye-theme (0.1~dev6) resolute; urgency=medium
+
+  * Raye Night and Raye Day colour schemes, Konsole schemes and QML design
+    tokens generated from one token file; the QML tokens follow the colour
+    scheme and the accent in use, with readable text on every button state.
+  * New packages raye-style, raye-shell, raye-icon-theme, raye-cursor-theme,
+    raye-sound-theme, sddm-theme-raye and raye-polkit-agent.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Fri, 30 Oct 2026 08:20:00 +0000
+
+raye-theme (0.1~dev5) resolute; urgency=medium
+
+  * Disk password prompt on the boot screen: a field with a dot per
+    letter, in the language of the system. It never showed before,
+    its pictures were dropped as soon as they were drawn.
+  * When the TPM opens the disk, the field only shows if the chip has
+    not answered after ten seconds; no technical lines at the bottom.
+  * Taskbar like Windows 11: icons fill their button, a short centred
+    pill under each open app (violet for the active one), no more long
+    dashed line.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Thu, 29 Oct 2026 00:16:00 -0400
+
+raye-theme (0.1~dev4) resolute; urgency=medium
+
+  * fastfetch shows the Raye eye, system-wide.
+  * Terminal set up like the one people know: tabs on top, no menu bar,
+    Cascadia Mono, Raye Night colours with a bit of transparency.
+  * New grub-theme-raye: the boot menu, for machines with another system.
+  * Settings on the taskbar and Win+I open Raye Settings.
+  * The Store sits on the taskbar where Discover was.
+  * Tray tidied at first login: network, sound and battery in sight, the
+    rest under the arrow.
+  * Raye Plasma theme: translucent taskbar with blur, a short line under
+    open apps (violet for the active one) instead of a block, rounded
+    hover. Start menu shows pinned apps as a grid.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Wed, 28 Oct 2026 19:58:50 -0400
+
+raye-theme (0.1~dev3) resolute; urgency=medium
+
+  * Login screen background is the Raye wallpaper (the override file
+    was installed under the wrong name).
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Wed, 28 Oct 2026 18:34:58 -0400
+
+raye-theme (0.1~dev2) resolute; urgency=medium
+
+  * Login screen runs on Wayland, like the session.
+  * Eye centred on the boot screen and the splash.
+  * 48 px taskbar, quieter tray, Windows shortcuts.
+  * No Discover launcher on the taskbar.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Wed, 28 Oct 2026 16:51:19 -0400
+
+raye-theme (0.1~dev1) resolute; urgency=medium
+
+  * First Raye look: night wallpaper, the eye as Start button and logo,
+    a centred taskbar, the boot screen and the login splash.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Wed, 28 Oct 2026 13:45:00 -0400

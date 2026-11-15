@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+<defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="0.6"/></filter><linearGradient id="b" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="28"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E9E3F5"/></linearGradient></defs>
+<g filter="url(#s)" opacity="0.28" transform="translate(0 0.7)"><circle cx="22.4" cy="22.6" r="4.6" fill="none" stroke="#000000" stroke-width="4.5"/></g>
+<circle cx="22.4" cy="22.6" r="4.6" fill="none" stroke="#1A1028" stroke-width="4.5"/>
+<circle cx="22.4" cy="22.6" r="4.6" fill="none" stroke="url(#b)" stroke-width="2.3"/>
+<path d="M18.42 24.9 A4.6 4.6 0 0 1 18.24 24.56" fill="none" stroke="#7B3CFF" stroke-width="1.79" stroke-linecap="round"/>
+<path d="M18.24 24.56 A4.6 4.6 0 0 1 18.09 24.2" fill="none" stroke="#833CFF" stroke-width="1.79" stroke-linecap="round"/>
+<path d="M18.09 24.2 A4.6 4.6 0 0 1 17.97 23.84" fill="none" stroke="#8A3DFF" stroke-width="1.79" stroke-linecap="round"/>
+<path d="M17.97 23.84 A4.6 4.6 0 0 1 17.88 23.46" fill="none" stroke="#923DFF" stroke-width="1.79" stroke-linecap="round"/>
+<path d="M17.88 23.46 A4.6 4.6 0 0 1 17.83 23.08" fill="none" stroke="#9A3EFF" stroke-width="1.79" stroke-linecap="round"/>
+<path d="M17.83 23.08 A4.6 4.6 0 0 1 17.8 22.69" fill="none" stroke="#A13EFF" stroke-width="1.79" stroke-linecap="round"/>
+<path d="M17.8 22.69 A4.6 4.6 0 0 1 17.81 22.31" fill="none" stroke="#A93FFF" stroke-width="1.79" stroke-linecap="round"/>
+<path d="M17.81 22.31 A4.6 4.6 0 0 1 17.85 21.93" fill="none" stroke="#B13FFF" stroke-width="1.79" stroke-linecap="round"/>
+<path d="M17.85 21.93 A4.6 4.6 0 0 1 17.92 21.55" fill="none" stroke="#B840FF" stroke-width="1.79" stroke-linecap="round"/>
+<path d="M17.92 21.55 A4.6 4.6 0 0 1 18.03 21.18" fill="none" stroke="#C040FF" stroke-width="1.79" stroke-linecap="round"/>
+</svg>

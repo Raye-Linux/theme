@@ -1,0 +1,308 @@
+{
+  "about": "Raye design tokens: the one source for every colour, size, type style and timing of the Raye look. tokens/generate.py writes the colour schemes, the Konsole schemes and the QML Tokens singleton from this file. Colours are sRGB hex. A colour is either \"#RRGGBB\" (opaque) or {\"color\", \"alpha\", \"solid\"}: drawn as color at alpha over the base, stored as solid where KDE needs an opaque value (computed over bg.base when not given).",
+
+  "modes": {
+    "night": { "scheme": "RayeNight", "name": "Raye Night", "name_fr": "Raye Nuit" },
+    "day":   { "scheme": "RayeDay",   "name": "Raye Day",   "name_fr": "Raye Jour" }
+  },
+
+  "color": {
+    "bg.base":              { "use": "window background, Mica fallback", "night": "#141318", "day": "#F5F4F7" },
+    "bg.secondary":         { "use": "nav pane, side areas", "night": "#100F13", "day": "#EEEDF1" },
+    "bg.tertiary":          { "use": "headers, sunken bars", "night": "#1A191F", "day": "#FAFAFB" },
+    "bg.quarternary":       { "use": "highest solid layer", "night": "#211F26", "day": "#FFFFFF" },
+    "bg.layer":             { "use": "content area beside a nav pane, View role",
+                              "night": { "color": "#FFFFFF", "alpha": 0.03, "solid": "#1B1A1F" },
+                              "day": { "color": "#FFFFFF", "alpha": 0.6, "solid": "#FBFBFC" } },
+    "bg.card":              { "use": "settings cards, list groups",
+                              "night": { "color": "#FFFFFF", "alpha": 0.05, "solid": "#212026" },
+                              "day": { "color": "#FFFFFF", "alpha": 0.85, "solid": "#FFFFFF" } },
+    "bg.card.hover":        { "night": { "color": "#FFFFFF", "alpha": 0.08, "solid": "#28272D" },
+                              "day": "#F7F7F9" },
+    "bg.tooltip":           { "use": "tooltip background (KDE Tooltip role)", "night": "#2A292F", "day": "#FFFFFF" },
+    "bg.smoke":             { "use": "behind dialogs",
+                              "night": { "color": "#000000", "alpha": 0.45 },
+                              "day": { "color": "#17151C", "alpha": 0.3 } },
+
+    "fill.control":         { "use": "button, combo, field at rest",
+                              "night": { "color": "#FFFFFF", "alpha": 0.07, "solid": "#26252B" },
+                              "day": { "color": "#FFFFFF", "alpha": 0.85, "solid": "#FDFDFD" } },
+    "fill.control.hover":   { "night": { "color": "#FFFFFF", "alpha": 0.1, "solid": "#2C2B31" },
+                              "day": "#F7F7F9" },
+    "fill.control.pressed": { "night": { "color": "#FFFFFF", "alpha": 0.04, "solid": "#201F25" },
+                              "day": "#F2F1F4" },
+    "fill.control.disabled":{ "night": "#1C1B20", "day": "#F2F1F4" },
+    "fill.input.active":    { "use": "focused text field", "night": "#100F13", "day": "#FFFFFF" },
+    "fill.subtle.hover":    { "use": "menu and list hover",
+                              "night": { "color": "#FFFFFF", "alpha": 0.06 },
+                              "day": { "color": "#17151C", "alpha": 0.04 } },
+    "fill.subtle.pressed":  { "night": { "color": "#FFFFFF", "alpha": 0.04 },
+                              "day": { "color": "#17151C", "alpha": 0.025 } },
+    "fill.subtle.selected": { "use": "selected list row, with the pill",
+                              "night": { "color": "#FFFFFF", "alpha": 0.09 },
+                              "day": { "color": "#17151C", "alpha": 0.06 } },
+
+    "stroke.control":       { "use": "1 px control border",
+                              "night": { "color": "#FFFFFF", "alpha": 0.07, "solid": "#2A292F" },
+                              "day": { "color": "#17151C", "alpha": 0.08, "solid": "#E1E0E4" } },
+    "stroke.control.bottom":{ "use": "bottom edge of a control",
+                              "night": { "color": "#FFFFFF", "alpha": 0.04 },
+                              "day": { "color": "#17151C", "alpha": 0.16, "solid": "#CFCDD4" } },
+    "stroke.strong":        { "use": "checkbox, radio, toggle border at rest (3:1)", "night": "#8B8893", "day": "#85828D" },
+    "stroke.card":          { "night": { "color": "#000000", "alpha": 0.2 },
+                              "day": { "color": "#17151C", "alpha": 0.07 } },
+    "stroke.surface":       { "use": "window and flyout outline",
+                              "night": { "color": "#FFFFFF", "alpha": 0.09 },
+                              "day": { "color": "#17151C", "alpha": 0.1 } },
+    "stroke.divider":       { "use": "separators",
+                              "night": { "color": "#FFFFFF", "alpha": 0.08 },
+                              "day": { "color": "#17151C", "alpha": 0.08 } },
+
+    "text.primary":         { "night": "#F1F0F4", "day": "#17151C" },
+    "text.secondary":       { "night": "#B5B3BC", "day": "#54525B" },
+    "text.tertiary":        { "use": "placeholders, inactive title; a shade past the first draft so placeholders keep 4.5:1, also on a hovered control", "night": "#97949F", "day": "#6C6975" },
+    "text.disabled":        { "night": "#5D5B64", "day": "#AAA8B0" },
+    "text.onAccent":        { "night": "#FFFFFF", "day": "#FFFFFF" },
+
+    "accent":               { "use": "fills; the user can change it, the next four follow", "night": "#7B3CFF", "day": "#7B3CFF" },
+    "accent.hover":         { "use": "night a touch deeper than 12 % toward white, so white text keeps 4.5:1", "night": "#8950FF", "day": "#6C2FF0" },
+    "accent.pressed":       { "night": "#6A2FE6", "day": "#5F27D6" },
+    "accent.text":          { "use": "links, accent text, checked glyphs on a plain background", "night": "#B48CFF", "day": "#6A2FE6" },
+    "accent.disabled":      { "night": "#3A2A5E", "day": "#C9B8F2" },
+    "link.visited":         { "night": "#D3A6FF", "day": "#8A35C8" },
+
+    "glow":                 { "use": "focus and primary glow, Start hover",
+                              "night": { "color": "#7B3CFF", "alpha": 0.22 },
+                              "day": { "color": "#7B3CFF", "alpha": 0.14 } },
+    "edge.lit":             { "use": "1 px top inner highlight of an accent button",
+                              "night": { "color": "#FFFFFF", "alpha": 0.12 },
+                              "day":   { "color": "#FFFFFF", "alpha": 0.12 } },
+    "focus.outer":          { "use": "2 px focus ring", "night": "#F1F0F4", "day": "#17151C" },
+    "focus.inner":          { "use": "1 px inner ring",
+                              "night": { "color": "#000000", "alpha": 0.70 },
+                              "day":   { "color": "#FFFFFF", "alpha": 0.70 } },
+
+    "status.critical":      { "use": "errors, battery critical", "night": "#FF6B85", "day": "#C4264B" },
+    "status.caution":       { "use": "warnings; day a shade deeper than the first draft so it still holds 4.5:1 on bg.secondary, the darkest day surface", "night": "#FFC857", "day": "#945E00" },
+    "status.success":       { "night": "#5FE0A1", "day": "#0E7A47" },
+    "status.info":          { "night": "#8FB8FF", "day": "#2F5FC9" },
+
+    "caption.close":        { "use": "close button hover, white glyph", "night": "#E5334F", "day": "#E5334F" },
+    "caption.close.pressed":{ "night": "#C22A44", "day": "#C22A44" },
+
+    "acrylic.tint":         { "use": "menus, popups, Start, tray, OSD",
+                              "night": { "color": "#1B1A20", "alpha": 0.8 },
+                              "day": { "color": "#FAFAFB", "alpha": 0.82 } },
+    "acrylic.taskbar":      { "use": "taskbar; its SVG is painted with the Window background of the scheme, so it is light in Day and the shell's taskbar text follows",
+                              "night": { "color": "#131217", "alpha": 0.86 },
+                              "day": { "color": "#F5F4F7", "alpha": 0.86 } },
+    "shadow":               { "use": "colour of shadows", "night": "#000000", "day": "#17151C" },
+
+    "selection.inactive":   { "use": "secondary text on the accent; white on the violet is 5.34:1, so every tint on it sits close to white to keep 4.5:1 - the hue is a hint, not a colour", "night": "#F0EAFF", "day": "#F0EAFF" },
+    "selection.visited":    { "use": "a visited link on a selected row", "night": "#F2EAFF", "day": "#F2EAFF" },
+    "selection.negative":   { "night": "#FFE8EC", "day": "#FFE8EC" },
+    "selection.neutral":    { "night": "#FFEBC0", "day": "#FFEBC0" },
+    "selection.positive":   { "night": "#CFF6E0", "day": "#CFF6E0" }
+  },
+
+  "brand": {
+    "about": "Mode-independent Raye colours for full-screen pictures (installer, boot, login backdrops).",
+    "violet": "#7B3CFF",
+    "magenta": "#C040FF",
+    "night.from": "#0E0A17",
+    "night.to": "#1A1028",
+    "crash": "#2A1052"
+  },
+
+  "accent_rule": {
+    "about": "How a user-picked accent gives its other shades, at run time (the Qt style, Tokens.qml). The default accent keeps the hand-tuned values of the colour table.",
+    "default": "#7B3CFF",
+    "unthemed": { "about": "Qt's own palette and Plasma's built-in one: what a program sees with no colour scheme written out. Raye never ships them, so Tokens.qml paints Raye Night with the default accent instead.",
+                  "window": ["#EFEFEF", "#EFF0F1"], "highlight": ["#308CC6", "#3DAEE9"] },
+    "hover":   { "night": { "toward": "#FFFFFF", "amount": 0.12 }, "day": { "toward": "#000000", "amount": 0.12 } },
+    "pressed": { "night": { "toward": "#000000", "amount": 0.12 }, "day": { "toward": "#000000", "amount": 0.24 } },
+    "text":    { "about": "Accent text and links are lifted past AA: on violet-tinted surfaces the colour itself eats legibility, so the floor is 7:1 on night and 6:1 on day, which is where the table's own shades sit.",
+                 "on": "bg.base", "step": 0.02,
+                 "night": { "toward": "#FFFFFF", "min_contrast": 7.0 },
+                 "day":   { "toward": "#000000", "min_contrast": 6.0 } },
+    "disabled": { "about": "The accent at alpha over the surface, then moved toward its own grey: a disabled fill reads as greyed out, not as a darker accent.",
+                  "over": "bg.base", "alpha": 0.35, "desaturate": 0.30 },
+    "on_accent": { "about": "White or dark text, whichever keeps the ratio on the accent, its hover and its pressed shade together. When neither does, hover and pressed are moved back toward the accent until the text holds (or as far as the accent itself allows); a pressed shade left with less than half its change goes the other way (white for black), and a hover left with less than half its change goes the pressed way at half the pressed change, so every state still shows.",
+                   "light": "#FFFFFF", "dark": "#17151C", "min_contrast": 4.5, "back_off_step": 0.005 },
+    "selection": { "about": "The five tinted foregrounds of a selected row, on the selection itself. A fraction toward a target guarantees NO ratio -- it only happened to land well on the violet it was tuned for -- so the tint's LIGHTNESS is walked until the WCAG minimum holds on BOTH selection backgrounds at once, hue and saturation untouched. It stops at white or at the dark text when the ratio cannot be reached, which is only on an accent no text colour holds 4.5:1 on; there the floor is what the best of the two text colours gets, so a tint is never worse than the readable ceiling of its own background. Tints go the way text.onAccent went, so every foreground of a selected row sits on the same side.",
+                   "on": ["accent", "accent.pressed"], "min_contrast": 4.5, "step": 0.005,
+                   "hue": { "about": "\"accent\": the tint is a hint of the accent, so it starts where the table puts it between the text on the accent and the accent itself, and carries the accent's hue. \"own\": the token keeps its own hue, because red, amber and green are SIGNALS -- a negative that reads as the accent says nothing.",
+                            "selection.inactive": "accent", "selection.visited": "accent",
+                            "selection.negative": "own", "selection.neutral": "own",
+                            "selection.positive": "own" } }
+  },
+
+  "contrast": {
+    "about": "WCAG 2 pairs the tests hold every mode to: [foreground, background, minimum ratio].",
+    "pairs": [
+      ["text.primary",   "bg.base", 4.5], ["text.primary",   "bg.secondary", 4.5], ["text.primary",   "bg.tertiary", 4.5],
+      ["text.primary",   "bg.quarternary", 4.5], ["text.primary", "bg.layer", 4.5], ["text.primary", "bg.card", 4.5],
+      ["text.primary",   "bg.card.hover", 4.5], ["text.primary", "bg.tooltip", 4.5], ["text.primary", "fill.control", 4.5],
+      ["text.primary",   "fill.control.hover", 4.5], ["text.primary", "fill.input.active", 4.5],
+      ["text.secondary", "bg.base", 4.5], ["text.secondary", "bg.secondary", 4.5], ["text.secondary", "bg.tertiary", 4.5],
+      ["text.secondary", "bg.quarternary", 4.5], ["text.secondary", "bg.layer", 4.5], ["text.secondary", "bg.card", 4.5],
+      ["text.secondary", "bg.tooltip", 4.5], ["text.secondary", "fill.control", 4.5],
+      ["text.secondary", "bg.card.hover", 4.5], ["text.secondary", "fill.control.hover", 4.5],
+      ["text.tertiary",  "bg.base", 4.5], ["text.tertiary", "bg.secondary", 4.5], ["text.tertiary", "bg.tertiary", 4.5],
+      ["text.tertiary",  "bg.quarternary", 4.5], ["text.tertiary", "bg.layer", 4.5], ["text.tertiary", "bg.card", 4.5],
+      ["text.tertiary",  "fill.control", 4.5], ["text.tertiary", "fill.input.active", 4.5],
+      ["text.tertiary",  "bg.card.hover", 4.5], ["text.tertiary", "fill.control.hover", 4.5], ["text.tertiary", "bg.tooltip", 4.5],
+      ["text.primary",   "fill.subtle.selected", 4.5], ["text.secondary", "fill.subtle.selected", 4.5],
+      ["accent.text",    "bg.base", 4.5], ["accent.text", "bg.layer", 4.5], ["accent.text", "bg.card", 4.5],
+      ["link.visited",   "bg.base", 4.5],
+      ["text.onAccent",  "accent", 4.5], ["text.onAccent", "accent.hover", 4.5], ["text.onAccent", "accent.pressed", 4.5],
+      ["selection.inactive", "accent", 4.5], ["selection.inactive", "accent.pressed", 4.5],
+      ["selection.visited",  "accent", 4.5], ["selection.visited",  "accent.pressed", 4.5],
+      ["selection.negative", "accent", 4.5], ["selection.negative", "accent.pressed", 4.5],
+      ["selection.neutral",  "accent", 4.5], ["selection.neutral",  "accent.pressed", 4.5],
+      ["selection.positive", "accent", 4.5], ["selection.positive", "accent.pressed", 4.5],
+      ["stroke.strong",  "bg.base", 3.0], ["stroke.strong", "bg.layer", 3.0], ["stroke.strong", "fill.control.pressed", 3.0],
+      ["accent",         "bg.base", 3.0], ["accent", "bg.layer", 3.0],
+      ["focus.outer",    "bg.base", 3.0],
+      ["status.critical","bg.base", 4.5], ["status.caution", "bg.base", 4.5], ["status.success", "bg.base", 4.5], ["status.info", "bg.base", 4.5],
+      ["status.critical","bg.secondary", 4.5], ["status.caution", "bg.secondary", 4.5], ["status.success", "bg.secondary", 4.5], ["status.info", "bg.secondary", 4.5],
+      ["text.primary",   "caption.close", 3.0]
+    ]
+  },
+
+  "kde": {
+    "about": "Colour scheme groups (section 3.2): each key names a colour token, a group can start from another one, \"mode\": \"night\" uses night values in both schemes.",
+    "groups": {
+      "Window": {
+        "BackgroundNormal": "bg.base", "BackgroundAlternate": "bg.secondary",
+        "ForegroundNormal": "text.primary", "ForegroundInactive": "text.secondary",
+        "ForegroundActive": "accent.text", "ForegroundLink": "accent.text", "ForegroundVisited": "link.visited",
+        "ForegroundNegative": "status.critical", "ForegroundNeutral": "status.caution", "ForegroundPositive": "status.success",
+        "DecorationFocus": "accent", "DecorationHover": "accent.hover"
+      },
+      "View":      { "from": "Window", "BackgroundNormal": "bg.layer", "BackgroundAlternate": "bg.card" },
+      "Button":    { "from": "Window", "BackgroundNormal": "fill.control", "BackgroundAlternate": "fill.control.hover" },
+      "Selection": { "from": "Window",
+        "BackgroundNormal": "accent", "BackgroundAlternate": "accent.pressed",
+        "ForegroundNormal": "text.onAccent", "ForegroundInactive": "selection.inactive",
+        "ForegroundActive": "#FFFFFF", "ForegroundLink": "#FFFFFF", "ForegroundVisited": "selection.visited",
+        "ForegroundNegative": "selection.negative", "ForegroundNeutral": "selection.neutral", "ForegroundPositive": "selection.positive" },
+      "Tooltip":   { "from": "Window", "BackgroundNormal": "bg.tooltip", "BackgroundAlternate": "bg.tertiary" },
+      "Complementary": { "from": "Window", "mode": "night" },
+      "Header":    { "from": "Window" },
+      "Header][Inactive": { "from": "Header", "ForegroundNormal": "text.tertiary", "ForegroundInactive": "text.tertiary" }
+    },
+    "wm": {
+      "activeBackground": "bg.base", "activeBlend": "bg.base", "activeForeground": "text.primary",
+      "inactiveBackground": "bg.base", "inactiveBlend": "bg.base", "inactiveForeground": "text.tertiary"
+    },
+    "effects": {
+      "ColorEffects:Disabled": { "Color": "bg.base", "ColorAmount": 0, "ColorEffect": 0, "ContrastAmount": 0.55,
+                                 "ContrastEffect": 1, "IntensityAmount": 0, "IntensityEffect": 0 },
+      "ColorEffects:Inactive": { "ChangeSelectionColor": false, "Color": "bg.base", "ColorAmount": 0, "ColorEffect": 0,
+                                 "ContrastAmount": 0, "ContrastEffect": 0, "Enable": false,
+                                 "IntensityAmount": 0, "IntensityEffect": 0 }
+    },
+    "general": { "shadeSortColumn": true, "TitlebarIsAccentColored": false, "accentActiveTitlebar": false },
+    "contrast": 4,
+    "kdeglobals": {
+      "about": "Lines for config/kdeglobals (owned by the look-and-feel package), kept here so they match the schemes.",
+      "General": { "accentActiveTitlebar": false },
+      "KDE": { "AnimationDurationFactor": 1 }
+    }
+  },
+
+  "terminal": {
+    "about": "Konsole colour schemes. ANSI colours 0-7, each with an intense shade; faint = normal.",
+    "night": {
+      "background": "#0E0D11", "background.intense": "#16151A",
+      "foreground": "#E5E3E9", "foreground.intense": "#FFFFFF",
+      "opacity": 0.92, "blur": true,
+      "ansi": ["#1D1C22", "#F0546E", "#50D68C", "#F0BE5A", "#6E8CFF", "#B96EFF", "#46D2DC", "#C9C7CE"],
+      "ansi.intense": ["#57555E", "#FF788C", "#78ECAA", "#FFD682", "#96AFFF", "#D6A0FF", "#78E6F0", "#F5F4F7"]
+    },
+    "day": {
+      "about": "On a light background the bold shades go darker, not lighter, or bold text would wash out.",
+      "background": "#FAFAFB", "background.intense": "#EEEDF1",
+      "foreground": "#17151C", "foreground.intense": "#000000",
+      "opacity": 0.96, "blur": true,
+      "ansi": ["#17151C", "#C4264B", "#0E7C48", "#9A6200", "#2F5FC9", "#8A2FD6", "#0B7480", "#85828D"],
+      "ansi.intense": ["#54525B", "#A11F3E", "#0B663B", "#7E5000", "#274EA5", "#7127AF", "#095F69", "#6C6975"]
+    }
+  },
+
+  "radius": {
+    "control": 4, "overlay": 8, "window": 8, "tooltip": 4, "small": 2, "navPill": 1.5, "maximized": 0,
+    "about": "pill = height / 2 (toggle track); overlay: menus, popups, dialogs, Start, quick settings, notifications, OSD, cards on a page"
+  },
+
+  "spacing": { "s1": 2, "s2": 4, "s3": 8, "s4": 12, "s5": 16, "s6": 20, "s7": 24, "s8": 32, "s9": 36, "s10": 48, "s11": 56 },
+
+  "size": {
+    "control.height": 32, "control.compact": 24,
+    "checkbox": 20, "radio": 20,
+    "toggle.width": 40, "toggle.height": 20, "toggle.knob": 12, "toggle.knob.hover": 14,
+    "toggle.knob.pressed.width": 17, "toggle.knob.pressed.height": 14,
+    "slider.track": 4, "slider.thumb": 20, "slider.thumb.inner": 12, "slider.thumb.inner.hover": 14, "slider.thumb.inner.pressed": 10,
+    "radio.dot": 12, "radio.dot.hover": 14, "radio.dot.pressed": 10,
+    "progress": 3,
+    "menu.item": 32, "menu.item.shell": 36, "menu.padding": 4,
+    "list.item": 40, "tree.item": 32, "nav.item": 36,
+    "pill.width": 3, "pill.height": 16,
+    "titlebar": 32, "caption.button.width": 46, "caption.button.height": 32,
+    "tooltip.padding.left": 8, "tooltip.padding.top": 5, "tooltip.padding.right": 8, "tooltip.padding.bottom": 7,
+    "tooltip.maxWidth": 320,
+    "scrollbar.thin": 2, "scrollbar.expanded": 12, "scrollbar.thumb": 6, "scrollbar.thumb.radius": 3,
+    "focus.outer": 2, "focus.inner": 1, "focus.glow": 2,
+    "icon.menu": 16, "icon.list": 20, "icon.nav.large": 24, "icon.multiline": 32, "icon.tile": 48, "icon.hero": 64
+  },
+
+  "elevation": {
+    "about": "Shadow per surface: blur radius px, y offset px, opacity of the shadow colour. Every floating surface and window also gets a 1 px stroke.surface outline. Card and control: no shadow (strokes only).",
+    "window.active":   { "night": [56, 18, 0.50], "day": [40, 16, 0.22] },
+    "window.inactive": { "night": [28, 8, 0.30],  "day": [22, 6, 0.14] },
+    "dialog":          { "night": [56, 18, 0.50], "day": [40, 16, 0.22] },
+    "flyout":          { "night": [28, 10, 0.40], "day": [20, 8, 0.16] },
+    "tooltip":         { "night": [12, 4, 0.30],  "day": [10, 3, 0.12] },
+    "card":            { "night": [0, 0, 0],      "day": [0, 0, 0] },
+    "control":         { "night": [0, 0, 0],      "day": [0, 0, 0] }
+  },
+
+  "type": {
+    "about": "px at 96 dpi (1 pt = 1.333 px); line heights px; weights CSS. KDE font lines go in kdeglobals.",
+    "caption":     { "px": 12,    "line": 16, "weight": 400, "family": "Inter" },
+    "body":        { "px": 13.33, "line": 20, "weight": 400, "family": "Inter" },
+    "bodyStrong":  { "px": 13.33, "line": 20, "weight": 600, "family": "Inter" },
+    "bodyLarge":   { "px": 17,    "line": 24, "weight": 400, "family": "Inter" },
+    "subtitle":    { "px": 19,    "line": 26, "weight": 600, "family": "Inter" },
+    "title":       { "px": 27,    "line": 34, "weight": 600, "family": "Inter Display" },
+    "titleLarge":  { "px": 38,    "line": 48, "weight": 600, "family": "Inter Display" },
+    "display":     { "px": 64,    "line": 80, "weight": 600, "family": "Inter Display" },
+    "windowTitle": { "px": 12,    "line": 16, "weight": 500, "family": "Inter" },
+    "mono":        { "px": 13.33, "line": 20, "weight": 400, "family": "Cascadia Mono" },
+    "kde": {
+      "font": "Inter,10", "menuFont": "Inter,10", "toolBarFont": "Inter,9", "smallestReadableFont": "Inter,9",
+      "activeFont": "Inter,9,-1,5,500", "fixed": "Cascadia Mono,10"
+    }
+  },
+
+  "motion": {
+    "about": "Durations ms. Curves are Qt easing names; bezier is for QML Easing.Bezier. Scaled by the user's animation speed.",
+    "faster": { "ms": 83,  "curve": "Linear" },
+    "fast":   { "ms": 167, "curve": "OutCubic", "exit": "InCubic" },
+    "normal": { "ms": 250, "curve": "OutQuint", "bezier": [0, 0, 0, 1, 1, 1] },
+    "slow":   { "ms": 333, "curve": "OutQuint", "bezier": [0, 0, 0, 1, 1, 1] },
+    "exit":   { "ms": 167, "curve": "InCubic", "short": 83, "short.curve": "Linear" },
+    "kwin": {
+      "about": "What config/kwinrc sets (owned by the motion package).",
+      "Effect-scale": { "Duration": 200, "InScale": 0.94, "OutScale": 0.96 },
+      "Effect-slidingpopups": { "SlideInTime": 250, "SlideOutTime": 167 },
+      "raye_popups": { "in": 167, "in.curve": "OutQuint", "slide": 6, "out": 83, "out.curve": "Linear" },
+      "maximize": 250, "minimize": 250,
+      "Effect-blur": { "BlurStrength": 11, "NoiseStrength": 4 },
+      "contrast": { "contrast": 0.2, "intensity": 1.1, "saturation": 1.4 },
+      "mica.alpha": { "night": 0.90, "day": 0.88 },
+      "menu.opacity": 0.88
+    }
+  }
+}

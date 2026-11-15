@@ -1,0 +1,6 @@
+File=raye.kcfg
+ClassName=StyleConfigData
+NameSpace=Raye
+Singleton=true
+Mutators=true
+GlobalEnums=true

@@ -1,0 +1,72 @@
+#!/bin/sh
+# Raye's global shortcuts (Win+R, Win+., Win+Shift+S...) put in the
+# account's own kglobalshortcutsrc, before the shortcut daemon starts.
+#
+# The daemon reads only that file, never /etc/xdg: a default left there
+# does nothing, and at the first sign-in Spectacle's Win+R (from its
+# .desktop file) was given out first, the Run box got an empty shortcut.
+#
+# Runs once per version of the defaults. A shortcut the person changed
+# is left alone: a missing entry is filled in, a KWin entry still at its
+# stock value is replaced, and the empty entry the clash above leaves is
+# fixed.
+#   raye-shortcut-defaults [defaults file] [kglobalshortcutsrc]
+set -u
+defaults=${1:-/usr/share/raye/kglobalshortcutsrc}
+file=${2:-${XDG_CONFIG_HOME:-$HOME/.config}/kglobalshortcutsrc}
+stamp=${XDG_STATE_HOME:-$HOME/.local/state}/raye/shortcut-defaults
+[ -r "$defaults" ] || exit 0
+
+version=$(md5sum "$defaults" | cut -d' ' -f1)
+[ "$(cat "$stamp" 2>/dev/null)" = "$version" ] && exit 0
+
+unset="$(printf '\001')unset"
+mkdir -p "$(dirname "$file")"
+
+# "group1/group2 key" for every entry of the defaults
+awk '
+    /^[ \t]*(#|$)/ { next }
+    /^\[/ { g = $0; gsub(/^\[|\]$/, "", g); gsub(/\]\[/, "/", g); next }
+    /=/ { k = $0; sub(/=.*/, "", k); print g " " k }
+' "$defaults" | while read -r groups key; do
+    set --
+    old_ifs=$IFS
+    IFS=/
+    for g in $groups; do set -- "$@" --group "$g"; done
+    IFS=$old_ifs
+    # absolute paths: no cascading, only what each file itself says
+    want=$(kreadconfig6 --file "$defaults" "$@" --key "$key")
+    have=$(kreadconfig6 --file "$file" "$@" --key "$key" --default "$unset")
+    # a two-key entry emptied by a clash reads back as a lone tab
+    blank=$(printf '%s' "$have" | tr -d ' \t')
+    case "$1 $2 $blank" in
+        "--group services $unset" | "--group services ") write=1 ;;
+        "--group services "*) write= ;;
+        *)
+            # KWin's own entries: "active,default,name"; untouched when
+            # the active shortcut is still the default one
+            active=${have%%,*}
+            rest=${have#*,}
+            stock=${rest%%,*}
+            # An entry Raye sets to "none,<key>" takes <key> back from a
+            # Plasma action (Win+A from the activity switcher): it is
+            # written while that action still holds the very key.
+            want_active=${want%%,*}
+            want_rest=${want#*,}
+            freed=${want_rest%%,*}
+            if [ "$have" = "$unset" ] || { [ "$have" != "$rest" ] && [ "$active" = "$stock" ]; }; then
+                write=1
+            elif [ "$have" != "$rest" ] && [ -z "$active" ]; then
+                # empty, not "none": left by a clash, never by the person
+                write=1
+            elif [ "$want_active" = none ] && [ -n "$active" ] && [ "$active" = "$freed" ]; then
+                write=1
+            else
+                write=
+            fi ;;
+    esac
+    [ -n "$write" ] && kwriteconfig6 --file "$file" "$@" --key "$key" -- "$want"
+done
+
+mkdir -p "$(dirname "$stamp")"
+echo "$version" > "$stamp"

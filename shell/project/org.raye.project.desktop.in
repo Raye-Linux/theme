@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Project
+Name[fr]=Projeter
+Comment=Choose how to use your screens
+Comment[fr]=Choisir comment utiliser vos écrans
+Exec=@KDE_INSTALL_FULL_BINDIR@/raye-project
+Icon=video-display
+NoDisplay=true
+StartupNotify=false
+X-KDE-Wayland-Interfaces=zwlr_layer_shell_v1
+# Win+P and the display key of a laptop.
+X-KDE-Shortcuts=Display,Meta+P

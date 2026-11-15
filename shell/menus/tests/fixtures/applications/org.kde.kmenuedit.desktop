@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Menu Editor
+Exec=org.kde.kmenuedit
+Categories=Qt;KDE;System;
+OnlyShowIn=KDE;

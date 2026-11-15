@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+
+# Loads the Inter fonts of the Raye boot menu. They are kept out of the
+# theme folder itself because update-grub loads every .pf2 found there
+# without condition, and under Secure Boot GRUB refuses fonts read from
+# disk with an error line on screen at every boot. Here each one is only
+# loaded when Secure Boot is off ($lockdown is unset); with it on, the
+# theme falls back to the Unifont built into GRUB.
+
+prefix="/usr"
+exec_prefix="/usr"
+datarootdir="/usr/share"
+
+. "$pkgdatadir/grub-mkconfig_lib"
+
+[ -n "$GRUB_THEME" ] || exit 0
+fonts="$(dirname "$GRUB_THEME")/fonts"
+set -- "$fonts"/*.pf2
+[ -f "$1" ] || exit 0
+is_path_readable_by_grub "$1" || exit 0
+
+prepare_grub_to_access_device $(${grub_probe} --target=device "$1")
+echo 'if [ x$lockdown != xy ]; then'
+for font; do
+    echo "  loadfont (\$root)$(make_system_path_relative_to_its_root "$font")"
+done
+echo 'fi'

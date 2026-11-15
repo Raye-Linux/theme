@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Gwenview
+Exec=org.kde.gwenview
+Categories=Qt;KDE;Graphics;Viewer;Photography;

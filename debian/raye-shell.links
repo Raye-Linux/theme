@@ -1,0 +1,1 @@
+usr/lib/systemd/user/raye-app-icons.path usr/lib/systemd/user/default.target.wants/raye-app-icons.path

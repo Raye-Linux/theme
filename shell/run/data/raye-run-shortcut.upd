@@ -1,0 +1,5 @@
+# Win+R for the Run box: see raye-run-shortcut.sh
+Version=6
+
+Id=raye-run-shortcut-1
+Script=raye-run-shortcut.sh

@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=A core tool of another desktop
+Exec=example-core-tool
+Categories=Core;

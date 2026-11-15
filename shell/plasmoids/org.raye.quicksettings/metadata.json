@@ -1,0 +1,16 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [ { "Name": "Raye Linux" } ],
+        "Category": "System Information",
+        "Description": "Network, volume and battery, with quick settings a click away",
+        "Description[fr]": "Réseau, volume et batterie, avec les paramètres rapides à portée de clic",
+        "Icon": "preferences-system",
+        "Id": "org.raye.quicksettings",
+        "License": "GPL-3.0-or-later",
+        "Name": "Quick settings",
+        "Name[fr]": "Paramètres rapides",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

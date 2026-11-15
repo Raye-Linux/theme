@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=KWrite
+Exec=org.kde.kwrite
+Categories=Qt;KDE;Utility;TextEditor;

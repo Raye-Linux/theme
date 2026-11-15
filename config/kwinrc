@@ -1,0 +1,87 @@
+# KWin defaults for every user (installed to /etc/xdg/kwinrc). A user's
+# own ~/.config/kwinrc wins key by key, so these only decide what a new
+# account starts with. Settings and the shell write the user's file.
+#
+# Motion follows Windows 11: windows open in 200 ms from 94 %, popups
+# from the taskbar slide in 250 ms and leave in 167 ms, menus and
+# tooltips fade in 167 ms and close at once (raye_popups). The user's
+# "Animation speed" (kdeglobals AnimationDurationFactor) scales all of
+# it, and 0 turns it off.
+
+[Plugins]
+scaleEnabled=true
+glideEnabled=false
+squashEnabled=true
+magiclampEnabled=false
+slideEnabled=true
+slidingpopupsEnabled=true
+blurEnabled=true
+contrastEnabled=true
+zoomEnabled=true
+# Raye's own menu and tooltip fade replaces the stock one
+fadingpopupsEnabled=false
+raye_popupsEnabled=true
+# the stock maximise stretches a picture of the old window over the new
+# one, soft and doubled for 250 ms: Raye's opens the real window out
+maximizeEnabled=false
+raye_maximizeEnabled=true
+# shell scripts: snap layouts, and Win+M to minimise everything
+org.raye.snapEnabled=true
+minimizeallEnabled=true
+
+# Four lines were removed here in November 2026 because, measured, none of
+# them did anything:
+#   org.raye.desktoppill, org.raye.desktops, org.raye.gestures -- no Raye
+#     repository ships a plugin with those ids, and KWin ignores an id it
+#     does not know without a word. They are still wanted (they are lots in
+#     the design notes), and the line comes back with the plugin.
+#   desktopchangeosdEnabled=false -- KWin reads a plugin's default from its
+#     metadata, and KPluginMetaData returns false when EnabledByDefault is
+#     absent, which is the case for desktopchangeosd. The line turned off
+#     something already off, while reading as though Raye had replaced it.
+# tests/config/test_kwin_plugins.py fails if any of that comes back.
+
+[Effect-scale]
+Duration=200
+InScale=0.94
+OutScale=0.96
+
+[Effect-slidingpopups]
+SlideInTime=250
+SlideOutTime=167
+
+# Acrylic: blur with a little grain
+[Effect-blur]
+BlurStrength=11
+NoiseStrength=4
+
+# Task view opens from the taskbar button and Win+Tab, not from a corner
+[Effect-overview]
+BorderActivate=9
+
+# Alt+Tab: Raye's switcher, shown after 90 ms, other windows not dimmed
+[TabBox]
+LayoutName=raye
+DelayTime=90
+HighlightWindows=false
+ShowDesktopMode=0
+
+# Drag a window to the top to maximise it, to a side or corner to snap it
+[Windows]
+ElectricBorderMaximize=true
+ElectricBorderTiling=true
+# New windows open centred on the screen in use (see kwinrulesrc)
+Placement=Centered
+
+# The outline of a window dragged to an edge or the top is Raye's, the same
+# sheet as the snap bar's preview (shipped with the snap script)
+[Outline]
+QmlPath=kwin-wayland/scripts/org.raye.snap/contents/ui/Outline.qml
+
+# The Raye title bar for every new account, the same as the Raye Night
+# look-and-feel says: buttons on the right only.
+[org.kde.kdecoration2]
+library=org.raye.decoration
+theme=Raye
+ButtonsOnLeft=
+ButtonsOnRight=IAX

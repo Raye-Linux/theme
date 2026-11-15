@@ -1,0 +1,16 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [ { "Name": "Raye Linux" } ],
+        "Category": "System Information",
+        "Description": "Checks that the shell test harness works",
+        "Description[fr]": "Vérifie que le banc de test du shell fonctionne",
+        "Icon": "raye-eye",
+        "Id": "org.raye.fixture.good",
+        "License": "GPL-2.0-or-later",
+        "Name": "Load test",
+        "Name[fr]": "Test de chargement",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Clock
+Exec=org.kde.kclock
+Categories=Qt;KDE;Utility;

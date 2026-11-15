@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [ { "Name": "Raye Linux" } ],
+        "Category": "Application Launchers",
+        "Description": "Start, Search and Task view on the taskbar",
+        "Description[fr]": "Démarrer, Rechercher et la vue des tâches dans la barre des tâches",
+        "Icon": "raye-eye",
+        "Id": "org.raye.start",
+        "License": "GPL-3.0-or-later",
+        "Name": "Start",
+        "Name[fr]": "Démarrer",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-Provides": [ "org.kde.plasma.launchermenu" ]
+}

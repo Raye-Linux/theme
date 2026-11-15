@@ -1,0 +1,7 @@
+[Unit]
+Description=Raye taskbars on every screen
+After=plasma-plasmashell.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/raye-taskbar-sync --settle

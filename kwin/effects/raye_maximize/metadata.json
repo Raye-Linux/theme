@@ -1,0 +1,20 @@
+{
+    "KPackageStructure": "KWin/Effect",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Raye Linux"
+            }
+        ],
+        "Category": "Window Management",
+        "Description": "A window being maximised opens out to its new size, always sharp",
+        "Description[fr]": "Une fenêtre qu'on agrandit s'ouvre jusqu'à sa nouvelle taille, toujours nette",
+        "EnabledByDefault": true,
+        "Id": "raye_maximize",
+        "License": "GPL",
+        "Name": "Raye maximise",
+        "Name[fr]": "Agrandissement Raye"
+    },
+    "X-KDE-Ordering": 60,
+    "X-Plasma-API": "javascript"
+}

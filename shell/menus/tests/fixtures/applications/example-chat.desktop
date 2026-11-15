@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=A chat app
+Exec=example-chat
+Categories=Network;Chat;InstantMessaging;

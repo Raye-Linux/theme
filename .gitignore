@@ -1,0 +1,11 @@
+out/
+*.deb
+*.buildinfo
+*.changes
+debian/.debhelper/
+debian/files
+debian/*.substvars
+debian/*/
+!debian/source/
+grub/raye/*.pf2
+__pycache__/

@@ -1,0 +1,16 @@
+{
+    "KPlugin": {
+        "Description": "Modify the appearance of widgets",
+        "Description[fr]": "Modifier l'apparence des composants graphiques",
+        "Icon": "preferences-desktop-theme",
+        "Name": "Raye Widget Style",
+        "Name[fr]": "Style des composants graphiques de Raye",
+        "ServiceTypes": [
+            "KCModule"
+        ]
+    },
+    "X-KDE-Keywords": "raye,widget,style",
+    "X-KDE-Keywords[fr]": "raye, composant graphique, style",
+    "X-KDE-ParentApp": "kcontrol",
+    "X-KDE-Weight": 50
+}

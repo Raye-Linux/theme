@@ -1,0 +1,38 @@
+#!/bin/sh
+# The Raye desktop shell (shell/). The list is the one of the shell's
+# build tree; each part adds its files when it lands, so every line is
+# optional. See debian/install-built.
+exec debian/install-built <<'LIST'
+? usr/share/plasma/plasmoids/org.raye.*
+? usr/lib/*/qt6/qml/org/raye/shell*
+? usr/lib/*/qt6/qml/org/raye/signin
+? usr/lib/*/qt6/plugins/plasma/applets/org.raye.*
+? usr/lib/*/qt6/plugins/plasma/containmentactions/org.raye.*
+? usr/share/kwin-wayland/tabbox/raye
+usr/lib/*/qt6/plugins/kwin/effects/plugins/raye_launchfeedback.so
+? usr/share/kwin-wayland/scripts/org.raye.*
+? usr/lib/*/libexec/raye-snap-relay
+? usr/share/dbus-1/services/org.raye.Snap.service
+? usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen/*
+? usr/bin/raye-inputpanel
+? usr/bin/raye-run
+? usr/bin/raye-project
+? usr/lib/systemd/user/plasma-kscreen-osd.service.d/*
+? usr/share/kconf_update/raye-run-shortcut.*
+? usr/share/applications/org.raye.*
+? etc/xdg/rayeshellrc
+? etc/xdg/menus/raye-applications.menu
+? usr/share/desktop-directories/raye-*
+? etc/xdg/plasma-workspace/env/raye-menu.sh
+? usr/libexec/raye-taskbar-sync
+? usr/libexec/raye-taskbar-pins
+? usr/libexec/raye-taskbar-switch
+? usr/share/raye/taskbar/sync.js
+? usr/share/raye/taskbar/switch.js
+? usr/lib/systemd/user/raye-taskbar-sync.service
+? usr/libexec/raye-app-icons
+? usr/lib/systemd/user/raye-app-icons.service
+? usr/lib/systemd/user/raye-app-icons.path
+? usr/share/raye/shell/osd/*
+? usr/share/locale/*/LC_MESSAGES/raye_shell_*.mo
+LIST

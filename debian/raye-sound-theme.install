@@ -1,0 +1,6 @@
+#!/bin/sh
+# Made by art/sounds.py into sounds/raye; optional until it lands. See
+# debian/install-built.
+exec debian/install-built <<'LIST'
+? sounds/raye usr/share/sounds
+LIST

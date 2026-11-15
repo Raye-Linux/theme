@@ -1,0 +1,8 @@
+[Unit]
+Description=Raye: app entries with no working icon
+
+[Service]
+Type=oneshot
+# a browser writes the icons and the entry one after the other
+ExecStartPre=/usr/bin/sleep 2
+ExecStart=/usr/libexec/raye-app-icons

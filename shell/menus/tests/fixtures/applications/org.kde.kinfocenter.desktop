@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Info Center
+Exec=org.kde.kinfocenter
+Categories=Qt;KDE;System;Documentation;
+OnlyShowIn=KDE;

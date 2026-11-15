@@ -1,0 +1,20 @@
+{
+    "KPackageStructure": "KWin/WindowSwitcher",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "190692880+techoraye@users.noreply.github.com",
+                "Name": "techoraye"
+            }
+        ],
+        "Description": "Window thumbnails in rows on Raye acrylic, with their name and a close button",
+        "Description[fr]": "Les aperçus des fenêtres en rangées sur l’acrylique Raye, avec leur nom et un bouton pour les fermer",
+        "Icon": "preferences-system-windows-switcher-thumbnail-grid",
+        "Id": "raye",
+        "License": "GPL",
+        "Name": "Raye",
+        "Name[fr]": "Raye",
+        "Version": "1.0"
+    },
+    "X-Plasma-API": "declarativeappletscript"
+}

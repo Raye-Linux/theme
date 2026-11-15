@@ -1,0 +1,24 @@
+# Words of the Raye boot screen, English.
+# key=text. A {name} part is filled in when the screen is drawn.
+password_title=Enter the password for this disk
+recovery_hint=Forgot it? Type your 48-digit recovery key instead.
+wrong_password=That password didn't work. Try again.
+caps_lock=Caps Lock is on
+keyboard=Keyboard: {layout}
+tpm_title=This PC's security settings changed
+tpm_line1=Type the disk password or the recovery key to start Raye.
+tpm_line2=It works again on its own after the next update.
+shutdown=Shutting down
+reboot=Restarting
+updates=Working on updates  {n}%
+updates_note=Don't turn off your PC
+finishing_updates=Finishing updates
+prepare_updates=Preparing updates
+go_back=Going back to an earlier state
+go_back_failed=Couldn't go back to that restore point. Starting as usual.
+firmware=Installing firmware
+firmware_note=Don't turn off your PC. This can take a few minutes.
+firmware_of=of
+upgrade=Upgrading Raye  {n}%
+remove_usb=You can take out the USB stick now
+fsck=Scanning and repairing drive ({label})

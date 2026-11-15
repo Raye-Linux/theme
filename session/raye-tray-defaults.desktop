@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Raye tray defaults
+Exec=/usr/libexec/raye-tray-defaults
+NoDisplay=true
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2

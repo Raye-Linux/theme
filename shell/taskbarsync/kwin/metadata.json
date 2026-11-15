@@ -1,0 +1,21 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Raye Linux"
+            }
+        ],
+        "Description": "Puts a taskbar on every screen, also on screens plugged in later",
+        "Description[fr]": "Met une barre des tâches sur chaque écran, aussi sur ceux branchés plus tard",
+        "EnabledByDefault": true,
+        "Icon": "video-display",
+        "Id": "org.raye.taskbarsync",
+        "License": "GPL-3.0-or-later",
+        "Name": "Raye taskbars",
+        "Name[fr]": "Barres des tâches Raye",
+        "Version": "1.0"
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js"
+}

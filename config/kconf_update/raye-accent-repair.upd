@@ -1,0 +1,10 @@
+# Accounts made by an older Raye carry AccentColor, which makes Plasma
+# blend the accent over the scheme: see raye-accent-repair.sh
+Version=6
+
+Id=raye-accent-repair-1
+Script=raye-accent-repair.sh
+
+# 0.3 changed the greys: a picked accent's own scheme still had the old ones
+Id=raye-accent-repair-2
+Script=raye-accent-repair.sh

@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "techoraye"
+            }
+        ],
+        "Id": "Raye-Paper",
+        "License": "CC-BY-SA-4.0",
+        "Name": "Paper",
+        "Name[fr]": "Papier"
+    }
+}

@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Elisa
+Exec=org.kde.elisa
+Categories=Qt;KDE;Audio;AudioVideo
