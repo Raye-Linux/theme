@@ -553,6 +553,9 @@ private Q_SLOTS:
         QTest::newRow("open, fast right") << 1 << 140 << 17 << 4;
         QTest::newRow("open, slowly left") << 3 << -100 << 3 << 1;
         QTest::newRow("pinned, fast left") << 4 << -180 << 23 << 0;
+        // let go far past either end of the row
+        QTest::newRow("open, far past the end") << 2 << 400 << 20 << 4;
+        QTest::newRow("open, far before the start") << 2 << -400 << 20 << 0;
     }
 
     void dragToReorder()
@@ -612,6 +615,10 @@ private Q_SLOTS:
         }
         QTest::mouseRelease(v->window, Qt::LeftButton, {}, press + QPoint(travel, 0));
         QCOMPARE(calls(v.get()), QStringList{QString(u"move %1 %2"_s).arg(from).arg(to)});
+        // let go, it eases in from where it was shown, still in the row: it
+        // used to jump out to the pointer and slide back
+        const qreal landing = dragged->mapToItem(dragged->parentItem(), QPointF(0, 0)).x();
+        QVERIFY2(landing >= 0 && landing <= 4 * pitch, qPrintable(QString::number(landing)));
         // nobody slides back to the old order on the way
         for (int i = 0; i < 5; ++i) {
             if (i != from)

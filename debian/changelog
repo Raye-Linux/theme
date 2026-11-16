@@ -1,3 +1,10 @@
+raye-theme (0.5.13~beta1) resolute; urgency=medium
+
+  * Taskbar: a button let go past either end of the row no longer jumps out
+    to the pointer and slides back; it lands from where it was shown.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Mon, 16 Nov 2026 17:02:08 +0000
+
 raye-theme (0.5.12~beta1) resolute; urgency=medium
 
   * Boot screen: no more "Working on updates 0%" on the way to the restart

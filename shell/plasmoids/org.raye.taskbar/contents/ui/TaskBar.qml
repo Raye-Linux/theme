@@ -57,6 +57,8 @@ FocusScope {
     // others are already in their places; the dropped one eases from the
     // pointer into its own.
     function drop(from, dx) {
+        // from where it was shown, held in the row, not from the pointer
+        dx = Logic.clampedShift(from, dx, layout.pitch, visibleCount)
         const to = dragTo < 0 ? from : dragTo
         settling = true
         landing.stop()
