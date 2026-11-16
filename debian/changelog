@@ -1,3 +1,13 @@
+raye-theme (0.5.11~beta1) resolute; urgency=medium
+
+  * Taskbar: a button dragged to a new place stays in the row of apps; it
+    no longer goes over the Start button or past the last app.
+  * Apps open at their own size again, never maximized on their own.
+  * Minimizing a window shrinks it into its taskbar button (the taskbar
+    tells the window manager where each button is).
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Mon, 16 Nov 2026 15:05:49 +0000
+
 raye-theme (0.5.10~beta1) resolute; urgency=high
 
   * Only an app's first window opens maximized: File Explorer's Properties

@@ -144,6 +144,14 @@ PlasmoidItem {
         function activate(i) { tasksModel.requestActivate(index(i)) }
         function minimize(i) { tasksModel.requestToggleMinimized(index(i)) }
         function close(i) { tasksModel.requestClose(index(i)) }
+        // where the button is on screen: minimizing a window shrinks it into
+        // its taskbar button, restoring grows it back out of it
+        function publishGeometry(i, item) {
+            if (!item || !item.visible || item.width <= 0)
+                return
+            const p = item.mapToGlobal(0, 0)
+            tasksModel.requestPublishDelegateGeometry(index(i), Qt.rect(p.x, p.y, item.width, item.height), item)
+        }
 
         // the app's own .desktop id ("" for a window with none)
         function desktopId(i) {

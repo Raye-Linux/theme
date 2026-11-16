@@ -6,9 +6,8 @@
 # "apply initially": the first map only, so a Windows program that moves its
 # own window later still can. Type 1 is normal windows: apps place their
 # dialogs and tool windows next to the main one, and that stays theirs.
-# Opening maximized is not a rule here: a rule cannot tell a resizable app
-# window from a fixed-size welcome window or the taskbar's own menus, and
-# sent those to the corner. org.raye.openmaximized (a KWin script) does it.
+# Apps open at their own size, centred, never maximized on their own (the
+# owner tried it in November 2026 and turned it back off).
 [General]
 count=1
 rules=raye-new-windows

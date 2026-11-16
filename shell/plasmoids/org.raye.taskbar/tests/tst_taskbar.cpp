@@ -448,6 +448,19 @@ private Q_SLOTS:
     // A pointer sweeping right then back over five 40 px buttons 44 px
     // apart, dragging the first one: each button is passed once, at its
     // middle, and a hand that shakes on the line never swaps back and forth.
+    // A dragged button never leaves the row: not over the Start button on
+    // the left, not past the last button on the right (five buttons, 44 px).
+    void dragStaysInTheRow()
+    {
+        QCOMPARE(call("clampedShift", {0, -300, 44, 5}).toNumber(), 0.0);
+        QCOMPARE(call("clampedShift", {2, -300, 44, 5}).toNumber(), -88.0);
+        QCOMPARE(call("clampedShift", {2, 500, 44, 5}).toNumber(), 88.0);
+        QCOMPARE(call("clampedShift", {4, 100, 44, 5}).toNumber(), 0.0);
+        QCOMPARE(call("clampedShift", {1, 30, 44, 5}).toNumber(), 30.0);
+        // a single button cannot move at all
+        QCOMPARE(call("clampedShift", {0, 50, 44, 1}).toNumber(), 0.0);
+    }
+
     void dragSlots()
     {
         QList<int> seen;
@@ -576,8 +589,10 @@ private Q_SLOTS:
             if (qAbs(d) <= qApp->styleHints()->startDragDistance())
                 continue;
             QVERIFY(dragged->property("dragging").toBool());
-            // under the pointer to the pixel
-            QCOMPARE(dragged->mapToItem(dragged->parentItem(), QPointF(0, 0)).x(), startX + d);
+            // under the pointer to the pixel, but never out of the row: it
+            // stops at the first and the last place (not over Start)
+            const qreal shift = qBound(-from * pitch, qreal(d), (4 - from) * pitch);
+            QCOMPARE(dragged->mapToItem(dragged->parentItem(), QPointF(0, 0)).x(), startX + shift);
             for (int i = 0; i < 5; ++i) {
                 if (i == from)
                     continue;

@@ -291,6 +291,14 @@ function appKey(launcherUrl, appId) {
 // button's place, and coming back needs it past the middle of the one that
 // moved over. Going back and forth needs a whole button of travel, so a
 // shaky hand never makes two buttons swap and swap back.
+// How far a dragged button may follow the pointer: from the first slot of
+// the row to the last, never over the Start button or past the end.
+function clampedShift(index, dx, pitch, count) {
+    var lowest = -index * pitch
+    var highest = Math.max(0, count - 1 - index) * pitch
+    return Math.max(lowest, Math.min(highest, dx))
+}
+
 function dragSlot(from, current, pointerX, pitch, width, count) {
     var t = current < 0 ? from : current
     while (t + 1 < count && pointerX > (t + 1) * pitch + width / 2)

@@ -70,8 +70,8 @@ def test_the_rule_leaves_dialogs_and_tool_windows_alone():
 
 
 def test_the_rule_does_not_maximize():
-    # a rule maximized fixed-size windows and the taskbar's menus into the
-    # corner; the KWin script org.raye.openmaximized picks the windows instead
+    # apps open at their own size: maximized on their own was tried and
+    # turned back off (it sent fixed-size windows and menus to the corner)
     rule = read("kwinrulesrc")["raye-new-windows"]
     assert "maximizehoriz" not in rule and "maximizevert" not in rule
 

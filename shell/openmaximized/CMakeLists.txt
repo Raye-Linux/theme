@@ -1,4 +1,3 @@
-# New app windows open maximized (a KWin script): only resizable app
-# windows, never dialogs, the shell's menus or fixed-size windows.
-install(DIRECTORY kwin/
-    DESTINATION ${KDE_INSTALL_DATADIR}/kwin-wayland/scripts/org.raye.openmaximized)
+# Opening apps maximized was tried in November 2026 and turned back off by
+# the owner: apps open at their own size. The script is kept here, not
+# installed, in case it comes back as an option in Settings.

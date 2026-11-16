@@ -260,12 +260,22 @@ FocusScope {
                 onDragHeld: if (!isLauncher) taskBar.trigger(index, "activate")
                 onFilesDropped: urls => { if (taskBar.controller) taskBar.controller.openUrls(index, urls) }
                 onMoving: (dx, px) => {
-                    dragOffset = dx
+                    dragOffset = Logic.clampedShift(index, dx, taskBar.layout.pitch, taskBar.visibleCount)
                     taskBar.dragFrom = index
                     taskBar.dragTo = Logic.dragSlot(index, taskBar.dragTo, px, taskBar.layout.pitch,
                                                     taskBar.layout.buttonWidth, taskBar.visibleCount)
                 }
                 onMoveRequested: dx => taskBar.drop(index, dx)
+                // the window manager learns where this button is, for the
+                // minimize animation into it
+                function publishGeometry() {
+                    if (taskBar.controller && typeof taskBar.controller.publishGeometry === "function")
+                        taskBar.controller.publishGeometry(index, taskButton)
+                }
+                onXChanged: Qt.callLater(publishGeometry)
+                onWidthChanged: Qt.callLater(publishGeometry)
+                onVisibleChanged: Qt.callLater(publishGeometry)
+                Component.onCompleted: Qt.callLater(publishGeometry)
                 // a drag that ends without a drop (the grab was taken away)
                 onDraggingChanged: if (!dragging && taskBar.dragFrom === index) {
                     taskBar.dragFrom = -1
