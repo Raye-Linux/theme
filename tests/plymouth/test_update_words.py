@@ -77,3 +77,35 @@ def test_a_number_alone_still_shows_the_updates(script):
     p.callback("SystemUpdate", "37")
     p.frames(FPS)
     assert "37" in words(p)[0]
+
+
+def test_a_reload_after_the_install_never_says_zero(script):
+    # plymouthd stays in updates mode: we change words by message, never by
+    # change-mode. When the splash is shown again (the restart after the
+    # install), the theme loads anew in that mode, without a number: it
+    # used to say "Working on updates 0%" until the PC went down
+    p = screen(script, "updates")
+    p.frames(FPS)
+    assert words(p) == ("", "")
+    p.message("raye:mode:reboot")
+    p.frames(FPS)
+    assert words(p) == (script[1]["reboot"], "")
+
+
+def test_the_update_start_still_shows_its_number(script):
+    # the initramfs hook sends the mode and 0 the moment the disk is open
+    p = screen(script, "updates")
+    p.message("raye:mode:updates")
+    p.callback("SystemUpdate", "0")
+    p.frames(FPS)
+    assert words(p)[0].endswith("%") and " 0" in words(p)[0].replace("\xa0", " ")
+
+
+def test_a_reload_in_upgrade_mode_comes_back_as_an_upgrade(script):
+    p = screen(script, "system-upgrade")
+    p.frames(FPS)
+    assert words(p) == ("", "")
+    p.callback("SystemUpdate", "40")
+    p.frames(FPS)
+    assert script[1]["upgrade"].split("{")[0].strip() in words(p)[0]
+    assert "40" in words(p)[0]

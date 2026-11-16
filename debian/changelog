@@ -1,3 +1,11 @@
+raye-theme (0.5.12~beta1) resolute; urgency=medium
+
+  * Boot screen: no more "Working on updates 0%" on the way to the restart
+    after an install. Shown again in updates mode, the theme now waits for
+    Raye Update's words instead of starting over at 0%.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Mon, 16 Nov 2026 16:04:19 +0000
+
 raye-theme (0.5.11~beta1) resolute; urgency=medium
 
   * Taskbar: a button dragged to a new place stays in the row of apps; it

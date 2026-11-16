@@ -348,6 +348,14 @@ fun draw_status() {
 
 # what the screen says for the current mode, with a progress number
 global.mode = Plymouth.GetMode();
+# Raye Update changes the words by message, so plymouthd itself stays in
+# updates mode to the end. When the splash is shown again (on the way to
+# the restart after an install) the theme loads anew in that mode, with
+# no number: it said "Working on updates 0%" until the PC went down.
+# Loaded in updates mode, the words wait for Raye Update; at the start of
+# an install the initramfs hook sends them the moment the disk is open.
+if (global.mode == "updates") global.mode = "waiting-updates";
+else if (global.mode == "system-upgrade") global.mode = "waiting-upgrade";
 global.progress = 0;
 global.status_line = "";
 global.status_note = "";
@@ -382,7 +390,9 @@ fun system_update(progress) {
     # is over; it put the update words back up before the sign-in screen
     if (global.updates_over) return;
     global.progress = progress;
-    if (global.mode != "system-upgrade" && global.mode != "firmware-upgrade")
+    if (global.mode == "waiting-upgrade")
+        global.mode = "system-upgrade";
+    else if (global.mode != "system-upgrade" && global.mode != "firmware-upgrade")
         global.mode = "updates";
     # "Finishing updates" stays while dpkg ends what a cut left half done;
     # the first number from apt puts the percentage back
