@@ -2,6 +2,7 @@
 // Windows 11 does it: Back and a title on top, a short list, and at the
 // bottom the one link that leaves for Raye Settings.
 import QtQuick
+import QtQuick.Controls
 import org.kde.kirigami as Kirigami
 import org.raye.ui
 import org.raye.shell
@@ -74,6 +75,8 @@ Column {
     }
 
     Flickable {
+        id: flick
+        objectName: "subPageList"
         x: 8
         width: parent.width - 16
         height: Math.min(list.implicitHeight, page.maxListHeight)
@@ -81,6 +84,19 @@ Column {
         clip: contentHeight > height
         interactive: contentHeight > height
         boundsBehavior: Flickable.StopAtBounds
+        // the mouse wheel and the touchpad scroll the list, whatever row the
+        // pointer is over
+        WheelHandler {
+            enabled: flick.interactive
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            onWheel: event => {
+                const step = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2
+                flick.contentY = Math.max(0, Math.min(flick.contentHeight - flick.height, flick.contentY - step))
+            }
+        }
+        ScrollBar.vertical: ScrollBar {
+            policy: flick.interactive ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+        }
         Column {
             id: list
             width: parent.width

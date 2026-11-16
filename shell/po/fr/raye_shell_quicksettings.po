@@ -180,3 +180,9 @@ msgstr "Activé"
 
 msgid "Off"
 msgstr "Désactivé"
+
+msgid "Hide the key"
+msgstr "Masquer la clé"
+
+msgid "Show the key"
+msgstr "Afficher la clé"

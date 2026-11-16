@@ -202,6 +202,11 @@ FocusScope {
         }
     }
     property int selectedRow: -1
+    // the open Wi-Fi row and its typed key, by network: a scan rebuilds the
+    // list every few seconds, and an index or the field itself would be lost
+    property string selectedKey: ""
+    property string typedKey: ""
+    property string typedPassword: ""
     function networkStatus(c) {
         if (c.state === "active")
             return c.kind === "wired" && c.address ? i18nd("raye_shell_quicksettings", "Connected · %1", c.address)
@@ -214,6 +219,9 @@ FocusScope {
     }
     function openPage(id) {
         selectedRow = -1
+        selectedKey = ""
+        typedKey = ""
+        typedPassword = ""
         wifiExpanded = false
         pageId = id
         if (id === "network" && networkMode === "wifi" && backend && backend.scanNetworks)
@@ -643,15 +651,20 @@ FocusScope {
                         iconName: Logic.networkIcon(connection)
                         name: connection.kind === "wired" ? (Logic.cableName(connection.name) || i18nd("raye_shell_quicksettings", "Ethernet")) : connection.name
                         status: panel.networkStatus(connection)
+                        readonly property string key: connection.kind + ":" + connection.name
                         current: connection.state === "active"
-                        selected: panel.selectedRow === place
+                        selected: panel.selectedKey === key
                         askPassword: Logic.networkAction(connection, "") === "password"
                         actionText: connection.state !== "" ? i18nd("raye_shell_quicksettings", "Disconnect")
                                                             : i18nd("raye_shell_quicksettings", "Connect")
-                        onClicked: panel.selectedRow = selected ? -1 : place
+                        savedPassword: panel.typedKey === key ? panel.typedPassword : ""
+                        onPasswordEdited: text => { panel.typedKey = key; panel.typedPassword = text }
+                        onClicked: panel.selectedKey = selected ? "" : key
                         onAction: {
                             panel.backend.connectNetwork(place, password)
-                            panel.selectedRow = -1
+                            panel.selectedKey = ""
+                            panel.typedKey = ""
+                            panel.typedPassword = ""
                         }
                     }
                 }

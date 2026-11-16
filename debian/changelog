@@ -1,3 +1,16 @@
+raye-theme (0.5.7~beta1) resolute; urgency=medium
+
+  * Quick settings: the Wi-Fi and Bluetooth lists scroll with the mouse
+    wheel and the touchpad, with a scroll bar.
+  * Quick settings: another Wi-Fi network can be picked to type its key
+    while one is connected; the open row and the typed key survive the
+    network scans.
+  * Quick settings: no more lag: the Wi-Fi list is read at most every
+    300 ms, and only rebuilt when what it shows changes.
+  * Quick settings: an eye button shows the typed Wi-Fi key to check it.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Mon, 16 Nov 2026 00:41:01 +0000
+
 raye-theme (0.5.6~beta1) resolute; urgency=medium
 
   * When a notification goes, the ones left slide down to their place

@@ -20,6 +20,10 @@ Rectangle {
     property string actionText: ""
     property bool askPassword: false
     readonly property string password: passwordInput.text
+    // what was typed before the list was rebuilt (a Wi-Fi scan rebuilds it)
+    property string savedPassword: ""
+    property bool revealPassword: false
+    signal passwordEdited(string text)
 
     signal clicked()
     signal action()
@@ -104,14 +108,16 @@ Rectangle {
                 objectName: "passwordField"
                 anchors.fill: parent
                 anchors.leftMargin: 10
-                anchors.rightMargin: 10
+                anchors.rightMargin: 36
                 verticalAlignment: TextInput.AlignVCenter
-                echoMode: TextInput.Password
+                echoMode: row.revealPassword ? TextInput.Normal : TextInput.Password
                 font: ShellTokens.body
                 color: ShellTokens.text
                 selectByMouse: true
                 clip: true
                 onAccepted: row.action()
+                onTextEdited: row.passwordEdited(text)
+                Component.onCompleted: text = row.savedPassword
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: passwordInput.text === ""
@@ -120,6 +126,27 @@ Rectangle {
                     color: ShellTokens.textSecondary
                     width: parent.width
                     elide: Text.ElideRight
+                }
+            }
+            // show what was typed, to check it before connecting
+            MouseArea {
+                objectName: "revealPassword"
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                width: 32
+                height: parent.height
+                visible: passwordInput.text !== ""
+                cursorShape: Qt.PointingHandCursor
+                Accessible.role: Accessible.Button
+                Accessible.name: row.revealPassword ? i18nd("raye_shell_quicksettings", "Hide the key")
+                                                    : i18nd("raye_shell_quicksettings", "Show the key")
+                onClicked: row.revealPassword = !row.revealPassword
+                Kirigami.Icon {
+                    anchors.centerIn: parent
+                    width: 16
+                    height: 16
+                    source: row.revealPassword ? "view-hidden" : "view-visible"
+                    color: ShellTokens.textSecondary
                 }
             }
         }

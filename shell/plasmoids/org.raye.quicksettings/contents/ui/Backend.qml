@@ -139,7 +139,25 @@ Item {
                 specific: o.specific,
             })
         }
-        networkConnections = Logic.sortNetworks(out)
+        const sorted = Logic.sortNetworks(out)
+        // the signal moves all the time: only what the list shows (the bars)
+        // counts, so the rows are not rebuilt for nothing
+        const key = JSON.stringify(sorted.map(c => [c.name, c.kind, c.state, c.saved, c.secured,
+                                                    c.askPassword, Math.floor(c.signal / 25), c.address,
+                                                    c.path, c.device, c.specific]))
+        if (key === lastNetworkKey)
+            return
+        lastNetworkKey = key
+        networkConnections = sorted
+    }
+    property string lastNetworkKey: ""
+    // many networks change at once during a scan: read them at most every
+    // 300 ms (a timer that restarts would never fire while signals keep moving)
+    function readNetworksSoon() { if (!networkTimer.running) networkTimer.start() }
+    Timer {
+        id: networkTimer
+        interval: 300
+        onTriggered: backend.readNetworks()
     }
     function connectNetwork(index, password) {
         const c = networkConnections[index]
@@ -202,14 +220,14 @@ Item {
                 function onRowsInserted() { networkItem.readAddress() }
             }
             onDetailsChanged: readAddress()
-            onStateChanged: { readAddress(); backend.readNetworks() }
-            onAddressChanged: backend.readNetworks()
-            onSignalChanged: backend.readNetworks()
-            onUuidChanged: backend.readNetworks()
+            onStateChanged: { readAddress(); backend.readNetworksSoon() }
+            onAddressChanged: backend.readNetworksSoon()
+            onSignalChanged: backend.readNetworksSoon()
+            onUuidChanged: backend.readNetworksSoon()
             Component.onCompleted: readAddress()
         }
-        onObjectAdded: backend.readNetworks()
-        onObjectRemoved: backend.readNetworks()
+        onObjectAdded: backend.readNetworksSoon()
+        onObjectRemoved: backend.readNetworksSoon()
     }
 
     // --- Bluetooth -------------------------------------------------------
