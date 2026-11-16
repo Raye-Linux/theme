@@ -1,3 +1,11 @@
+raye-theme (0.5.10~beta1) resolute; urgency=high
+
+  * Only an app's first window opens maximized: File Explorer's Properties
+    and Options, and the other windows an open app shows next, keep their
+    own size.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Mon, 16 Nov 2026 14:12:15 +0000
+
 raye-theme (0.5.9~beta1) resolute; urgency=high
 
   * Only real app windows open maximized (a KWin script): fixed-size
