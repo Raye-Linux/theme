@@ -69,5 +69,13 @@ def test_the_rule_leaves_dialogs_and_tool_windows_alone():
     assert int(read("kwinrulesrc")["raye-new-windows"]["types"]) == NORMAL_WINDOWS
 
 
+def test_a_new_window_opens_maximized_once():
+    # apply initially only: the person can restore or resize it afterwards
+    rule = read("kwinrulesrc")["raye-new-windows"]
+    for key in ("maximizehoriz", "maximizevert"):
+        assert rule[key] == "true"
+        assert int(rule[key + "rule"]) == APPLY_INITIALLY
+
+
 def test_the_rule_is_installed():
     assert installed_for_everyone("kwinrulesrc")

@@ -1,3 +1,9 @@
+raye-theme (0.5.8~beta1) resolute; urgency=medium
+
+  * Apps open maximized; they can still be restored or resized.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Mon, 16 Nov 2026 13:03:00 +0000
+
 raye-theme (0.5.7~beta1) resolute; urgency=medium
 
   * Quick settings: the Wi-Fi and Bluetooth lists scroll with the mouse
