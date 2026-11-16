@@ -27,6 +27,8 @@ maximizeEnabled=false
 raye_maximizeEnabled=true
 # shell scripts: snap layouts, and Win+M to minimise everything
 org.raye.snapEnabled=true
+# new app windows open maximized (shell/openmaximized)
+org.raye.openmaximizedEnabled=true
 minimizeallEnabled=true
 
 # Four lines were removed here in November 2026 because, measured, none of

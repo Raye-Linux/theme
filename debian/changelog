@@ -1,3 +1,10 @@
+raye-theme (0.5.9~beta1) resolute; urgency=high
+
+  * Only real app windows open maximized (a KWin script): fixed-size
+    windows stay centred and the taskbar's menus open in their place again.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Mon, 16 Nov 2026 13:54:56 +0000
+
 raye-theme (0.5.8~beta1) resolute; urgency=medium
 
   * Apps open maximized; they can still be restored or resized.

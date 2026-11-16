@@ -69,12 +69,11 @@ def test_the_rule_leaves_dialogs_and_tool_windows_alone():
     assert int(read("kwinrulesrc")["raye-new-windows"]["types"]) == NORMAL_WINDOWS
 
 
-def test_a_new_window_opens_maximized_once():
-    # apply initially only: the person can restore or resize it afterwards
+def test_the_rule_does_not_maximize():
+    # a rule maximized fixed-size windows and the taskbar's menus into the
+    # corner; the KWin script org.raye.openmaximized picks the windows instead
     rule = read("kwinrulesrc")["raye-new-windows"]
-    for key in ("maximizehoriz", "maximizevert"):
-        assert rule[key] == "true"
-        assert int(rule[key + "rule"]) == APPLY_INITIALLY
+    assert "maximizehoriz" not in rule and "maximizevert" not in rule
 
 
 def test_the_rule_is_installed():

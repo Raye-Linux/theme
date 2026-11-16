@@ -6,18 +6,15 @@
 # "apply initially": the first map only, so a Windows program that moves its
 # own window later still can. Type 1 is normal windows: apps place their
 # dialogs and tool windows next to the main one, and that stays theirs.
-# New windows also open maximized (owner's choice); the person can still
-# restore or resize them, since the rule only applies at the first map.
+# Opening maximized is not a rule here: a rule cannot tell a resizable app
+# window from a fixed-size welcome window or the taskbar's own menus, and
+# sent those to the corner. org.raye.openmaximized (a KWin script) does it.
 [General]
 count=1
 rules=raye-new-windows
 
 [raye-new-windows]
-Description=New windows open centred and maximized
+Description=New windows open centred
 ignoregeometry=true
 ignoregeometryrule=3
 types=1
-maximizehoriz=true
-maximizehorizrule=3
-maximizevert=true
-maximizevertrule=3

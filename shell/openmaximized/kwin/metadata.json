@@ -1,0 +1,21 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Raye Linux"
+            }
+        ],
+        "Description": "Apps open maximized",
+        "Description[fr]": "Les applis s'ouvrent agrandies",
+        "EnabledByDefault": true,
+        "Icon": "window-maximize",
+        "Id": "org.raye.openmaximized",
+        "License": "GPL-3.0-or-later",
+        "Name": "Raye open maximized",
+        "Name[fr]": "Ouverture agrandie Raye",
+        "Version": "1.0"
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js"
+}
