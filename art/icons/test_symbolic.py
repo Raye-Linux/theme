@@ -230,7 +230,11 @@ def test_outline_covers_what_the_line_covers():
             for n in (16, 24, 48):
                 a = _alpha(build().svg(n, "light").text(), n)
                 b = _alpha(build().svg(n, "light", gtk=True).text(), n)
-                d = list(ImageChops.difference(a, b).get_flattened_data())
+                diff = ImageChops.difference(a, b)
+                # Pillow 12 renamed getdata (deprecated) to get_flattened_data;
+                # the build machine still has Pillow 11
+                flat = getattr(diff, "get_flattened_data", diff.getdata)
+                d = list(flat())
                 worst.append((max(d), sum(d) / 255 / (n * n), name, n))
     # edge antialiasing only: no missing or extra part anywhere
     assert max(w[0] for w in worst) <= 80, max(worst)
