@@ -10,12 +10,20 @@ Two things write entries that point at nothing:
 - a browser making itself the default. It registers a made-up entry
   (userapp-<name>-XXXXXX.desktop) with no icon at all.
 
+It also ties each site a browser installed as an app to its own entry.
+Recent browsers name the site's window with an extra underscore that the
+entry they write does not have (window brave-_<id>-Default or crx__<id>,
+entry brave-<id>-Default.desktop with StartupWMClass=crx_<id>), so the
+taskbar takes the window for the browser and shows the browser's icon.
+A KWin rule per site gives the window its entry back.
+
 raye-app-icons.path runs this when ~/.local/share/applications changes,
 raye-taskbar-sync at login. An entry that works is never rewritten.
 """
 
 import glob
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -233,6 +241,142 @@ def fix_all(folders, data_dirs):
     return changed
 
 
+# --- sites installed as apps ----------------------------------------------
+
+WEB_APP_ID = re.compile(r"--app-id=([a-p]{32})(?![a-z])")
+PLAIN = re.compile(r"[A-Za-z0-9_-]+")
+RULE_PREFIX = "raye-webapp-"
+
+
+def web_app(stem, keys):
+    """(browser, site id, profile) of an entry a Chromium-family browser
+    wrote for a site, from its name <browser>-<id>-<profile>; else None."""
+    found = WEB_APP_ID.search(keys.get("Exec", ""))
+    if not found:
+        return None
+    site = found.group(1)
+    marker = "-" + site + "-"
+    at = stem.rfind(marker)
+    if at <= 0:
+        return None
+    # a sandboxed browser puts its own id in front: com.brave.Browser.flextop.brave
+    browser = stem[:at].rsplit(".", 1)[-1]
+    profile = stem[at + len(marker):]
+    if not PLAIN.fullmatch(browser) or not PLAIN.fullmatch(profile):
+        return None
+    return browser, site, profile
+
+
+def window_pattern(browser, site, profile):
+    """What KWin matches against "<resource name> <resource class>" of the
+    site's windows: crx_<id> on X11, <browser>-<id>-<profile> on Wayland,
+    with any number of underscores before the id. No backslash: KConfig
+    would read it as an escape."""
+    return "(?i)(^|[ .])(crx_+%s|%s-_*%s-%s)($| )" % (site, browser, site, profile)
+
+
+def one_line(text):
+    return "".join(c for c in text if c >= " " and c != "\\").strip()
+
+
+def web_app_rules(folders):
+    """{group: [lines]} of the KWin rules the sites in folders need."""
+    rules = {}
+    for folder in folders:
+        for path in sorted(glob.glob(os.path.join(glob.escape(folder), "*.desktop"))):
+            stem = os.path.basename(path)[: -len(".desktop")]
+            try:
+                with open(path, encoding="utf-8") as f:
+                    keys = read_entry(f.read())
+            except (OSError, UnicodeDecodeError):
+                continue
+            site = web_app(stem, keys)
+            if not site or not PLAIN.fullmatch(stem.replace(".", "_")):
+                continue
+            rules[RULE_PREFIX + stem] = [
+                "Description=" + (one_line(keys.get("Name", "")) or stem),
+                "desktopfile=" + stem,
+                "desktopfilerule=2",
+                "wmclass=" + window_pattern(*site),
+                "wmclasscomplete=true",
+                "wmclassmatch=3",
+            ]
+    return rules
+
+
+def split_groups(text):
+    """(lines before any group, [(name, [lines])]) of a KConfig file."""
+    head, groups = [], []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            groups.append((stripped[1:-1], []))
+        elif groups:
+            groups[-1][1].append(line)
+        else:
+            head.append(line)
+    return head, groups
+
+
+def key_of(lines, key):
+    for line in lines:
+        k, sep, v = line.partition("=")
+        if sep and k.strip() == key:
+            return v.strip()
+    return None
+
+
+def merged_rules(text, ours):
+    """kwinrulesrc text with the rules of the user kept as they are and
+    ours (from web_app_rules) put after them in place of the old ones."""
+    head, groups = split_groups(text)
+    general = next((lines for name, lines in groups if name == "General"), [])
+    listed = key_of(general, "rules")
+    if listed:
+        order = [r for r in re.split(r"(?<!\\),", listed) if r]
+    else:
+        # files from before the rules list number their groups 1..count
+        try:
+            order = [str(i) for i in range(1, int(key_of(general, "count") or 0) + 1)]
+        except ValueError:
+            order = []
+    order = [r for r in order if not r.startswith(RULE_PREFIX)] + sorted(ours)
+
+    kept = [l for l in general if l.partition("=")[0].strip() not in ("rules", "count")]
+    while kept and not kept[-1].strip():
+        kept.pop()
+    out = head + ["[General]", "count=%d" % len(order), "rules=" + ",".join(order)] + kept
+    blocks = [(n, l) for n, l in groups if n != "General" and not n.startswith(RULE_PREFIX)]
+    blocks += [(n, ours[n]) for n in sorted(ours)]
+    for name, lines in blocks:
+        while lines and not lines[-1].strip():
+            lines = lines[:-1]
+        out += ["", "[%s]" % name] + lines
+    return "\n".join(out) + "\n"
+
+
+def sync_web_app_rules(folders, rules_file):
+    """Writes the rules the sites need into rules_file (kwinrulesrc).
+    Returns True when the file changed and KWin has to read it again."""
+    ours = web_app_rules(folders)
+    try:
+        with open(rules_file, encoding="utf-8") as f:
+            old = f.read()
+    except FileNotFoundError:
+        old = None
+    if not ours and (old is None or "[" + RULE_PREFIX not in old):
+        return False
+    new = merged_rules(old or "", ours)
+    if new == old:
+        return False
+    if old is None:
+        os.makedirs(os.path.dirname(rules_file), exist_ok=True)
+        fd = os.open(rules_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        os.close(fd)
+    write_keeping_mode(rules_file, new)
+    return True
+
+
 def main():
     home = os.path.expanduser("~")
     data_home = os.environ.get("XDG_DATA_HOME") or os.path.join(home, ".local/share")
@@ -245,10 +389,28 @@ def main():
     changed = fix_all([os.path.join(data_home, "applications")], data_dirs)
     if changed:
         print("raye-app-icons: fixed %d entries" % len(changed))
-        # the taskbar and Start read the app list from this cache
+
+    config_home = os.environ.get("XDG_CONFIG_HOME") or os.path.join(home, ".config")
+    try:
+        rules_changed = sync_web_app_rules([os.path.join(data_home, "applications")],
+                                           os.path.join(config_home, "kwinrulesrc"))
+    except (OSError, UnicodeDecodeError) as e:
+        print("raye-app-icons: kwinrulesrc: %s" % e, file=sys.stderr)
+        rules_changed = False
+    if changed or rules_changed:
+        # the taskbar and Start read the app list from this cache; a rule
+        # pointing at an entry the cache does not have yet would find nothing
         try:
             subprocess.run(["kbuildsycoca6"], stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL, timeout=60, check=False)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+    if rules_changed:
+        # open windows are matched again too
+        try:
+            subprocess.run(["busctl", "--user", "call", "org.kde.KWin", "/KWin",
+                            "org.kde.KWin", "reconfigure"], stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL, timeout=10, check=False)
         except (OSError, subprocess.TimeoutExpired):
             pass
     return 0

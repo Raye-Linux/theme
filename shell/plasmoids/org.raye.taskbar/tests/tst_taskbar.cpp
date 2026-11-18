@@ -247,6 +247,18 @@ private Q_SLOTS:
         QVERIFY(!call("sameList", {list({u"a"_s, u"b"_s}), list({u"b"_s, u"a"_s})}).toBool());
     }
 
+    void webAppPinKeepsItsOwnEntry()
+    {
+        // a site a browser installed as an app: its entry, never the browser's
+        const QStringList ids{u"brave-abcdefghijklmnopabcdefghijklmnop-Default.desktop"_s,
+                              u"com.brave.Browser.flextop.chrome-abcdefghijklmnopabcdefghijklmnop-Profile_1.desktop"_s};
+        const QStringList urls = strings(call("launchersForPinned", {list(ids)}));
+        QCOMPARE(urls.size(), 2);
+        QCOMPARE(strings(call("pinnedForLaunchers", {list(urls)})), ids);
+        QCOMPARE(call("desktopIdForLauncher", {u"file:///home/u/.local/share/applications/brave-abcdefghijklmnopabcdefghijklmnop-Default.desktop"_s}).toString(),
+                 ids.first());
+    }
+
     void pinsOnSeveralScreens()
     {
         // "Show my taskbar apps on": pins on every taskbar only for "all"
