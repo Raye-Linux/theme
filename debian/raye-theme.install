@@ -43,6 +43,7 @@ colors/editor/RayeNight.theme usr/share/org.kde.syntax-highlighting/themes
 colors/editor/RayeDay.theme usr/share/org.kde.syntax-highlighting/themes
 ? kwin/effects/raye_popups usr/share/kwin-wayland/effects
 ? kwin/effects/raye_maximize usr/share/kwin-wayland/effects
+? kwin/effects/raye_windows usr/share/kwin-wayland/effects
 sddm/breeze/theme.conf.user usr/share/sddm/themes/breeze
 config/sddm-raye.conf etc/sddm.conf.d
 config/kglobalshortcutsrc usr/share/raye
