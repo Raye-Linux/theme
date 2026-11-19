@@ -93,6 +93,8 @@ QtObject {
     function unpin(id) { record("unpin " + id) }
     function moveToFront(id) { record("front " + id) }
     function movePin(from, to) { record("move " + from + " " + to) }
+    function setTiles(text) { record("tiles " + text) }
+    function setTileColumns(n) { record("columns " + n) }
     function isOnTaskbar(id) { return false }
     function setOnTaskbar(id, on) { record("taskbar " + id + " " + on) }
     function uninstall(id) { record("uninstall " + id) }

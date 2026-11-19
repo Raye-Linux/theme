@@ -25,7 +25,10 @@ class ShellSettings : public QObject
     QML_ELEMENT
     QML_SINGLETON
 
-    // [Taskbar]
+    // [Appearance] "windows11" or "windows10"
+    Q_PROPERTY(QString look READ look NOTIFY lookChanged)
+    Q_PROPERTY(bool windows10 READ windows10 NOTIFY lookChanged)
+    // [Taskbar]; the alignment in use: always "left" in the Windows 10 look
     Q_PROPERTY(QString alignment READ alignment NOTIFY taskbarChanged)
     Q_PROPERTY(QString searchMode READ searchMode NOTIFY taskbarChanged)
     Q_PROPERTY(bool taskView READ taskView NOTIFY taskbarChanged)
@@ -56,6 +59,9 @@ class ShellSettings : public QObject
     Q_PROPERTY(QStringList startPinned READ startPinned WRITE setStartPinned NOTIFY startChanged)
     Q_PROPERTY(QString startPinnedFolders READ startPinnedFolders WRITE setStartPinnedFolders NOTIFY startChanged)
     Q_PROPERTY(QString restartNeeded READ restartNeeded NOTIFY startChanged)
+    // the tiles of the Windows 10 Start: groups and sizes (tileslogic.js)
+    Q_PROPERTY(QString startTiles READ startTiles WRITE setStartTiles NOTIFY startChanged)
+    Q_PROPERTY(QString startTileColumns READ startTileColumns WRITE setStartTileColumns NOTIFY startChanged)
     // [Clock]
     Q_PROPERTY(bool clockShowSeconds READ clockShowSeconds NOTIFY clockChanged)
     Q_PROPERTY(bool clockShowDate READ clockShowDate NOTIFY clockChanged)
@@ -82,6 +88,9 @@ public:
     // most searches kept, longest search kept
     static constexpr int MaxRecentSearches = 10;
     static constexpr int MaxSearchLength = 256;
+
+    QString look() const;
+    bool windows10() const;
 
     QString alignment() const;
     QString searchMode() const;
@@ -117,6 +126,10 @@ public:
     QString startPinnedFolders() const;
     void setStartPinnedFolders(const QString &folders);
     QString restartNeeded() const;
+    QString startTiles() const;
+    void setStartTiles(const QString &tiles);
+    QString startTileColumns() const;
+    void setStartTileColumns(const QString &columns);
 
     bool clockShowSeconds() const;
     bool clockShowDate() const;
@@ -160,6 +173,7 @@ public:
     static bool isToken(const QString &id);
 
 Q_SIGNALS:
+    void lookChanged();
     void taskbarChanged();
     void trayChanged();
     void startChanged();

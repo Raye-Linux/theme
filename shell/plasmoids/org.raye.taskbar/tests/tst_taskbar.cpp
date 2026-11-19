@@ -528,6 +528,29 @@ private Q_SLOTS:
         QCOMPARE(button(v.get(), 1)->width(), 40.0);
     }
 
+    // Windows 10: square buttons as tall as the taskbar, side by side, and a
+    // line along the bottom of a running app
+    void windows10Buttons()
+    {
+        auto v = view({{u"windows10"_s, true}, {u"alignment"_s, u"left"_s}},
+                      {app(u"Files"_s, u"org.kde.dolphin"_s, {{u"IsLauncher"_s, true}, {u"IsWindow"_s, false}}),
+                       app(u"Firefox"_s, u"firefox"_s, {{u"IsActive"_s, true}}),
+                       app(u"Kate"_s, u"org.kde.kate"_s)});
+        QVERIFY(v);
+        QQuickItem *active = button(v.get(), 1);
+        QCOMPARE(active->width(), 44.0);
+        QCOMPARE(active->height(), 48.0);
+        QCOMPARE(active->findChild<QQuickItem *>(u"backplate"_s)->property("radius").toReal(), 0.0);
+        QTRY_COMPARE(active->findChild<QQuickItem *>(u"pill"_s)->width(), 44.0);
+        QCOMPARE(active->findChild<QQuickItem *>(u"pill"_s)->height(), 2.0);
+        QTRY_COMPARE(button(v.get(), 2)->findChild<QQuickItem *>(u"pill"_s)->width(), 32.0);
+        QCOMPARE(button(v.get(), 0)->findChild<QQuickItem *>(u"pill"_s)->opacity(), 0.0);
+        // the line sits on the bottom edge
+        QQuickItem *line = button(v.get(), 2)->findChild<QQuickItem *>(u"pill"_s);
+        QCOMPARE(line->mapToScene(QPointF(0, line->height())).y(), 48.0);
+        QCOMPARE(button(v.get(), 2)->x() - button(v.get(), 1)->x(), 44.0);
+    }
+
     void leftAligned()
     {
         auto v = view({{u"alignment"_s, u"left"_s}}, {app(u"Kate"_s, u"org.kde.kate"_s)});

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
  */
 #include "rayebutton.h"
+#include "rayesettingsprovider.h"
 
 #include <KColorUtils>
 #include <KDecoration3/DecoratedWindow>
@@ -211,7 +212,8 @@ void Button::drawIcon(QPainter *painter) const
     }
 
     case DecorationButtonType::Maximize: {
-        const qreal radius(1.5);
+        // square in the Windows 10 look, like the window
+        const qreal radius(SettingsProvider::self()->windows10() ? 0 : 1.5);
         if (isChecked()) {
             // restore: a square with a second one behind it, up and right
             const QRectF front(glyph.left() + half, glyph.top() + 2 + half, 8 - stroke, 8 - stroke);

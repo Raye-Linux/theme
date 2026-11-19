@@ -36,6 +36,17 @@ const QColor closeRedPressed(0xC2, 0x2A, 0x44);
 const QColor dayInk(0x1A, 0x10, 0x28);
 }
 
+bool isWindows10Look(const QString &value)
+{
+    const QString v = value.trimmed().toLower();
+    return v == QLatin1String("windows10") || v == QLatin1String("win10") || v == QLatin1String("10");
+}
+
+qreal cornerRadiusFor(bool windows10)
+{
+    return windows10 ? 0 : CornerRadius;
+}
+
 Corners cornersFor(qreal radius, bool maximized, Qt::Edges edges)
 {
     Corners corners;

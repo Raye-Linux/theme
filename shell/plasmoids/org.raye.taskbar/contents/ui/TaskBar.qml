@@ -33,6 +33,8 @@ FocusScope {
     readonly property bool labels: layout.labels
     readonly property bool small: layout.small
     readonly property bool overflowing: layout.overflow
+    // square buttons as tall as the taskbar, side by side
+    readonly property bool windows10: settings.windows10 === true
     readonly property int visibleCount: Math.min(layout.visible, buttonCount)
     readonly property int buttonCount: repeater.count
     // the room the row takes, for the Start applet's centring
@@ -229,8 +231,8 @@ FocusScope {
                 transform: Translate { x: taskButton.shift }
                 z: dragging || index === taskBar.landIndex ? 1 : 0
                 anchors.verticalCenter: parent.verticalCenter
-                width: taskBar.layout.buttonWidth
-                height: taskBar.small ? ShellTokens.buttonSmallSize : ShellTokens.buttonSize
+                width: taskBar.windows10 ? taskBar.layout.pitch - (taskBar.labels ? 2 : 0) : taskBar.layout.buttonWidth
+                height: taskBar.windows10 ? taskBar.height : taskBar.small ? ShellTokens.buttonSmallSize : ShellTokens.buttonSize
                 visible: index < taskBar.visibleCount
                 Behavior on x {
                     enabled: !taskBar.settling
@@ -246,6 +248,7 @@ FocusScope {
                 demandsAttention: !!model.IsDemandingAttention
                 childCount: model.ChildCount || 0
                 small: taskBar.small
+                windows10: taskBar.windows10
                 labelShown: taskBar.labels
                 flashing: taskBar.settings.flashing
                 count: taskBar.settings.badges ? (taskBar.badgeCounts[Logic.appKey(model.LauncherUrlWithoutIcon, model.AppId)] || 0) : 0

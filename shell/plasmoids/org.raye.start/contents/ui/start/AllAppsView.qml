@@ -17,6 +17,10 @@ FocusScope {
     property var backend: null
     // [Start] AllView: "category", "grid" or "list"
     property string viewKind: "list"
+    // the Windows 10 look: square rows, and what goes above the list
+    property bool square: false
+    property Component listHeader: null
+    readonly property real rowRadius: square ? 0 : Tokens.radiusControl
     readonly property var rows: Menu.withHeaders(backend ? backend.apps : [])
     readonly property var present: Menu.lettersPresent((backend ? backend.apps : []).map(a => a.name))
     property bool lettersShown: false
@@ -108,6 +112,7 @@ FocusScope {
         cacheBuffer: 400
         currentIndex: -1
         highlightFollowsCurrentItem: false
+        header: view.listHeader
         QQC.ScrollBar.vertical: QQC.ScrollBar { policy: QQC.ScrollBar.AsNeeded }
 
         Keys.onPressed: event => {
@@ -133,11 +138,11 @@ FocusScope {
 
             Rectangle {
                 anchors { fill: parent; margins: 1 }
-                radius: Tokens.radiusControl
+                radius: view.rowRadius
                 color: rowMouse.pressed ? ShellTokens.pressFill
                                         : rowMouse.containsMouse ? ShellTokens.hoverFill : "transparent"
                 FocusRing {
-                    radius: Tokens.radiusControl
+                    radius: view.rowRadius
                     shown: list.activeFocus && view.keysUsed && list.currentIndex === row.index
                 }
             }
@@ -224,7 +229,7 @@ FocusScope {
                     objectName: "letter_" + modelData
                     width: 48
                     height: 48
-                    radius: Tokens.radiusControl
+                    radius: view.rowRadius
                     color: cellMouse.containsMouse && has ? ShellTokens.hoverFill : "transparent"
                     Text {
                         anchors.centerIn: parent

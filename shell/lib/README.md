@@ -41,7 +41,13 @@ is not allowed falls back to the default; a few values of Raye Settings'
 first plan are read too (`iconLabel`, `whenFull`, `mainAndOpen`,
 `morePins`, `moreRecommended`), but writers use the names in the file.
 
-Keys added for other parts: `[Start] PinnedFolders` (folders of pins,
+`[Appearance] Look` is `windows11` or `windows10`: in the Windows 10 look
+`alignment` answers `left` whatever `[Taskbar] Alignment` says (the key
+keeps the person's choice for later), and the shell's corners are square.
+The window decoration of the style reads the same key.
+
+Keys added for other parts: `[Start] Tiles` and `[Start] TileColumns` (the
+tiles of the Windows 10 Start, written by it), `[Start] PinnedFolders` (folders of pins,
 written by the Start menu), `[Start] RestartNeeded` (a reason id; a dot
 on the power button while it is set), `[Notifications] LockBadges`.
 

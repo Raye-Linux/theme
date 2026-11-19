@@ -11,6 +11,7 @@
 
 #include <QColor>
 #include <QRectF>
+#include <QString>
 
 namespace Raye
 {
@@ -39,6 +40,13 @@ struct Corners {
     qreal bottomRight = 0;
     qreal bottomLeft = 0;
 };
+
+//* [Appearance] Look of rayeshellrc names the Windows 10 look ("windows10",
+//* "win10" or "10"); anything else is the Windows 11 look
+bool isWindows10Look(const QString &value);
+
+//* window corners: 8 px, square in the Windows 10 look
+qreal cornerRadiusFor(bool windows10);
 
 //* corner radii: square on any side that touches a screen edge, and when maximized
 Corners cornersFor(qreal radius, bool maximized, Qt::Edges adjacentScreenEdges);

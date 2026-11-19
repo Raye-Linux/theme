@@ -6,6 +6,7 @@
 
 #include "rayesettingsprovider.h"
 
+#include "rayedecorationmetrics.h"
 #include "rayeexceptionlist.h"
 
 #include <QRegularExpression>
@@ -18,8 +19,33 @@ SettingsProvider *SettingsProvider::s_self = nullptr;
 //__________________________________________________________________
 SettingsProvider::SettingsProvider()
     : m_config(KSharedConfig::openConfig(QStringLiteral("rayerc")))
+    , m_shellConfig(KSharedConfig::openConfig(QStringLiteral("rayeshellrc"), KConfig::CascadeConfig))
 {
+    // Raye Settings writes the look with KConfig::Notify: windows follow at once
+    m_shellWatcher = KConfigWatcher::create(m_shellConfig);
+    connect(m_shellWatcher.data(), &KConfigWatcher::configChanged, this, [this](const KConfigGroup &group) {
+        if (group.name() != QLatin1String("Appearance")) {
+            return;
+        }
+        const bool was = m_windows10;
+        readLook();
+        if (was != m_windows10) {
+            Q_EMIT lookChanged();
+        }
+    });
     reconfigure();
+}
+
+//__________________________________________________________________
+void SettingsProvider::readLook()
+{
+    m_windows10 = DecorationMetrics::isWindows10Look(m_shellConfig->group(QStringLiteral("Appearance")).readEntry("Look", QString()));
+}
+
+//__________________________________________________________________
+bool SettingsProvider::windows10() const
+{
+    return m_windows10;
 }
 
 //__________________________________________________________________
@@ -48,6 +74,13 @@ void SettingsProvider::reconfigure()
     }
 
     m_defaultSettings->load();
+
+    const bool was = m_windows10;
+    m_shellConfig->reparseConfiguration();
+    readLook();
+    if (was != m_windows10) {
+        Q_EMIT lookChanged();
+    }
 
     ExceptionList exceptions;
     exceptions.readConfig(m_config);

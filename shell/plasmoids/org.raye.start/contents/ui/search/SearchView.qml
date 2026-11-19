@@ -162,7 +162,7 @@ FocusScope {
         id: box
         anchors { left: parent.left; right: parent.right; top: parent.top; leftMargin: 32; rightMargin: 32; topMargin: 24 }
         height: 36
-        radius: height / 2
+        radius: ShellTokens.windows10 ? 0 : height / 2
         color: Tokens.fillInputActive
         border.width: 1
         border.color: Qt.alpha(ShellTokens.accent, 0.8)
@@ -259,7 +259,7 @@ FocusScope {
                     height: 36
                     Rectangle {
                         anchors.fill: parent
-                        radius: Tokens.radiusControl
+                        radius: ShellTokens.radiusButton
                         color: recentMouse.containsMouse ? ShellTokens.hoverFill : "transparent"
                     }
                     Kirigami.Icon {
@@ -338,7 +338,7 @@ FocusScope {
                 Rectangle {
                     visible: !row.isHeader
                     anchors { fill: parent; margins: 1 }
-                    radius: Tokens.radiusControl
+                    radius: ShellTokens.radiusButton
                     color: view.currentIndex === row.index ? ShellTokens.selectedFill
                                                            : rowMouse.containsMouse ? ShellTokens.hoverFill : "transparent"
                     // the chosen one has the accent mark on its left
@@ -497,7 +497,7 @@ FocusScope {
         height: visible ? 36 : 0
         hoverEnabled: true
         background: Rectangle {
-            radius: Tokens.radiusControl
+            radius: ShellTokens.radiusButton
             color: action.down ? ShellTokens.pressFill : action.hovered ? ShellTokens.hoverFill : "transparent"
         }
         contentItem: Row {

@@ -37,6 +37,7 @@ private:
     QJSEngine m_js;
     QJSEngine m_menu;
     QJSEngine m_links;
+    QJSEngine m_tiles;
     QStringList m_warnings;
     static inline TestStart *s_self = nullptr;
 
@@ -70,6 +71,15 @@ private:
         if (r.isError())
             qWarning() << name << r.toString();
         return r;
+    }
+
+    // a JS expression on tileslogic.js, as JSON
+    QString tiles(const QString &expr)
+    {
+        const QJSValue r = m_tiles.evaluate(u"JSON.stringify("_s + expr + u")"_s);
+        if (r.isError())
+            qWarning() << expr << r.toString();
+        return r.toString();
     }
 
     QJSValue links(const char *name, const QJSValueList &args)
@@ -259,6 +269,10 @@ private Q_SLOTS:
         QVERIFY(q.open(QIODevice::ReadOnly));
         const QJSValue rq = m_links.evaluate(QString::fromUtf8(q.readAll()).remove(u".pragma library"_s));
         QVERIFY2(!rq.isError(), qPrintable(rq.toString()));
+        QFile t(QStringLiteral(RAYE_START_DIR "/contents/ui/tileslogic.js"));
+        QVERIFY(t.open(QIODevice::ReadOnly));
+        const QJSValue rt = m_tiles.evaluate(QString::fromUtf8(t.readAll()).remove(u".pragma library"_s));
+        QVERIFY2(!rt.isError(), qPrintable(rt.toString()));
         qInstallMessageHandler(collect);
     }
 
@@ -786,6 +800,100 @@ private Q_SLOTS:
         QVERIFY(text.contains(u"Name[fr]="_s));
     }
 
+    // Windows 10 look: Raye's first tiles, before anything is changed
+    void windows10Row()
+    {
+        QCOMPARE(call("rowWidth10", {u"box"_s, true}).toInt(), 48 + 320 + 48);
+        // no icon-and-label search on Windows 10: the box
+        QCOMPARE(call("rowWidth10", {u"iconlabel"_s, false}).toInt(), 48 + 320);
+        QCOMPARE(call("rowWidth10", {u"icon"_s, true}).toInt(), 3 * 48);
+        QCOMPARE(call("rowWidth10", {u"hidden"_s, false}).toInt(), 48);
+    }
+
+    // Start sits on the taskbar, against the left edge, one column of
+    // tiles on a small screen and two on a wide one
+    void windows10Popup()
+    {
+        const QJSValue small = call("popupSize10", {1280, 800, 48, 1});
+        QCOMPARE(small.property(u"width"_s).toInt(), 48 + 296 + 8 + 24 + 320);
+        QCOMPARE(small.property(u"height"_s).toInt(), 720);
+        const QJSValue wide = call("popupSize10", {1920, 1080, 48, 2});
+        QCOMPARE(wide.property(u"width"_s).toInt(), 48 + 296 + 8 + 24 + 2 * 320 + 32);
+        // never wider or taller than the screen
+        const QJSValue tiny = call("popupSize10", {640, 480, 48, 3});
+        QCOMPARE(tiny.property(u"width"_s).toInt(), 640);
+        QCOMPARE(tiny.property(u"height"_s).toInt(), 432);
+        const QJSValue pos = call("popupPosition10", {rect(1280, 0, 1920, 1080), 1032, 1048, 720});
+        QCOMPARE(pos.property(u"x"_s).toInt(), 1280);
+        QCOMPARE(pos.property(u"y"_s).toInt(), 1032 - 720);
+    }
+
+    void tileDefaults()
+    {
+        const QString pins = uR"(["org.kde.dolphin.desktop","firefox.desktop","org.raye.store.desktop","org.kde.elisa.desktop"])"_s;
+        QCOMPARE(tiles(u"groups('', "_s + pins + u").map(g => g.name)"_s), uR"(["@productivity","@explore"])"_s);
+        QCOMPARE(tiles(u"groups('', "_s + pins + u")[0].tiles"_s),
+                 uR"([{"id":"org.kde.dolphin.desktop","size":"wide"},{"id":"firefox.desktop","size":"medium"}])"_s);
+        QCOMPARE(tiles(u"groups('', "_s + pins + u")[1].tiles.map(t => t.id + ' ' + t.size)"_s),
+                 uR"(["org.raye.store.desktop wide","org.kde.elisa.desktop medium"])"_s);
+        QCOMPARE(tiles(u"groups('', [])"_s), u"[]"_s);
+    }
+
+    // the groups follow the pins: unpinned apps go, a new pin lands at the
+    // end of the last group, an app shows once
+    void tilesFollowThePins()
+    {
+        const QString text = u"Work|a.desktop=wide,b.desktop=small,a.desktop=large;Play|gone.desktop=medium"_s;
+        QCOMPARE(tiles(u"groups('"_s + text + u"', ['a.desktop','b.desktop','new.desktop'])"_s),
+                 uR"([{"name":"Work","tiles":[{"id":"a.desktop","size":"wide"},{"id":"b.desktop","size":"small"},{"id":"new.desktop","size":"medium"}]}])"_s);
+        // a size nobody knows is medium
+        QCOMPARE(tiles(u"parse('|x.desktop=huge')[0].tiles[0].size"_s), u"\"medium\""_s);
+    }
+
+    void tileNamesRoundTrip()
+    {
+        QCOMPARE(tiles(u"parse(serialize([{ name: 'Jeux; à | moi, =', tiles: [{ id: 'a.desktop', size: 'small' }] }]))"_s),
+                 uR"([{"name":"Jeux; à | moi, =","tiles":[{"id":"a.desktop","size":"small"}]}])"_s);
+        QCOMPARE(tiles(u"serialize(rename(parse('|a.desktop=wide'), 0, '  Work '))"_s), u"\"Work|a.desktop=wide\""_s);
+    }
+
+    // medium, wide and large start on even cells; small ones fill a 2 x 2
+    // block four at a time, as on Windows 10
+    void tilesPack()
+    {
+        const QString r = tiles(u"pack(parse('|A=medium,b=small,c=small,d=small,e=small,F=wide,g=small')[0].tiles)"
+                                ".tiles.map(t => t.id + ' ' + t.x + ',' + t.y)"_s);
+        QCOMPARE(r, uR"(["A 0,0","b 2,0","c 3,0","d 2,1","e 3,1","F 0,2","g 4,0"])"_s);
+        QCOMPARE(tiles(u"pack(parse('|A=large,B=medium,C=medium')[0].tiles).rows"_s), u"4"_s);
+        QCOMPARE(tiles(u"tilePixels('medium')"_s), uR"({"width":104,"height":104})"_s);
+        QCOMPARE(tiles(u"groupWidth"_s), u"320"_s);
+    }
+
+    void tilesMove()
+    {
+        const QString g = u"parse('One|a=medium,b=medium,c=medium;Two|d=small')"_s;
+        // later in the same group: counted without the tile itself
+        QCOMPARE(tiles(u"moveTile("_s + g + u", 'a', 0, 2)[0].tiles.map(t => t.id)"_s), uR"(["b","a","c"])"_s);
+        // to the other group, which keeps its name
+        QCOMPARE(tiles(u"serialize(moveTile("_s + g + u", 'b', 1, 0))"_s), u"\"One|a=medium,c=medium;Two|b=medium,d=small\""_s);
+        // past the last group: a new one; the empty group goes
+        QCOMPARE(tiles(u"serialize(moveTile("_s + g + u", 'd', 2, 0))"_s), u"\"One|a=medium,b=medium,c=medium;|d=small\""_s);
+        QCOMPARE(tiles(u"serialize(setSize("_s + g + u", 'd', 'large'))"_s), u"\"One|a=medium,b=medium,c=medium;Two|d=large\""_s);
+        QCOMPARE(tiles(u"serialize(setSize("_s + g + u", 'd', 'giant'))"_s), u"\"One|a=medium,b=medium,c=medium;Two|d=small\""_s);
+    }
+
+    void tileColumns()
+    {
+        QCOMPARE(tiles(u"columnsFor('auto', 1280)"_s), u"1"_s);
+        QCOMPARE(tiles(u"columnsFor('auto', 1920)"_s), u"2"_s);
+        QCOMPARE(tiles(u"columnsFor('3', 1280)"_s), u"3"_s);
+        QCOMPARE(tiles(u"columnsFor('9', 1280)"_s), u"1"_s);
+        QCOMPARE(tiles(u"columnsForWidth(320)"_s), u"1"_s);
+        QCOMPARE(tiles(u"columnsForWidth(700)"_s), u"2"_s);
+        QCOMPARE(tiles(u"columnsForWidth(5000)"_s), u"3"_s);
+        QCOMPARE(tiles(u"columnOf([300, 100, 100], 2)"_s), u"[0,1,1]"_s);
+    }
+
     void popupLeftEdge()
     {
         // centred on a 1920 screen at x 1366
@@ -908,6 +1016,136 @@ private Q_SLOTS:
         QQuickItem *bar = v->item->findChild<QQuickItem *>(u"bottomBar"_s);
         QCOMPARE(bar->property("fullName").toString(), u"Test Raye"_s);
         QVERIFY(!v->item->findChild<QQuickItem *>(u"updateDot"_s)->isVisible());
+    }
+
+    // The Windows 10 look: the eye, a wide square search box and Task view,
+    // each as tall as the taskbar, side by side
+    void windows10RowButtons()
+    {
+        auto v = view(u"row"_s, {{u"windows10"_s, true}});
+        QVERIFY(v);
+        QQuickItem *eye = child(v->item, u"startButton"_s);
+        QQuickItem *box = child(v->item, u"searchBox"_s);
+        QQuickItem *taskView = child(v->item, u"taskViewButton"_s);
+        QCOMPARE(eye->width(), 48.0);
+        QCOMPARE(eye->height(), 48.0);
+        QCOMPARE(box->width(), 320.0);
+        QCOMPARE(box->height(), 48.0);
+        QCOMPARE(v->item->property("rowWidth").toInt(), 48 + 320 + 48);
+        QCOMPARE(box->mapToScene(QPointF(0, 0)).x(), 48.0);
+        QCOMPARE(taskView->mapToScene(QPointF(0, 0)).x(), 48.0 + 320);
+        // no icon-and-label search on Windows 10: it stays a box
+        QMetaObject::invokeMethod(v->fixture.get(), "setOption", Q_ARG(QVariant, u"searchMode"_s), Q_ARG(QVariant, u"iconlabel"_s));
+        QVERIFY(box->isVisible());
+        QVERIFY(!child(v->item, u"searchLabel"_s)->isVisible());
+        click(v.get(), box);
+        QCOMPARE(calls(v.get()), QStringList({u"search"_s}));
+    }
+
+    // Start in the Windows 10 look: rail, every app A to Z, tiles in groups
+    void windows10Start()
+    {
+        StartConfig config(u"[Appearance]\nLook=windows10\n[Start]\nAllView=category\n"_s);
+        auto v = view(u"frame"_s, {{u"withBackend"_s, true}});
+        QVERIFY(v);
+        QCOMPARE(v->item->width(), 48.0 + 296 + 8 + 24 + 320);
+        QTRY_COMPARE(visibleNamed(v->item, u"tile"_s).size(), 3);
+        QVERIFY(child(v->item, u"startRail"_s));
+        // the list is always the letters, whatever AllView says
+        QTRY_COMPARE(visibleNamed(v->item, u"allAppsRow"_s).size(), 4);
+        QCOMPARE(visibleNamed(v->item, u"letterHeader"_s).size(), 4);
+        QCOMPARE(visibleNamed(v->item, u"recentlyAddedRow"_s).size(), 1);
+        // one group, Raye's own, with Files wide
+        const auto names = visibleNamed(v->item, u"groupName"_s);
+        QCOMPARE(names.size(), 1);
+        QCOMPARE(names.first()->property("text").toString(), u"Productivity"_s);
+        const auto tiles = visibleNamed(v->item, u"tile"_s);
+        QCOMPARE(tiles.at(0)->property("name").toString(), u"Files"_s);
+        QCOMPARE(tiles.at(0)->width(), 4 * 54.0 - 4);
+        QCOMPARE(tiles.at(1)->width(), 2 * 54.0 - 4);
+
+        // a click on a tile starts its app, an app of the list too
+        click(v.get(), tiles.at(1));
+        QTRY_VERIFY(backendCalls(v.get()).contains(u"trigger 1"_s));
+        click(v.get(), visibleNamed(v->item, u"allAppsRow"_s).at(1));
+        QTRY_VERIFY(backendCalls(v.get()).contains(u"app org.kde.kcalc.desktop"_s));
+
+        // the account and power in the rail
+        QVERIFY(child(v->item, u"accountButton"_s)->isVisible());
+        QVERIFY(child(v->item, u"powerButton"_s)->isVisible());
+        QVERIFY(v->item->findChild<QQuickItem *>(u"restartToWindows"_s));
+        QVERIFY(!child(v->item, u"updateDot"_s)->isVisible());
+    }
+
+    // resize, move and name tiles: each ends up in [Start] Tiles
+    void windows10TileEdits()
+    {
+        StartConfig config(u"[Appearance]\nLook=windows10\n"_s);
+        auto v = view(u"frame"_s, {{u"withBackend"_s, true}});
+        QVERIFY(v);
+        QTRY_COMPARE(visibleNamed(v->item, u"tile"_s).size(), 3);
+
+        QObject *wide = v->item->findChild<QObject *>(u"tileWide"_s);
+        QVERIFY(wide);
+        QObject *menu = v->item->findChild<QObject *>(u"tileMenu"_s);
+        QVERIFY(menu);
+        QMetaObject::invokeMethod(menu, "openFor", Q_ARG(QVariant, u"firefox.desktop"_s),
+                                  Q_ARG(QVariant, u"medium"_s), Q_ARG(QVariant, QPointF(10, 10)));
+        QMetaObject::invokeMethod(wide, "triggered");
+        QVERIFY(backendCalls(v.get()).contains(
+            u"tiles %40productivity|org.kde.dolphin.desktop=wide,firefox.desktop=wide,org.kde.konsole.desktop=medium"_s));
+        QMetaObject::invokeMethod(menu, "close");
+
+        // dropped below the groups: a group of its own
+        QQuickItem *area = child(v->item, u"tileArea"_s);
+        const int bottom = area->property("groupsBottom").toInt();
+        QMetaObject::invokeMethod(area, "dropTile", Q_ARG(QVariant, u"org.kde.konsole.desktop"_s),
+                                  Q_ARG(QVariant, QPointF(10, bottom + 10)));
+        QVERIFY(backendCalls(v.get()).contains(
+            u"tiles %40productivity|org.kde.dolphin.desktop=wide,firefox.desktop=medium;|org.kde.konsole.desktop=medium"_s));
+        // dropped on Files: in its place
+        QMetaObject::invokeMethod(area, "dropTile", Q_ARG(QVariant, u"org.kde.konsole.desktop"_s),
+                                  Q_ARG(QVariant, QPointF(10, 50)));
+        QVERIFY(backendCalls(v.get()).contains(
+            u"tiles %40productivity|org.kde.konsole.desktop=medium,org.kde.dolphin.desktop=wide,firefox.desktop=medium"_s));
+
+        // a name of the person's own
+        // the tile menu had its own window: ours gets the keys back
+        QTest::qWait(300);
+        v->window->requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(v->window));
+        QQuickItem *header = visibleNamed(v->item, u"groupHeader"_s).first();
+        click(v.get(), header);
+        QTRY_COMPARE(visibleNamed(v->item, u"groupField"_s).size(), 1);
+        QTRY_VERIFY(visibleNamed(v->item, u"groupField"_s).first()->hasActiveFocus());
+        for (const char c : {'W', 'o', 'r', 'k'})
+            QTest::keyClick(v->window, c);
+        QTest::keyClick(v->window, Qt::Key_Return);
+        QVERIFY(backendCalls(v.get()).contains(
+            u"tiles Work|org.kde.dolphin.desktop=wide,firefox.desktop=medium,org.kde.konsole.desktop=medium"_s));
+        // and the typing never went to Search
+        QCOMPARE(v->item->property("mode").toString(), u"start"_s);
+    }
+
+    // The look changes at once, back and forth, in a Start that is open
+    void lookSwitchesAtOnce()
+    {
+        auto v = view(u"frame"_s, {{u"withBackend"_s, true}});
+        QVERIFY(v);
+        QCOMPARE(v->item->width(), 680.0);
+        QTRY_COMPARE(visibleNamed(v->item, u"pinnedTile"_s).size(), 3);
+        QObject *settings = v->engine->singletonInstance<QObject *>("org.raye.shell", "ShellSettings");
+        QVERIFY(settings);
+        {
+            StartConfig config(u"[Appearance]\nLook=windows10\n"_s);
+            QMetaObject::invokeMethod(settings, "reload");
+            QTRY_VERIFY(child(v->item, u"startRail"_s));
+            QCOMPARE(v->item->width(), 696.0);
+            QTRY_COMPARE(visibleNamed(v->item, u"tile"_s).size(), 3);
+        }
+        QMetaObject::invokeMethod(settings, "reload");
+        QTRY_COMPARE(visibleNamed(v->item, u"pinnedTile"_s).size(), 3);
+        QCOMPARE(v->item->width(), 680.0);
     }
 
     // A restart another part of the system asked for puts the dot on the

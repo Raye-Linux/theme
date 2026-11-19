@@ -22,6 +22,7 @@
 
 #include <QApplication>
 #include <QDir>
+#include <QFile>
 #include <QHoverEvent>
 #include <QPainter>
 #include <QPainterPath>
@@ -360,6 +361,35 @@ private Q_SLOTS:
         QCOMPARE(m_decoration->borderRadius().bottomRight(), 8.0);
         // 1 px outline in stroke.surface
         QCOMPARE(m_decoration->borderOutline().color().alpha(), qRound(0.09 * 255));
+    }
+
+    // [Appearance] Look=windows10 in rayeshellrc: square corners and the
+    // accent around the window in use, at once and back again
+    void windows10LookIsSquare()
+    {
+        build(WindowState());
+        QCOMPARE(qAlpha(paint().pixel(0, 0)), 0);
+        const QString dir = qEnvironmentVariable("XDG_CONFIG_HOME");
+        QVERIFY(!dir.isEmpty());
+        QDir().mkpath(dir);
+        QFile f(dir + QStringLiteral("/rayeshellrc"));
+        QVERIFY(f.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        f.write("[Appearance]\nLook=windows10\n");
+        f.close();
+        Q_EMIT m_settings->reconfigured();
+        QTest::qWait(50);
+        const QImage square(paint());
+        QCOMPARE(qAlpha(square.pixel(0, 0)), 255);
+        QCOMPARE(m_decoration->borderRadius().bottomLeft(), 0.0);
+        QCOMPARE(m_decoration->borderOutline().radius().topLeft(), 0.0);
+        QVERIFY(channelDistance(m_decoration->borderOutline().color(), night.accent) <= 2);
+        shoot(QStringLiteral("night-100-windows10"));
+
+        QFile::remove(f.fileName());
+        Q_EMIT m_settings->reconfigured();
+        QTest::qWait(50);
+        QCOMPARE(qAlpha(paint().pixel(0, 0)), 0);
+        QCOMPARE(m_decoration->borderRadius().bottomLeft(), 8.0);
     }
 
     void maximizedIsSquare()

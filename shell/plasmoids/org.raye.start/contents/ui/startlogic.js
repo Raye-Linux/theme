@@ -93,3 +93,46 @@ function isTypedText(text, ctrl, alt, meta) {
     var c = text.charCodeAt(0)
     return c >= 0x20 && c !== 0x7f
 }
+
+// --- the Windows 10 look --------------------------------------------------
+// The buttons fill the taskbar's height and sit side by side, from the
+// left edge: the eye, a wide square search box, Task view.
+var w10 = {
+    buttonWidth: 48,
+    searchBoxWidth: 320,
+    railWidth: 48,          // Start's slim column of icons on the left
+    listWidth: 296,         // the list of apps
+    tilesLeft: 8,           // room before and after the tiles
+    tilesRight: 24,
+    groupWidth: 320,        // tileslogic.js groupWidth
+    groupGap: 32,
+    maxHeight: 720
+}
+
+// Windows 10 has no icon-and-label search: that style is the box there
+function searchWidth10(style) {
+    switch (searchStyle(style)) {
+    case "hidden": return 0
+    case "icon": return w10.buttonWidth
+    default: return w10.searchBoxWidth
+    }
+}
+
+function rowWidth10(style, taskView) {
+    return w10.buttonWidth + searchWidth10(style) + (taskView ? w10.buttonWidth : 0)
+}
+
+// Start: the rail, the list and the columns of tile groups, as tall as 720
+// or what is above the taskbar; it sits on the taskbar, against the left edge.
+function popupSize10(screenWidth, screenHeight, panelHeight, columns) {
+    columns = Math.max(1, columns || 1)
+    var w = w10.railWidth + w10.listWidth + w10.tilesLeft + w10.tilesRight
+            + columns * w10.groupWidth + (columns - 1) * w10.groupGap
+    w = Math.min(w, Math.max(0, screenWidth))
+    var h = Math.min(w10.maxHeight, screenHeight - panelHeight)
+    return { width: w, height: Math.max(0, h) }
+}
+
+function popupPosition10(screen, panelTop, width, height) {
+    return { x: screen.x, y: Math.max(screen.y, panelTop - height) }
+}

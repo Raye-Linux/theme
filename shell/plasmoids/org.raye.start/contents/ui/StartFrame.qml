@@ -5,6 +5,7 @@
 // views are separate files:
 //   start/StartView.qml    StartView { signal requestClose; property string pendingText;
 //                          property var backend; signal requestSearch(string text) }
+//   start10/StartView10.qml  the same, in the Windows 10 look
 //   search/SearchView.qml  SearchView { property string query; property var backend;
 //                          signal requestClose; signal requestStart }
 // `backend` is Backend.qml (models, actions), made in the background
@@ -14,6 +15,7 @@ import org.raye.ui
 import org.raye.shell
 
 import "startlogic.js" as Logic
+import "tileslogic.js" as Tiles
 
 FocusScope {
     id: frame
@@ -37,7 +39,10 @@ FocusScope {
     // the views are made the first time they are wanted
     property bool startWanted: false
 
-    readonly property var size: Logic.popupSize(screenWidth, screenHeight, panelHeight)
+    readonly property bool windows10: ShellSettings.windows10
+    readonly property int tileColumns: Tiles.columnsFor(ShellSettings.startTileColumns, screenWidth)
+    readonly property var size: windows10 ? Logic.popupSize10(screenWidth, screenHeight, panelHeight, tileColumns)
+                                          : Logic.popupSize(screenWidth, screenHeight, panelHeight)
     readonly property Item view: mode === "search" ? searchLoader.item : startLoader.item
     // the view of the mode is made: the panel can show
     readonly property bool ready: mode === "search" ? searchLoader.status === Loader.Ready
@@ -241,8 +246,12 @@ FocusScope {
             anchors.fill: parent
             active: frame.startWanted
             asynchronous: frame.preparing
-            source: "start/StartView.qml"
-            onLoaded: item.backend = Qt.binding(() => frame.backend)
+            source: frame.windows10 ? "start10/StartView10.qml" : "start/StartView.qml"
+            onLoaded: {
+                item.backend = Qt.binding(() => frame.backend)
+                if (item.tileColumns !== undefined)
+                    item.tileColumns = Qt.binding(() => frame.tileColumns)
+            }
             focus: frame.mode === "start"
             opacity: frame.mode === "start" ? 1 : 0
             visible: opacity > 0

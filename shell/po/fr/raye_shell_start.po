@@ -259,3 +259,48 @@ msgstr "Liste"
 
 msgid "Restart to Windows"
 msgstr "Redémarrer sur Windows"
+
+# The Windows 10 look
+msgid "Type here to search"
+msgstr "Taper ici pour rechercher"
+
+msgctxt "section of Start"
+msgid "Recently added"
+msgstr "Ajoutées récemment"
+
+msgid "Expand"
+msgstr "Développer"
+
+msgid "Collapse"
+msgstr "Réduire"
+
+msgid "Productivity"
+msgstr "Productivité"
+
+msgid "Explore"
+msgstr "Explorer"
+
+msgid "Name group"
+msgstr "Nommer le groupe"
+
+msgid "Drop here for a new group"
+msgstr "Déposer ici pour un nouveau groupe"
+
+msgid "Resize"
+msgstr "Redimensionner"
+
+msgctxt "tile size"
+msgid "Small"
+msgstr "Petite"
+
+msgctxt "tile size"
+msgid "Medium"
+msgstr "Moyenne"
+
+msgctxt "tile size"
+msgid "Wide"
+msgstr "Large"
+
+msgctxt "tile size"
+msgid "Large"
+msgstr "Grande"

@@ -7,8 +7,13 @@
 # Lists are comma separated. Values not listed for a key fall back to its
 # default.
 
+[Appearance]
+# windows11, windows10: the taskbar, Start, the corners of windows and
+# flyouts. windows10 keeps the taskbar on the left whatever Alignment says.
+Look=windows11
+
 [Taskbar]
-# center, left
+# center, left (the Windows 11 look)
 Alignment=center
 # box, iconlabel, icon, hidden
 Search=box
@@ -49,6 +54,10 @@ Pinned=org.kde.dolphin.desktop,firefox.desktop,org.raye.store.desktop,org.raye.s
 PinnedFolders=
 # why a restart is needed (a dot on the power button), empty when none
 RestartNeeded=
+# the tiles of the Windows 10 look, written by the Start menu
+Tiles=
+# auto, 1, 2, 3: columns of tile groups in the Windows 10 look
+TileColumns=auto
 
 [Clock]
 ShowSeconds=false

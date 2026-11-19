@@ -241,6 +241,10 @@ void Decoration::init()
     // full reconfiguration
     connect(s.get(), &KDecoration3::DecorationSettings::reconfigured, this, &Decoration::reconfigure);
     connect(s.get(), &KDecoration3::DecorationSettings::reconfigured, SettingsProvider::self(), &SettingsProvider::reconfigure, Qt::UniqueConnection);
+    connect(SettingsProvider::self(), &SettingsProvider::lookChanged, this, [this]() {
+        reconfigure();
+        update();
+    });
     connect(s.get(), &KDecoration3::DecorationSettings::reconfigured, this, &Decoration::updateButtonsGeometryDelayed);
 
     connect(window(), &KDecoration3::DecoratedWindow::activeChanged, this, &Decoration::recalculateBorders);
@@ -430,7 +434,8 @@ void Decoration::recalculateBorders()
         setBorderOutline(KDecoration3::BorderOutline());
     } else {
         // 1 px stroke.surface outline, or the accent at 70 % with the accent border on
-        const bool accentBorder(m_internalSettings->accentBorder() && window()->isActive());
+        // the Windows 10 look draws the accent around the window in use
+        const bool accentBorder((m_internalSettings->accentBorder() || SettingsProvider::self()->windows10()) && window()->isActive());
         const auto color = DecorationMetrics::outlineColor(isDark(),
                                                            window()->color(ColorGroup::Active, ColorRole::Foreground),
                                                            window()->palette().color(QPalette::Active, QPalette::Highlight),
@@ -718,6 +723,10 @@ void Decoration::setScaledCornerRadius()
     // On X11, the smallSpacing value is used for scaling.
     // On Wayland, this value has constant factor of 2.
     // Removing it will break radius scaling on X11.
+    if (SettingsProvider::self()->windows10()) {
+        m_scaledCornerRadius = DecorationMetrics::cornerRadiusFor(true);
+        return;
+    }
     m_scaledCornerRadius = KDecoration3::snapToPixelGrid(Metrics::Frame_FrameRadius * settings()->smallSpacing(), window()->nextScale());
 }
 

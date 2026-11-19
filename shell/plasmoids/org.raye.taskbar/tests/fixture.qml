@@ -41,6 +41,7 @@ Window {
         property string smallButtons: "never"
         property bool badges: true
         property bool flashing: true
+        property bool windows10: false
     }
 
     QtObject {

@@ -95,34 +95,9 @@ Item {
         }
     }
 
-    RayeMenu {
+    AccountMenu {
         id: accountMenu
-        RayeMenuItem {
-            text: i18nd("raye_shell_start", "Change account settings")
-            icon.name: "user-identity"
-            onTriggered: bar.backend.power("account")
-        }
-        RayeMenuSeparator {}
-        RayeMenuItem {
-            text: i18nd("raye_shell_start", "Lock")
-            icon.name: "system-lock-screen"
-            enabled: !bar.sessions || bar.sessions.canLock !== false
-            onTriggered: bar.backend.power("lock")
-        }
-        RayeMenuItem {
-            text: i18nd("raye_shell_start", "Sign out")
-            icon.name: "system-log-out"
-            enabled: !bar.sessions || bar.sessions.canLogout !== false
-            onTriggered: bar.backend.power("signout")
-        }
-        RayeMenuItem {
-            objectName: "switchUser"
-            text: i18nd("raye_shell_start", "Switch user")
-            icon.name: "system-switch-user"
-            visible: bar.sessions ? bar.sessions.canSwitchUser === true : false
-            height: visible ? implicitHeight : 0
-            onTriggered: bar.backend.power("switch")
-        }
+        backend: bar.backend
     }
 
     T.AbstractButton {
@@ -169,51 +144,9 @@ Item {
         }
     }
 
-    RayeMenu {
+    PowerMenu {
         id: powerMenu
-        objectName: "powerMenu"
-        RayeMenuItem {
-            text: i18nd("raye_shell_start", "Sleep")
-            icon.name: "system-suspend"
-            visible: !bar.sessions || bar.sessions.canSuspend !== false
-            height: visible ? implicitHeight : 0
-            onTriggered: bar.backend.power("sleep")
-        }
-        RayeMenuItem {
-            text: i18nd("raye_shell_start", "Update and shut down")
-            icon.name: "system-shutdown"
-            visible: bar.updatesReady
-            height: visible ? implicitHeight : 0
-            onTriggered: bar.backend.power("update-shutdown")
-        }
-        RayeMenuItem {
-            text: i18nd("raye_shell_start", "Shut down")
-            icon.name: "system-shutdown"
-            enabled: !bar.sessions || bar.sessions.canShutdown !== false
-            onTriggered: bar.backend.power("shutdown")
-        }
-        RayeMenuItem {
-            text: i18nd("raye_shell_start", "Update and restart")
-            icon.name: "system-reboot"
-            visible: bar.updatesReady
-            height: visible ? implicitHeight : 0
-            onTriggered: bar.backend.power("update-restart")
-        }
-        RayeMenuItem {
-            text: i18nd("raye_shell_start", "Restart")
-            icon.name: "system-reboot"
-            enabled: !bar.sessions || bar.sessions.canReboot !== false
-            onTriggered: bar.backend.power("restart")
-        }
-        RayeMenuItem {
-            objectName: "restartToWindows"
-            readonly property bool wanted: bar.backend ? bar.backend.canRestartToWindows === true : false
-            text: i18nd("raye_shell_start", "Restart to Windows")
-            icon.name: "system-reboot"
-            visible: wanted
-            height: visible ? implicitHeight : 0
-            onTriggered: bar.backend.restartToWindows()
-        }
+        backend: bar.backend
     }
 
     // [Start] Folders: a button each, before power

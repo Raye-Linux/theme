@@ -7,7 +7,8 @@
 // With --open: the Start popup over the wallpaper (--search: in Search
 // mode, "wi" typed), on its own acrylic.
 // With --links: the quick link menu over the eye (--links-session: its
-// second menu).
+// second menu). With [Appearance] Look=windows10 in the rayeshellrc of
+// $XDG_CONFIG_HOME: everything in the Windows 10 look.
 import QtQuick
 import QtQuick.Window
 import org.raye.ui
@@ -56,6 +57,7 @@ Window {
         property string smallButtons: "never"
         property bool badges: true
         property bool flashing: true
+        property bool windows10: ShellSettings.windows10
     }
 
     component Apps: QtObject {
@@ -97,7 +99,7 @@ Window {
             id: start
             height: parent.height
             // the apps' natural width, as the taskbar publishes it
-            leadingSpace: Logic.leadingSpace(settings.alignment, bar.width, 0, rowWidth, apps.count * 44)
+            leadingSpace: settings.windows10 ? 0 : Logic.leadingSpace(settings.alignment, bar.width, 0, rowWidth, apps.count * 44)
         }
         Taskbar.TaskBar {
             id: tasks
@@ -179,9 +181,10 @@ Window {
     Item {
         id: popup
         visible: win.open
-        readonly property var size: Logic.popupSize(win.width, win.height, 48)
-        readonly property var pos: Logic.popupPosition("center", Qt.rect(0, 0, win.width, win.height), win.height - 48,
-                                                        size.width, size.height)
+        readonly property var size: Qt.size(frame.width, frame.height)
+        readonly property var pos: ShellSettings.windows10
+            ? Logic.popupPosition10(Qt.rect(0, 0, win.width, win.height), win.height - 48, size.width, size.height)
+            : Logic.popupPosition("center", Qt.rect(0, 0, win.width, win.height), win.height - 48, size.width, size.height)
         x: pos.x
         y: pos.y
         width: size.width
@@ -196,6 +199,12 @@ Window {
                 reset(win.args.indexOf("--search") >= 0 ? "search" : "start",
                       win.args.indexOf("--search") >= 0 ? "wi" : "")
                 present()
+            }
+            // --rail: the Windows 10 rail open
+            Timer {
+                interval: 300
+                running: win.args.indexOf("--rail") >= 0
+                onTriggered: frame.view.railExpanded = true
             }
             // --all: on the All page, in the view of [Start] AllView
             Timer {

@@ -20,6 +20,8 @@
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QScopeGuard>
+#include <QDir>
+#include <QStandardPaths>
 #include <QSignalSpy>
 #include <QTest>
 
@@ -224,6 +226,28 @@ private Q_SLOTS:
         QCOMPARE(o->property("d").toInt(), 500);
         QCOMPARE(o->property("s").toReal(), 0.9);
         QCOMPARE(o->property("a").value<QColor>(), QColor(u"#e0a458"_s));
+    }
+
+    // the Windows 10 look: every corner of the shell is square
+    void squareInWindows10()
+    {
+        const QString dir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+        QDir().mkpath(dir);
+        QFile f(dir + u"/rayeshellrc"_s);
+        QVERIFY(f.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        f.write("[Appearance]\nLook=windows10\n");
+        f.close();
+        auto removeFile = qScopeGuard([&] { QFile::remove(f.fileName()); });
+        QQmlEngine engine;
+        engineSetup(engine);
+        auto o = load(engine, "import QtQuick\nimport org.raye.shell\nQtObject {"
+                              " property real r: ShellTokens.radiusButton; property real f: ShellTokens.radiusFlyout;"
+                              " property real t: ShellTokens.radiusTooltip; property bool w: ShellTokens.windows10 }");
+        QVERIFY(o);
+        QVERIFY(o->property("w").toBool());
+        QCOMPARE(o->property("r").toReal(), 0.0);
+        QCOMPARE(o->property("f").toReal(), 0.0);
+        QCOMPARE(o->property("t").toReal(), 0.0);
     }
 
     void textContrast_data()

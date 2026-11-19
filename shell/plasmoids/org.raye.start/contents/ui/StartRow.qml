@@ -3,7 +3,9 @@
 // Each is a 40 x 40 backplate with 4 px corners; the search box is a
 // 232 x 32 pill. `leadingSpace` is the room left before the eye so the
 // whole group (these buttons and the apps after them) sits in the middle
-// of the screen.
+// of the screen. In the Windows 10 look the buttons fill the taskbar's
+// height side by side from the left edge, and the search box is a wide
+// square field ("Type here to search").
 import QtQuick
 import QtQuick.Templates as T
 import org.kde.kirigami as Kirigami
@@ -21,9 +23,17 @@ Item {
     property bool expanded: false
     property string mode: "start"
 
-    readonly property string searchStyle: Logic.searchStyle(settings.searchMode)
+    readonly property bool windows10: settings.windows10 === true
+    readonly property string searchStyle: {
+        const s = Logic.searchStyle(settings.searchMode)
+        return windows10 && s === "iconlabel" ? "box" : s
+    }
     readonly property bool taskViewShown: settings.taskView
-    readonly property int rowWidth: Logic.rowWidth(searchStyle, taskViewShown)
+    readonly property int rowWidth: windows10 ? Logic.rowWidth10(searchStyle, taskViewShown)
+                                              : Logic.rowWidth(searchStyle, taskViewShown)
+    // a button of the row: 40 x 40, or the taskbar's height and 48 wide
+    readonly property int buttonWidth: windows10 ? Logic.w10.buttonWidth : Logic.buttonSize
+    readonly property int buttonHeight: windows10 ? height : Logic.buttonSize
 
     readonly property Item startButton: startButton
     readonly property Item taskViewButton: taskViewButton
@@ -47,12 +57,14 @@ Item {
         id: buttons
         x: row.leadingSpace
         anchors.verticalCenter: parent.verticalCenter
-        spacing: Logic.buttonGap
+        spacing: row.windows10 ? 0 : Logic.buttonGap
 
         // the Raye eye, which blinks when pressed
         PanelButton {
             id: startButton
             objectName: "startButton"
+            width: row.buttonWidth
+            height: row.buttonHeight
             selected: row.expanded && row.mode === "start"
             toolTipText: row.expanded || row.quickLinksOpen ? "" : i18nd("raye_shell_start", "Start")
             Accessible.role: Accessible.ButtonMenu
@@ -98,8 +110,8 @@ Item {
             id: searchBox
             objectName: "searchBox"
             visible: row.searchStyle === "box"
-            width: Logic.searchBoxWidth
-            height: Logic.searchBoxHeight
+            width: row.windows10 ? Logic.w10.searchBoxWidth : Logic.searchBoxWidth
+            height: row.windows10 ? row.height : Logic.searchBoxHeight
             anchors.verticalCenter: parent.verticalCenter
             hoverEnabled: true
             focusPolicy: Qt.TabFocus
@@ -108,20 +120,22 @@ Item {
             onClicked: row.searchClicked()
 
             background: Rectangle {
-                radius: height / 2
-                color: ShellTokens.taskbarDark ? Qt.rgba(1, 1, 1, searchBox.down ? 0.04 : searchBox.hovered ? 0.08 : 0.05)
+                radius: row.windows10 ? 0 : height / 2
+                color: row.windows10 ? (ShellTokens.taskbarDark ? Qt.rgba(1, 1, 1, searchBox.down ? 0.08 : searchBox.hovered ? 0.15 : 0.11)
+                                                                : Qt.rgba(1, 1, 1, searchBox.hovered ? 0.95 : 0.85))
+                     : ShellTokens.taskbarDark ? Qt.rgba(1, 1, 1, searchBox.down ? 0.04 : searchBox.hovered ? 0.08 : 0.05)
                                                : Qt.rgba(1, 1, 1, searchBox.hovered ? 0.7 : 0.55)
                 border.width: 1
                 border.color: row.expanded && row.mode === "search" ? Qt.alpha(ShellTokens.accent, 0.8)
                                                                      : ShellTokens.taskbarDark ? Qt.rgba(1, 1, 1, 0.1) : Qt.rgba(0, 0, 0, 0.08)
                 Behavior on color { ColorAnimation { duration: ShellTokens.durationFaster } }
-                FocusRing { radius: height / 2; target: searchBox }
+                FocusRing { radius: row.windows10 ? 0 : height / 2; target: searchBox }
             }
 
             contentItem: Item {
                 SearchGlyph {
                     id: boxGlass
-                    x: 12
+                    x: row.windows10 ? 14 : 12
                     anchors.verticalCenter: parent.verticalCenter
                     width: 16
                     height: 16
@@ -130,7 +144,7 @@ Item {
                 }
                 Text {
                     anchors { left: boxGlass.right; leftMargin: 10; right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter }
-                    text: i18nd("raye_shell_start", "Search")
+                    text: row.windows10 ? i18nd("raye_shell_start", "Type here to search") : i18nd("raye_shell_start", "Search")
                     elide: Text.ElideRight
                     color: Qt.alpha(ShellTokens.taskbarText, 0.72)
                     font.family: "Inter"
@@ -173,6 +187,8 @@ Item {
             id: searchIcon
             objectName: "searchIcon"
             visible: row.searchStyle === "icon"
+            width: row.buttonWidth
+            height: row.buttonHeight
             selected: row.expanded && row.mode === "search"
             toolTipText: i18nd("raye_shell_start", "Search")
             onClicked: row.searchClicked()
@@ -190,6 +206,8 @@ Item {
             id: taskViewButton
             objectName: "taskViewButton"
             visible: row.taskViewShown
+            width: row.buttonWidth
+            height: row.buttonHeight
             toolTipText: i18nd("raye_shell_start", "Task view")
             onClicked: row.taskViewClicked()
             onHoveredChanged: row.taskViewHovered(hovered)

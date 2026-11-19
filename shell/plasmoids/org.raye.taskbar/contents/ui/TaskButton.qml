@@ -3,6 +3,8 @@
 // pill under the icon (short and grey when the app runs, long and accent
 // for the window in use), the badge at the top right, the amber
 // backplate of an app asking for attention, the hop of an app starting.
+// In the Windows 10 look the button is a square as tall as the taskbar,
+// and a running app gets a line along its bottom edge instead of the pill.
 import QtQuick
 import org.kde.kirigami as Kirigami
 import org.raye.ui
@@ -25,6 +27,8 @@ Item {
     property int childCount: 0
 
     property bool small: false
+    property bool windows10: false
+    readonly property real plateRadius: windows10 ? 0 : ShellTokens.radiusButton
     property bool labelShown: false
     property int count: 0                 // the badge, 0 for none
     property bool flashing: true
@@ -71,7 +75,7 @@ Item {
         id: plate
         objectName: "backplate"
         anchors.fill: parent
-        radius: ShellTokens.radiusButton
+        radius: button.plateRadius
         color: button.pressed ? ShellTokens.taskbarPressFill
              : button.isActive && !button.isMinimized ? ShellTokens.taskbarSelectedFill
              : button.hovered ? ShellTokens.taskbarHoverFill : "transparent"
@@ -83,7 +87,7 @@ Item {
         id: attentionPlate
         objectName: "attention"
         anchors.fill: parent
-        radius: ShellTokens.radiusButton
+        radius: button.plateRadius
         color: Qt.alpha(ShellTokens.attention, 0.8)
         visible: button.attention
         opacity: 1
@@ -98,7 +102,7 @@ Item {
     }
 
     FocusRing {
-        radius: ShellTokens.radiusButton
+        radius: button.plateRadius
         shown: button.keyboardCurrent
     }
 
@@ -171,24 +175,25 @@ Item {
         id: pillHolder
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: button.small ? 1 : 2
+        anchors.bottomMargin: button.windows10 ? 0 : button.small ? 1 : 2
         width: pill.width
-        height: ShellTokens.pillHeight
+        height: pill.height
 
         Rectangle {
             id: pill
             objectName: "pill"
             anchors.centerIn: parent
-            height: ShellTokens.pillHeight
-            radius: height / 2
-            width: button.indicator === "focused" ? ShellTokens.pillLong : ShellTokens.pillShort
-            color: button.indicator === "focused" ? ShellTokens.accent : ShellTokens.pillRunningOnTaskbar
+            height: button.windows10 ? 2 : ShellTokens.pillHeight
+            radius: button.windows10 ? 0 : height / 2
+            width: button.windows10 ? (button.indicator === "focused" ? button.width : button.width - 12)
+                 : button.indicator === "focused" ? ShellTokens.pillLong : ShellTokens.pillShort
+            color: button.indicator === "focused" || button.windows10 ? ShellTokens.accent : ShellTokens.pillRunningOnTaskbar
             opacity: button.indicator === "none" ? 0 : 1
 
             // loading: the short pill breathes until the window shows (runs
             // only while the app starts)
             SequentialAnimation on width {
-                running: button.indicator === "starting" && ShellTokens.durationSlow > 0
+                running: button.indicator === "starting" && !button.windows10 && ShellTokens.durationSlow > 0
                 loops: Animation.Infinite
                 alwaysRunToEnd: true
                 NumberAnimation { to: ShellTokens.pillShort + 6; duration: ShellTokens.durationSlow; easing.type: Easing.InOutQuad }

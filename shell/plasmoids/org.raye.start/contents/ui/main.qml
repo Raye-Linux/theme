@@ -88,6 +88,10 @@ PlasmoidItem {
     // room around the panel for its shadow; at the bottom it is the gap
     // above the taskbar, so the panel rises from behind the taskbar's edge
     readonly property int popupMargin: Logic.flyoutGap
+    // the Windows 10 Start sits on the taskbar against the left edge: room
+    // for the shadow above and on the right only
+    readonly property int marginLeft: ShellSettings.windows10 ? 0 : popupMargin
+    readonly property int marginBottom: ShellSettings.windows10 ? 0 : popupMargin
 
     function openPopup(mode, text) {
         // finishes at once whatever is still being made in the background
@@ -99,10 +103,16 @@ PlasmoidItem {
         frame.screenWidth = screenRect.width
         frame.screenHeight = screenRect.height
         frame.panelHeight = panelHeight
-        const pos = Logic.popupPosition(ShellSettings.alignment, screenRect, panelTop, frame.width, frame.height)
-        const startX = row && row.startButton ? row.startButton.mapToGlobal(0, 0).x : screenRect.x
-        popup.x = Menu.popupX(ShellSettings.alignment, screenRect.x, screenRect.width, startX, frame.width) - popupMargin
-        popup.y = pos.y - popupMargin
+        if (ShellSettings.windows10) {
+            const p = Logic.popupPosition10(screenRect, panelTop, frame.width, frame.height)
+            popup.x = p.x
+            popup.y = p.y - popupMargin
+        } else {
+            const pos = Logic.popupPosition(ShellSettings.alignment, screenRect, panelTop, frame.width, frame.height)
+            const startX = row && row.startButton ? row.startButton.mapToGlobal(0, 0).x : screenRect.x
+            popup.x = Menu.popupX(ShellSettings.alignment, screenRect.x, screenRect.width, startX, frame.width) - popupMargin
+            popup.y = pos.y - popupMargin
+        }
         frame.reset(mode, text)
         frame.present()
         popup.visible = true
@@ -230,7 +240,7 @@ PlasmoidItem {
         const row = root.compactRepresentationItem
         if (!row || !row.Window.window)
             return
-        if (!root.taskbarApplet) {
+        if (!root.taskbarApplet || ShellSettings.windows10) {
             row.leadingSpace = 0
             return
         }
@@ -243,6 +253,8 @@ PlasmoidItem {
     Connections {
         target: ShellSettings
         function onTaskbarChanged() { layoutTimer.restart() }
+        // the other look: Start is made again in it the next time it opens
+        function onLookChanged() { root.closePopup() }
     }
 
     // The popup is this applet's own window (below), so the full
@@ -307,8 +319,8 @@ PlasmoidItem {
         }
 
         mainItem: FocusScope {
-            width: frame.width + 2 * root.popupMargin
-            height: frame.height + 2 * root.popupMargin
+            width: frame.width + root.marginLeft + root.popupMargin
+            height: frame.height + root.popupMargin + root.marginBottom
             focus: true
 
             // a click in the room around the panel closes Start
@@ -321,7 +333,7 @@ PlasmoidItem {
             }
             StartFrame {
                 id: frame
-                x: root.popupMargin
+                x: root.marginLeft
                 y: root.popupMargin
                 focus: true
                 backend: backendLoader.item

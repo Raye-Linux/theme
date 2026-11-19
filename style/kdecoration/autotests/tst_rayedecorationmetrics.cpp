@@ -55,6 +55,17 @@ private Q_SLOTS:
         QCOMPARE(rightOnly.bottomRight, 0.0);
     }
 
+    void windows10LookIsSquare()
+    {
+        QVERIFY(isWindows10Look(QStringLiteral("windows10")));
+        QVERIFY(isWindows10Look(QStringLiteral(" Win10 ")));
+        QVERIFY(isWindows10Look(QStringLiteral("10")));
+        QVERIFY(!isWindows10Look(QStringLiteral("windows11")));
+        QVERIFY(!isWindows10Look(QString()));
+        QCOMPARE(cornerRadiusFor(true), 0.0);
+        QCOMPARE(cornerRadiusFor(false), 8.0);
+    }
+
     void glyphIsCentredAndSnapped()
     {
         // 46x32 button at 100 %

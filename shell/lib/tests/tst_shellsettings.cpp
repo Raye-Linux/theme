@@ -102,6 +102,47 @@ private Q_SLOTS:
         QVERIFY(s.lockBadges());
         QVERIFY(s.searchRecent().isEmpty());
         QVERIFY(s.volumeChime());
+        QCOMPARE(s.look(), u"windows11"_s);
+        QVERIFY(!s.windows10());
+        QVERIFY(s.startTiles().isEmpty());
+        QCOMPARE(s.startTileColumns(), u"auto"_s);
+    }
+
+    // The Windows 10 look keeps the taskbar on the left, but the person's
+    // own alignment stays in the file for when they go back to 11
+    void windows10Look()
+    {
+        ShellSettings s(config("[Appearance]\nLook=windows10\n[Taskbar]\nAlignment=center\n"));
+        QCOMPARE(s.look(), u"windows10"_s);
+        QVERIFY(s.windows10());
+        QCOMPARE(s.alignment(), u"left"_s);
+        QCOMPARE(s.value(u"Taskbar"_s, u"Alignment"_s).toString(), u"center"_s);
+
+        ShellSettings eleven(config("[Appearance]\nLook=windows11\n[Taskbar]\nAlignment=center\n"));
+        QVERIFY(!eleven.windows10());
+        QCOMPARE(eleven.alignment(), u"center"_s);
+
+        ShellSettings shortName(config("[Appearance]\nLook=10\n"));
+        QVERIFY(shortName.windows10());
+        ShellSettings win(config("[Appearance]\nLook=Win10\n"));
+        QVERIFY(win.windows10());
+        ShellSettings odd(config("[Appearance]\nLook=vista\n"));
+        QCOMPARE(odd.look(), u"windows11"_s);
+    }
+
+    void tilesAreKept()
+    {
+        auto c = config("[Start]\nTileColumns=7\n");
+        ShellSettings s(c);
+        QCOMPARE(s.startTileColumns(), u"auto"_s);
+        QSignalSpy start(&s, &ShellSettings::startChanged);
+        s.setStartTiles(u"Work|org.kde.kate.desktop=wide;|firefox.desktop=small"_s);
+        s.setStartTileColumns(u"2"_s);
+        QCOMPARE(start.count(), 2);
+        QCOMPARE(s.startTiles(), u"Work|org.kde.kate.desktop=wide;|firefox.desktop=small"_s);
+        QCOMPARE(s.startTileColumns(), u"2"_s);
+        s.setStartTileColumns(u"many"_s);
+        QCOMPARE(s.startTileColumns(), u"auto"_s);
     }
 
     // Settings shows a row only when its key is in the shipped file: the
@@ -308,6 +349,15 @@ private Q_SLOTS:
         QVERIFY(taskbar.wait(5000));
         QCOMPARE(s.alignment(), u"left"_s);
         QCOMPARE(clock.count(), 0);
+
+        // the look: Start, the taskbar and every surface follow at once
+        QSignalSpy look(&s, &ShellSettings::lookChanged);
+        taskbar.clear();
+        writer.group(u"Appearance"_s).writeEntry("Look", u"windows10"_s, KConfig::Notify);
+        writer.sync();
+        QVERIFY(look.wait(5000));
+        QVERIFY(s.windows10());
+        QVERIFY(taskbar.count() >= 1);
     }
 };
 

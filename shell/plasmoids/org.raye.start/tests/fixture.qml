@@ -57,6 +57,7 @@ Window {
         property string searchMode: "box"
         property bool taskView: true
         property string alignment: "center"
+        property bool windows10: false
     }
 
     Loader {

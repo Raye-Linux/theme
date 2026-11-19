@@ -10,6 +10,7 @@
 #include "rayedecoration.h"
 #include "rayesettings.h"
 
+#include <KConfigWatcher>
 #include <KSharedConfig>
 
 #include <QObject>
@@ -30,6 +31,13 @@ public:
     //* internal settings for given decoration
     InternalSettingsPtr internalSettings(Decoration *) const;
 
+    //* [Appearance] Look of rayeshellrc is the Windows 10 look
+    bool windows10() const;
+
+Q_SIGNALS:
+    //* the look changed: every decoration reconfigures
+    void lookChanged();
+
 public Q_SLOTS:
 
     //* reconfigure
@@ -47,6 +55,12 @@ private:
 
     //* config object
     KSharedConfigPtr m_config;
+
+    //* the shell's options (rayeshellrc), for the look
+    KSharedConfigPtr m_shellConfig;
+    KConfigWatcher::Ptr m_shellWatcher;
+    bool m_windows10 = false;
+    void readLook();
 
     //* singleton
     static SettingsProvider *s_self;

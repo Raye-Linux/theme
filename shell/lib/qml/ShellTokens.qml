@@ -13,6 +13,7 @@ pragma Singleton
 
 import QtQuick
 import org.raye.ui
+import org.raye.shell
 
 QtObject {
     // --- taskbar ----------------------------------------------------------
@@ -53,9 +54,11 @@ QtObject {
     readonly property int splitTileArrowWidth: 32
 
     // --- shape ------------------------------------------------------------
-    readonly property real radiusButton: Tokens.radiusControl
-    readonly property real radiusFlyout: Tokens.radiusOverlay
-    readonly property real radiusTooltip: Tokens.radiusTooltip
+    // [Appearance] Look=windows10: every corner of the shell is square
+    readonly property bool windows10: ShellSettings.windows10
+    readonly property real radiusButton: windows10 ? 0 : Tokens.radiusControl
+    readonly property real radiusFlyout: windows10 ? 0 : Tokens.radiusOverlay
+    readonly property real radiusTooltip: windows10 ? 0 : Tokens.radiusTooltip
 
     // --- colours ----------------------------------------------------------
     readonly property color text: Tokens.textPrimary

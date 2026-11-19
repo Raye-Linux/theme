@@ -27,6 +27,7 @@ struct Key {
 // Every key of rayeshellrc. Keep it the same as shell/lib/rayeshellrc
 // (the tests check it) and as shell.md 3.21.
 constexpr Key Table[] = {
+    {"Appearance", "Look", Kind::Choice, "windows11", "windows11,windows10|11=windows11,10=windows10,win11=windows11,win10=windows10"},
     {"Taskbar", "Alignment", Kind::Choice, "center", "center,left"},
     {"Taskbar", "Search", Kind::Choice, "box", "box,iconlabel,icon,hidden"},
     {"Taskbar", "TaskView", Kind::Bool, "true"},
@@ -61,6 +62,8 @@ constexpr Key Table[] = {
      "org.raye.taskmanager.desktop"},
     {"Start", "PinnedFolders", Kind::Text, ""},
     {"Start", "RestartNeeded", Kind::Tokens, ""},
+    {"Start", "Tiles", Kind::Text, ""},
+    {"Start", "TileColumns", Kind::Choice, "auto", "auto,1,2,3"},
     {"Clock", "ShowSeconds", Kind::Bool, "false"},
     {"Clock", "ShowDate", Kind::Bool, "true"},
     {"Clock", "Use24h", Kind::Choice, "auto", "auto,true,false"},
@@ -219,7 +222,12 @@ void ShellSettings::watch()
 
 void ShellSettings::notifyGroup(const QString &group)
 {
-    if (group == u"Taskbar"_s) {
+    if (group == u"Appearance"_s) {
+        Q_EMIT lookChanged();
+        // the alignment in use, the search box and Start change with it
+        Q_EMIT taskbarChanged();
+        Q_EMIT startChanged();
+    } else if (group == u"Taskbar"_s) {
         Q_EMIT taskbarChanged();
         // RecentSearches off hides the list
         Q_EMIT searchChanged();
@@ -247,7 +255,7 @@ void ShellSettings::notifyGroup(const QString &group)
 void ShellSettings::reload()
 {
     m_config->reparseConfiguration();
-    for (const char *g : {"Taskbar", "Tray", "Start", "Clock", "Focus", "QuickSettings", "Notifications", "Sound", "Search", "JumpLists"})
+    for (const char *g : {"Appearance", "Taskbar", "Tray", "Start", "Clock", "Focus", "QuickSettings", "Notifications", "Sound", "Search", "JumpLists"})
         notifyGroup(QString::fromLatin1(g));
 }
 
@@ -314,7 +322,7 @@ void ShellSettings::write(const QString &group, const QString &key, const QVaria
 #define RAYE_LIST(name, group, key) \
     QStringList ShellSettings::name() const { return value(u"" group ""_s, u"" key ""_s).toStringList(); }
 
-RAYE_STRING(alignment, "Taskbar", "Alignment")
+RAYE_STRING(look, "Appearance", "Look")
 RAYE_STRING(searchMode, "Taskbar", "Search")
 RAYE_BOOL(taskView, "Taskbar", "TaskView")
 RAYE_BOOL(widgets, "Taskbar", "Widgets")
@@ -342,6 +350,8 @@ RAYE_STRING(startAllView, "Start", "AllView")
 RAYE_LIST(startPinned, "Start", "Pinned")
 RAYE_STRING(startPinnedFolders, "Start", "PinnedFolders")
 RAYE_STRING(restartNeeded, "Start", "RestartNeeded")
+RAYE_STRING(startTiles, "Start", "Tiles")
+RAYE_STRING(startTileColumns, "Start", "TileColumns")
 RAYE_BOOL(clockShowSeconds, "Clock", "ShowSeconds")
 RAYE_BOOL(clockShowDate, "Clock", "ShowDate")
 RAYE_STRING(clockUse24h, "Clock", "Use24h")
@@ -352,6 +362,20 @@ RAYE_BOOL(volumeChime, "Sound", "VolumeChime")
 #undef RAYE_STRING
 #undef RAYE_BOOL
 #undef RAYE_LIST
+
+bool ShellSettings::windows10() const
+{
+    return look() == u"windows10"_s;
+}
+
+// Windows 10 has no centred taskbar: the key keeps the person's choice
+// for the Windows 11 look, this answers what the taskbar does now
+QString ShellSettings::alignment() const
+{
+    if (windows10())
+        return u"left"_s;
+    return value(u"Taskbar"_s, u"Alignment"_s).toString();
+}
 
 int ShellSettings::toastSeconds() const
 {
@@ -393,6 +417,17 @@ void ShellSettings::setStartAllView(const QString &view)
 void ShellSettings::setStartPinnedFolders(const QString &folders)
 {
     write(u"Start"_s, u"PinnedFolders"_s, folders);
+}
+
+void ShellSettings::setStartTiles(const QString &tiles)
+{
+    write(u"Start"_s, u"Tiles"_s, tiles);
+}
+
+void ShellSettings::setStartTileColumns(const QString &columns)
+{
+    const Key *k = find(u"Start"_s, u"TileColumns"_s);
+    write(u"Start"_s, u"TileColumns"_s, check(*k, columns, {}));
 }
 
 void ShellSettings::setFocusUntil(const QDateTime &until)

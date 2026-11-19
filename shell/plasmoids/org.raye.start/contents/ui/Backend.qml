@@ -36,6 +36,9 @@ Item {
     function pin(id) { ShellSettings.startPinned = Menu.pin(pins, id) }
     function unpin(id) { ShellSettings.startPinned = Menu.unpin(pins, id) }
     function moveToFront(id) { ShellSettings.startPinned = Menu.moveToFront(pins, id) }
+    // the tiles of the Windows 10 look (tileslogic.js) and their columns
+    function setTiles(text) { ShellSettings.startTiles = text }
+    function setTileColumns(n) { ShellSettings.startTileColumns = String(n) }
     // `from` and `to` are rows of pinnedModel, which leaves out pins of
     // apps that are gone: map them back to the list
     function movePin(from, to) {
