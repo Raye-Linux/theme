@@ -13,6 +13,7 @@ import pytest
 REPO = Path(__file__).resolve().parents[2]
 THEME = REPO / "plymouth" / "raye"
 HOOK = REPO / "initramfs" / "raye-plymouth"
+BOOT_SCRIPTS = ["init-premount/raye-plymouth-tpm", "init-bottom/raye-plymouth"]
 THEME_PATH = "usr/share/plymouth/themes/raye"
 
 
@@ -52,6 +53,8 @@ def system(tmp_path: Path) -> Path:
         "! variant\n  fr-legacy       ca: French (Canada, legacy)\n"
         "  oss             fr: French (alt.)\n")
     (root / "etc/default").mkdir(parents=True)
+    (root / "usr/share/initramfs-tools").mkdir(parents=True)
+    (root / "usr/share/initramfs-tools/scripts").symlink_to(REPO / "initramfs" / "scripts")
     return root
 
 
@@ -772,3 +775,24 @@ def test_watcher_waits_for_a_slow_chip(system, fakebin, tmp_path):
     calls = run_watcher(script, tmp_path, [(0.0, 300, "plymouthd"), (0.0, 301, "clevis"),
                                            (0.0, 400, ASK), (1.0, 410, UNSEAL)])
     assert calls == ""
+
+
+def test_boot_scripts_are_package_files():
+    # mkinitramfs orders a boot script by its copy under
+    # /usr/share/initramfs-tools/scripts; one only a hook wrote never runs
+    install = (REPO / "debian/plymouth-theme-raye.install").read_text().splitlines()
+    for s in BOOT_SCRIPTS:
+        f = REPO / "initramfs/scripts" / s
+        assert f.stat().st_mode & stat.S_IXUSR, s
+        d = s.rsplit("/", 1)[0]
+        assert f"initramfs/scripts/{s} usr/share/initramfs-tools/scripts/{d}" in install, s
+
+
+def test_another_theme_gets_none_of_our_boot_scripts(system, fakebin, tmp_path):
+    dest = initramfs(tmp_path, theme=False)
+    for s in BOOT_SCRIPTS:
+        (dest / "scripts" / s).parent.mkdir(parents=True, exist_ok=True)
+        (dest / "scripts" / s).write_text("#!/bin/sh\n")
+    assert run_hook(system, dest, fakebin).returncode == 0
+    for s in BOOT_SCRIPTS:
+        assert not (dest / "scripts" / s).exists(), s

@@ -126,6 +126,8 @@ def tpm_initramfs(tmp_path):
     theme.symlink_to(REPO / "plymouth" / "raye")
     (root / "etc").mkdir()
     (root / "etc/crypttab").write_text("root UUID=1111 none luks,tpm2-device=auto\n")
+    (root / "usr/share/initramfs-tools").mkdir(parents=True)
+    (root / "usr/share/initramfs-tools/scripts").symlink_to(REPO / "initramfs" / "scripts")
     dest = tmp_path / "initramfs"
     d = dest / "usr/share/plymouth/themes/raye"
     d.mkdir(parents=True)

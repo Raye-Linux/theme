@@ -16,6 +16,9 @@ raye-theme (1.0~beta2) resolute; urgency=medium
   * Win+N and the clock open the notification centre on Hyprland.
   * The Hyprland desktop shows the wallpaper picked for Plasma.
   * The boot screen keeps backslashes in the keyboard name.
+  * Boot screen: its start-up scripts were left out of the initramfs and
+    never ran; the shutdown screen now speaks the boot language and the
+    TPM message works.
 
  -- techoraye <190692880+techoraye@users.noreply.github.com>  Thu, 19 Nov 2026 10:00:00 +0000
 

@@ -90,8 +90,20 @@ fi
 
 dest="${DESTDIR}${theme}"
 # The plymouth hook copies the default theme only: nothing to do when it
-# is not this one.
-[ -r "$dest/raye.plymouth" ] && [ -r "$src/raye.script.in" ] || exit 0
+# is not this one, and none of our boot scripts either. They are files of
+# this package under /usr/share/initramfs-tools/scripts, because
+# mkinitramfs orders a boot script by reading that copy and silently leaves
+# out one a hook only wrote into the initramfs.
+boot_scripts="init-premount/raye-plymouth-tpm init-bottom/raye-plymouth"
+if ! [ -r "$dest/raye.plymouth" ] || ! [ -r "$src/raye.script.in" ]; then
+    for s in $boot_scripts; do rm -f "${DESTDIR}/scripts/$s"; done
+    exit 0
+fi
+boot_script() {
+    mkdir -p "${DESTDIR}/scripts/${1%/*}"
+    cp "$root/usr/share/initramfs-tools/scripts/$1" "${DESTDIR}/scripts/$1"
+    chmod 755 "${DESTDIR}/scripts/$1"
+}
 
 lang=en
 if [ -r "$root/etc/default/locale" ]; then
@@ -189,71 +201,9 @@ fi
 # boot screen. This boot script watches it and does, so the screen can
 # wait for the chip as long as it works and ask as soon as it does not.
 if [ "$tpm" = 1 ]; then
-    mkdir -p "${DESTDIR}/scripts/init-premount"
-    cat > "${DESTDIR}/scripts/init-premount/raye-plymouth-tpm" <<'EOF'
-#!/bin/sh
-# Tells the Raye boot screen when the TPM did not open the disk (see the
-# raye-plymouth initramfs hook): the password still asked for 2 s after
-# an unseal ended means the chip said no.
-PREREQ=""
-prereqs() { echo "$PREREQ"; }
-case "$1" in
-prereqs) prereqs; exit 0 ;;
-esac
-proc=${RAYE_PROC:-/proc}
-tick=${RAYE_TICK:-0.2}
-# 2 s and 3 min, in ticks
-patience=${RAYE_PATIENCE:-10}
-ticks=${RAYE_TICKS:-900}
-
-# by process name: read is built in, so a tick forks nothing
-running() {
-    for f in "$proc"/[0-9]*/comm; do
-        read -r name < "$f" 2>/dev/null || continue
-        for want in "$@"; do
-            case "$name" in
-            $want) return 0 ;;
-            esac
-        done
-    done
-    return 1
-}
-
-watch() {
-    tried=0
-    since=0
-    n=0
-    while [ $n -lt "$ticks" ]; do
-        n=$((n + 1))
-        # clevis decrypt runs clevis-decrypt, then clevis-decrypt-tpm2
-        if running "clevis-decrypt*"; then
-            tried=1
-            since=0
-        elif [ $tried = 1 ]; then
-            # plymouth ask-for-password, or askpass without a boot screen
-            if running plymouth askpass; then
-                since=$((since + 1))
-                if [ $since -ge "$patience" ]; then
-                    plymouth display-message --text=raye:tpm-failed
-                    return 0
-                fi
-            else
-                # opened: the next disk, if any, starts over
-                tried=0
-                since=0
-            fi
-        fi
-        sleep "$tick"
-    done
-}
-
-watch < /dev/null > /dev/null 2>&1 &
-# init-bottom stops it: past the initramfs a plymouth run by anything
-# else would look like the password still asked
-echo $! > /run/raye-plymouth-tpm.pid
-exit 0
-EOF
-    chmod 755 "${DESTDIR}/scripts/init-premount/raye-plymouth-tpm"
+    boot_script init-premount/raye-plymouth-tpm
+else
+    rm -f "${DESTDIR}/scripts/init-premount/raye-plymouth-tpm"
 fi
 
 # The shutdown screen comes from the installed system, not from here.
@@ -271,31 +221,4 @@ sed "s|$theme|/run/plymouth/themes/raye|g" "$dest/raye.plymouth" > "$dest/run.pl
     echo 'Theme=raye'
 } > "$dest/run.defaults"
 
-mkdir -p "${DESTDIR}/scripts/init-bottom"
-cat > "${DESTDIR}/scripts/init-bottom/raye-plymouth" <<'EOF'
-#!/bin/sh
-# Keep the Raye boot screen in /run for the shutdown screen (see the
-# raye-plymouth initramfs hook), and stop the TPM watch.
-PREREQ=""
-prereqs() { echo "$PREREQ"; }
-case "$1" in
-prereqs) prereqs; exit 0 ;;
-esac
-if [ -r /run/raye-plymouth-tpm.pid ]; then
-    read -r pid < /run/raye-plymouth-tpm.pid
-    kill "$pid" 2>/dev/null
-    rm -f /run/raye-plymouth-tpm.pid
-fi
-# The root disk is open: a password question the TPM beat is over, even
-# though nothing told the screen (it showed it during offline updates).
-plymouth display-message --text=raye:disk-open 2>/dev/null || true
-theme=/usr/share/plymouth/themes/raye
-[ -r "$theme/run.plymouth" ] || exit 0
-mkdir -p /run/plymouth/themes/raye
-cp "$theme"/* /run/plymouth/themes/raye/ 2>/dev/null
-mv /run/plymouth/themes/raye/run.plymouth /run/plymouth/themes/raye/raye.plymouth
-rm -f /run/plymouth/themes/raye/run.defaults /run/plymouth/themes/raye/tpm.png
-cp "$theme/run.defaults" /run/plymouth/plymouthd.defaults
-exit 0
-EOF
-chmod 755 "${DESTDIR}/scripts/init-bottom/raye-plymouth"
+boot_script init-bottom/raye-plymouth

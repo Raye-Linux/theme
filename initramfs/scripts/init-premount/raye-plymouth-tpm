@@ -1,0 +1,61 @@
+#!/bin/sh
+# Tells the Raye boot screen when the TPM did not open the disk (see the
+# raye-plymouth initramfs hook): the password still asked for 2 s after
+# an unseal ended means the chip said no.
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in
+prereqs) prereqs; exit 0 ;;
+esac
+proc=${RAYE_PROC:-/proc}
+tick=${RAYE_TICK:-0.2}
+# 2 s and 3 min, in ticks
+patience=${RAYE_PATIENCE:-10}
+ticks=${RAYE_TICKS:-900}
+
+# by process name: read is built in, so a tick forks nothing
+running() {
+    for f in "$proc"/[0-9]*/comm; do
+        read -r name < "$f" 2>/dev/null || continue
+        for want in "$@"; do
+            case "$name" in
+            $want) return 0 ;;
+            esac
+        done
+    done
+    return 1
+}
+
+watch() {
+    tried=0
+    since=0
+    n=0
+    while [ $n -lt "$ticks" ]; do
+        n=$((n + 1))
+        # clevis decrypt runs clevis-decrypt, then clevis-decrypt-tpm2
+        if running "clevis-decrypt*"; then
+            tried=1
+            since=0
+        elif [ $tried = 1 ]; then
+            # plymouth ask-for-password, or askpass without a boot screen
+            if running plymouth askpass; then
+                since=$((since + 1))
+                if [ $since -ge "$patience" ]; then
+                    plymouth display-message --text=raye:tpm-failed
+                    return 0
+                fi
+            else
+                # opened: the next disk, if any, starts over
+                tried=0
+                since=0
+            fi
+        fi
+        sleep "$tick"
+    done
+}
+
+watch < /dev/null > /dev/null 2>&1 &
+# init-bottom stops it: past the initramfs a plymouth run by anything
+# else would look like the password still asked
+echo $! > /run/raye-plymouth-tpm.pid
+exit 0

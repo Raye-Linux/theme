@@ -1,3 +1,5 @@
 plymouth/raye usr/share/plymouth/themes
 initramfs/raye-plymouth usr/share/initramfs-tools/hooks
 plymouth/systemd/plymouth-quit.service.d usr/lib/systemd/system
+initramfs/scripts/init-premount/raye-plymouth-tpm usr/share/initramfs-tools/scripts/init-premount
+initramfs/scripts/init-bottom/raye-plymouth usr/share/initramfs-tools/scripts/init-bottom

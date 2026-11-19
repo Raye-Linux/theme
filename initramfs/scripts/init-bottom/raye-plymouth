@@ -1,0 +1,24 @@
+#!/bin/sh
+# Keep the Raye boot screen in /run for the shutdown screen (see the
+# raye-plymouth initramfs hook), and stop the TPM watch.
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in
+prereqs) prereqs; exit 0 ;;
+esac
+if [ -r /run/raye-plymouth-tpm.pid ]; then
+    read -r pid < /run/raye-plymouth-tpm.pid
+    kill "$pid" 2>/dev/null
+    rm -f /run/raye-plymouth-tpm.pid
+fi
+# The root disk is open: a password question the TPM beat is over, even
+# though nothing told the screen (it showed it during offline updates).
+plymouth display-message --text=raye:disk-open 2>/dev/null || true
+theme=/usr/share/plymouth/themes/raye
+[ -r "$theme/run.plymouth" ] || exit 0
+mkdir -p /run/plymouth/themes/raye
+cp "$theme"/* /run/plymouth/themes/raye/ 2>/dev/null
+mv /run/plymouth/themes/raye/run.plymouth /run/plymouth/themes/raye/raye.plymouth
+rm -f /run/plymouth/themes/raye/run.defaults /run/plymouth/themes/raye/tpm.png
+cp "$theme/run.defaults" /run/plymouth/plymouthd.defaults
+exit 0
