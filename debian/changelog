@@ -1,3 +1,10 @@
+raye-theme (1.0~beta1) resolute; urgency=medium
+
+  * Web apps installed from a browser show their own icon and name on the
+    taskbar.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Thu, 19 Nov 2026 06:00:00 +0000
+
 raye-theme (0.5.13~beta1) resolute; urgency=medium
 
   * Taskbar: a button let go past either end of the row no longer jumps out
