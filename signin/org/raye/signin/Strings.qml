@@ -138,7 +138,11 @@ QtObject {
         moreChoices: "More choices",
         yes: "Yes",
         no: "No",
-        pleaseWait: "Please wait"
+        pleaseWait: "Please wait",
+        desktop: "Desktop",
+        desktopNamed: "Desktop: %1",
+        sessionPlasma: "Raye",
+        sessionHyprland: "Raye (Hyprland)"
     })
 
     readonly property var fr: ({
@@ -201,6 +205,10 @@ QtObject {
         moreChoices: "Plus de choix",
         yes: "Oui",
         no: "Non",
-        pleaseWait: "Veuillez patienter"
+        pleaseWait: "Veuillez patienter",
+        desktop: "Bureau",
+        desktopNamed: "Bureau : %1",
+        sessionPlasma: "Raye",
+        sessionHyprland: "Raye (Hyprland)"
     })
 }

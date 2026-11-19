@@ -7,9 +7,14 @@ import org.raye.hypr
 Window {
     id: wall
 
+    property int screenIndex: 0
+    readonly property size pixels: Qt.size(width * Screen.devicePixelRatio, height * Screen.devicePixelRatio)
+    // the picture or colour picked for the Plasma desktop, else Raye's own
+    readonly property var picked: (Views.backgroundRevision, Views.background(screenIndex, pixels))
+
     width: screen ? screen.width : 1280
     height: screen ? screen.height : 800
-    color: "#0e0a17"
+    color: picked.color !== undefined ? picked.color : "#0e0a17"
     flags: Qt.FramelessWindowHint
     visible: true
 
@@ -26,7 +31,8 @@ Window {
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: false
-        sourceSize: Qt.size(wall.width * Screen.devicePixelRatio, wall.height * Screen.devicePixelRatio)
-        source: Views.wallpaper(Qt.size(wall.width * Screen.devicePixelRatio, wall.height * Screen.devicePixelRatio))
+        visible: wall.picked.color === undefined
+        sourceSize: wall.pixels
+        source: wall.picked.source !== undefined ? wall.picked.source : Views.wallpaper(wall.pixels)
     }
 }

@@ -220,6 +220,137 @@ TestCase {
         compare(a.picture.toString(), "file:///srv/lake.jpg")
     }
 
+    // --- the desktop to sign in to --------------------------------------
+
+    Component {
+        id: sessionsComponent
+        ListModel {
+            property int lastIndex: 0
+            ListElement { file: "/usr/share/wayland-sessions/plasma.desktop"; name: "Plasma (Wayland)" }
+            ListElement { file: "/usr/share/wayland-sessions/raye-hyprland.desktop"; name: "Raye (Hyprland)" }
+            ListElement { file: "/usr/share/wayland-sessions/sway.desktop"; name: "Sway" }
+        }
+    }
+
+    Component {
+        id: plasmaOnlyComponent
+        ListModel {
+            property int lastIndex: 0
+            ListElement { file: "/usr/share/wayland-sessions/plasma.desktop"; name: "Plasma (Wayland)" }
+            ListElement { file: "/usr/share/xsessions/plasmax11.desktop"; name: "Plasma (X11)" }
+        }
+    }
+
+    Component {
+        id: storeComponent
+        QtObject {
+            property var values: ({})
+            function value(key, fallback) { return values.hasOwnProperty(key) ? values[key] : fallback }
+            function setValue(key, v) {
+                var next = Object.assign({}, values)
+                next[key] = v
+                values = next
+            }
+        }
+    }
+
+    function withSessions(extra) {
+        var props = { sessions: createTemporaryObject(sessionsComponent, test),
+                      store: createTemporaryObject(storeComponent, test) }
+        for (var k in extra)
+            props[k] = extra[k]
+        var a = make(props)
+        tryCompare(a, "currentIndex", 1)
+        tryCompare(a, "showSessions", true)
+        return a
+    }
+
+    function test_rayeSessionsOnly() {
+        var a = withSessions({})
+        compare(a.sessionChoices.length, 2)
+        compare(a.sessionChoices[0].key, "plasma")
+        compare(a.sessionChoices[1].key, "hyprland")
+        compare(a.sessionKey, "plasma")
+    }
+
+    function test_oneRayeSessionHidesThePicker() {
+        var a = make({ sessions: createTemporaryObject(plasmaOnlyComponent, test) })
+        tryCompare(a, "currentIndex", 1)
+        tryVerify(function () { return a.sessionChoices.length === 1 })
+        verify(!a.showSessions)
+        a.login("x")
+        compare(a.greeter.calls[0][3], 0)
+    }
+
+    function test_chosenSessionIsUsed() {
+        var a = withSessions({})
+        a.chooseSession("hyprland")
+        compare(a.sessionKey, "hyprland")
+        a.login("pw")
+        compare(a.greeter.calls[0][3], 1)
+    }
+
+    function test_lastSessionOfSddm() {
+        var model = createTemporaryObject(sessionsComponent, test)
+        model.lastIndex = 1
+        var a = withSessions({ sessions: model })
+        compare(a.sessionKey, "hyprland")
+        // SDDM's last is another desktop: it stays the one used
+        model.lastIndex = 2
+        compare(a.sessionKey, "")
+        a.login("pw")
+        compare(a.greeter.calls[0][3], 2)
+    }
+
+    function test_eachAccountKeepsItsDesktop() {
+        var store = createTemporaryObject(storeComponent, test)
+        store.setValue("sessions/alex", "raye-hyprland.desktop")
+        var a = withSessions({ store: store })
+        compare(a.sessionKey, "plasma")
+        a.currentIndex = 0
+        compare(a.sessionKey, "hyprland")
+        // a choice made for one account is not carried to the next
+        a.chooseSession("plasma")
+        a.currentIndex = 1
+        compare(a.sessionKey, "plasma")
+        a.currentIndex = 0
+        compare(a.sessionKey, "hyprland")
+    }
+
+    function test_successRemembersTheDesktop() {
+        var a = withSessions({})
+        a.chooseSession("hyprland")
+        a.login("pw")
+        compare(a.store.value("sessions/camille", ""), "")
+        a.greeter.loginSucceeded()
+        compare(a.store.value("sessions/camille", ""), "raye-hyprland.desktop")
+    }
+
+    function test_failureRemembersNothing() {
+        var a = withSessions({})
+        a.chooseSession("hyprland")
+        a.login("bad")
+        a.greeter.loginFailed()
+        compare(a.store.value("sessions/camille", ""), "")
+        // the choice stays for the next try
+        compare(a.sessionKey, "hyprland")
+    }
+
+    function test_typedNameUsesItsDesktop() {
+        var store = createTemporaryObject(storeComponent, test)
+        store.setValue("sessions/root", "raye-hyprland.desktop")
+        var a = make({ users: null, sessions: createTemporaryObject(sessionsComponent, test), store: store })
+        tryCompare(a, "showSessions", true)
+        a.loginAs("root", "pw")
+        compare(a.greeter.calls[0][3], 1)
+    }
+
+    function test_unknownChoiceIgnored() {
+        var a = withSessions({})
+        a.chooseSession("gnome")
+        compare(a.sessionKey, "plasma")
+    }
+
     Component {
         id: spyComponent
         SignalSpy {}

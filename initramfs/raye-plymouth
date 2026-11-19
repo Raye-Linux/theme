@@ -32,7 +32,9 @@ render() {
     *) strings="$src/strings-$1" ;;
     esac
     [ -r "$strings" ] || strings="$src/strings-en"
-    awk -v kb="$2" '
+    # through the environment: awk -v would read backslashes as escapes
+    RAYE_KB="$2" awk '
+    BEGIN { kb = ENVIRON["RAYE_KB"] }
     function esc(v,    i, c, o) {
         o = ""
         for (i = 1; i <= length(v); i++) {

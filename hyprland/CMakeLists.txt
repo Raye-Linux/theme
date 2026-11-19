@@ -19,7 +19,9 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 
 find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Qml Quick DBus Network Test)
-find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS CoreAddons I18n KIO Service)
+# the title bar plugin uses QtWayland's private decoration API
+find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS GuiPrivate WaylandClient WaylandClientPrivate)
+find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS Config CoreAddons I18n KIO Service)
 find_package(LibNotificationManager ${PLASMA_MIN_VERSION} REQUIRED)
 
 set(QT_QML_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml")
@@ -29,7 +31,7 @@ qt_add_executable(raye-hypr-shell shell/src/main.cpp)
 
 # every QML file at the root of the module
 set(_hypr_qml hyprlogic.js Shell.qml Panel.qml Wallpaper.qml Flyout.qml TaskController.qml
-    StartPopup.qml QuickPopup.qml Toasts.qml)
+    StartPopup.qml QuickPopup.qml CentrePopup.qml Toasts.qml)
 set(_hypr_qml_files "")
 foreach(_file IN LISTS _hypr_qml)
     set_source_files_properties(shell/qml/${_file} PROPERTIES QT_RESOURCE_ALIAS ${_file})
@@ -50,10 +52,24 @@ qt_add_qml_module(raye-hypr-shell
 
 target_link_libraries(raye-hypr-shell PRIVATE
     Qt6::Gui Qt6::Qml Qt6::Quick Qt6::DBus Qt6::Network
-    KF6::I18n KF6::I18nQml KF6::KIOGui KF6::Service KF6::CoreAddons
+    KF6::ConfigCore KF6::I18n KF6::I18nQml KF6::KIOGui KF6::Service KF6::CoreAddons
     PW::LibNotificationManager)
 
 install(TARGETS raye-hypr-shell ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
+
+# Raye title bars for Qt apps (QT_WAYLAND_DECORATION=raye), with the
+# sizes and colours of the KWin decoration
+set(RAYE_METRICS ${CMAKE_CURRENT_SOURCE_DIR}/../style/kdecoration)
+add_library(rayetitlebar-logic STATIC decoration/titlebar.cpp ${RAYE_METRICS}/rayedecorationmetrics.cpp)
+set_target_properties(rayetitlebar-logic PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(rayetitlebar-logic PUBLIC decoration ${RAYE_METRICS})
+target_link_libraries(rayetitlebar-logic PUBLIC Qt6::Gui)
+
+qt_add_plugin(rayetitlebar SHARED PLUGIN_TYPE wayland-decoration-client CLASS_NAME RayeDecorationPlugin)
+target_sources(rayetitlebar PRIVATE decoration/decoration.cpp)
+target_link_libraries(rayetitlebar PRIVATE rayetitlebar-logic Qt6::Gui Qt6::GuiPrivate Qt6::DBus
+    Qt6::WaylandClient Qt6::WaylandClientPrivate)
+install(TARGETS rayetitlebar DESTINATION ${KDE_INSTALL_QTPLUGINDIR}/wayland-decoration-client)
 
 install(FILES config/hyprland.conf config/hyprlock.conf config/hypridle.conf
         DESTINATION ${KDE_INSTALL_DATADIR}/raye/hyprland)

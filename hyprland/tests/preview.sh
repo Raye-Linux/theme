@@ -9,8 +9,9 @@
 # BUILD is the build folder of this tree. QML_IMPORT_PATH must give
 # org.raye.shell and org.raye.ui (the shell and qml trees of the theme),
 # and LANG the language. PREVIEW_AFTER is run on the shell's session bus
-# before the picture (notify-send, for a toast). Needs sway, grim and
-# dbus-run-session.
+# before the picture (notify-send, for a toast). PREVIEW_APPLETSRC is a
+# Plasma desktop settings file for the wallpaper to follow. Needs sway,
+# grim and dbus-run-session.
 set -eu
 
 here=$(cd "$(dirname "$0")" && pwd)
@@ -37,6 +38,8 @@ ln -s "$top/shell/lib/rayeshellrc" "$rt/xdg/rayeshellrc"
 printf '[Icons]\nTheme=%s\n' "${PREVIEW_ICONS:-Papirus-Dark}" > "$rt/xdg/kdeglobals"
 export XDG_CONFIG_DIRS=$rt/xdg:/etc/xdg
 export XDG_CONFIG_HOME=$rt/config
+mkdir -p "$XDG_CONFIG_HOME"
+[ -n "${PREVIEW_APPLETSRC:-}" ] && cp "$PREVIEW_APPLETSRC" "$XDG_CONFIG_HOME/plasma-org.kde.plasma.desktop-appletsrc"
 for d in "$build"/locale "${RAYE_SHELL_BUILD:-}"/locale; do
     [ -d "$d" ] && cp -r "$d"/. "$share/locale/"
 done

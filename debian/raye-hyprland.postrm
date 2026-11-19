@@ -1,0 +1,20 @@
+#!/bin/sh
+# Give the hyprland package its sign-in entries back.
+set -e
+
+DIR=/usr/share/wayland-sessions
+STOCK="hyprland.desktop hyprland-uwsm.desktop"
+
+case "$1" in
+    remove|purge|disappear|abort-install)
+        for f in $STOCK; do
+            [ "$(dpkg-divert --listpackage "$DIR/$f")" = raye-hyprland ] || continue
+            dpkg-divert --package raye-hyprland --remove --rename \
+                --divert "$DIR/$f.stock" "$DIR/$f"
+        done
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

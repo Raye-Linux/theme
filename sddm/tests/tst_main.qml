@@ -259,6 +259,55 @@ TestCase {
         compare(JSON.stringify(main.greeter.calls), JSON.stringify([["suspend"], ["reboot"], ["powerOff"]]))
     }
 
+    Component {
+        id: twoDesktops
+        ListModel {
+            property int lastIndex: 0
+            ListElement { file: "/usr/share/wayland-sessions/plasma.desktop"; name: "Plasma (Wayland)" }
+            ListElement { file: "/usr/share/wayland-sessions/raye-hyprland.desktop"; name: "Raye (Hyprland)" }
+        }
+    }
+
+    Component {
+        id: oneDesktop
+        ListModel {
+            property int lastIndex: 0
+            ListElement { file: "/usr/share/wayland-sessions/plasma.desktop"; name: "Plasma (Wayland)" }
+        }
+    }
+
+    function test_noDesktopButtonWithOneDesktop() {
+        var main = make({ sessions: createTemporaryObject(oneDesktop, test) })
+        mouseClick(main, 600, 400)
+        verify(!part(main, "sessionButton").visible)
+    }
+
+    function test_desktopButtonPicksTheSession() {
+        var main = make({ sessions: createTemporaryObject(twoDesktops, test) })
+        mouseClick(main, 600, 400)
+        var bar = part(main, "cornerBar")
+        var button = part(main, "sessionButton")
+        tryVerify(function () { return button.visible })
+        compare(bar.session, "plasma")
+        // the row is laid out once the button shows
+        waitForRendering(main)
+        mouseClick(button)
+        tryVerify(function () { return bar.sessionFlyout.opened })
+        compare(bar.sessionFlyout.rows.length, 2)
+        compare(bar.sessionFlyout.rows[0].text, "Raye")
+        compare(bar.sessionFlyout.rows[1].text, "Raye (Hyprland)")
+        verify(bar.sessionFlyout.rows[0].selected)
+        keyClick(Qt.Key_Down)
+        keyClick(Qt.Key_Return)
+        tryVerify(function () { return !bar.sessionFlyout.visible })
+        compare(bar.session, "hyprland")
+        // the keys go back to the password
+        keyClick(Qt.Key_S)
+        keyClick(Qt.Key_Return)
+        compare(main.greeter.calls.length, 1)
+        compare(main.greeter.calls[0][3], 1)
+    }
+
     function test_idleBackToLockThenBlack() {
         var main = make({ idleToLock: 150, idleToBlack: 400 })
         keyClick(Qt.Key_A)

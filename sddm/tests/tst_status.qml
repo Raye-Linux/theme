@@ -152,4 +152,56 @@ TestCase {
         // the stock picture of the other theme is not Raye's
         compare(Status.picture("/usr/share/wallpapers/Next/contents/images/5120x2880.png"), "")
     }
+
+    // SDDM's session list: [{ file, name }] in model order
+    readonly property var both: [
+        { file: "/usr/share/wayland-sessions/sway.desktop", name: "Sway" },
+        { file: "/usr/share/wayland-sessions/raye-hyprland.desktop", name: "Raye (Hyprland)" },
+        { file: "/usr/share/wayland-sessions/plasma.desktop", name: "Plasma (Wayland)" },
+        { file: "/usr/share/xsessions/plasmax11.desktop", name: "Plasma (X11)" }
+    ]
+
+    function test_sessionKey() {
+        compare(Status.sessionKey("/usr/share/wayland-sessions/plasma.desktop"), "plasma")
+        compare(Status.sessionKey("raye-hyprland.desktop"), "hyprland")
+        compare(Status.sessionKey("/usr/local/share/wayland-sessions/raye-hyprland.desktop"), "hyprland")
+        compare(Status.sessionKey("/usr/share/wayland-sessions/hyprland.desktop"), "")
+        compare(Status.sessionKey("/usr/share/xsessions/plasmax11.desktop"), "")
+        compare(Status.sessionKey(""), "")
+        compare(Status.sessionKey(undefined), "")
+    }
+
+    function test_sessionChoicesAreRayesOnly() {
+        var c = Status.sessionChoices(both)
+        compare(c.length, 2)
+        // Plasma first, whatever the order SDDM read the files in
+        compare(c[0].key, "plasma")
+        compare(c[0].index, 2)
+        compare(c[1].key, "hyprland")
+        compare(c[1].index, 1)
+        compare(c[1].file, "raye-hyprland.desktop")
+    }
+
+    function test_sessionChoicesOne() {
+        var c = Status.sessionChoices([both[2], both[3]])
+        compare(c.length, 1)
+        compare(c[0].key, "plasma")
+        compare(Status.sessionChoices([]).length, 0)
+        compare(Status.sessionChoices(null).length, 0)
+    }
+
+    function test_pickSession() {
+        var c = Status.sessionChoices(both)
+        // what this account used last time
+        compare(Status.pickSession(c, "raye-hyprland.desktop", 2).key, "hyprland")
+        // never used: SDDM's last session, when it is one of Raye's
+        compare(Status.pickSession(c, "", 1).key, "hyprland")
+        compare(Status.pickSession(c, "", 2).key, "plasma")
+        // a remembered session that is gone
+        compare(Status.pickSession(c, "gnome.desktop", 1).key, "hyprland")
+        // SDDM's last is another desktop: leave it to SDDM
+        compare(Status.pickSession(c, "", 0), null)
+        compare(Status.pickSession(c, "", -1).key, "plasma")
+        compare(Status.pickSession([], "raye-hyprland.desktop", 1), null)
+    }
 }

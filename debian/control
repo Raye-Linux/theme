@@ -82,6 +82,7 @@ Build-Depends: debhelper-compat (= 13),
                qml6-module-qtquick-virtualkeyboard <!nocheck>,
                qml6-module-qtquick-window <!nocheck>,
                qt6-base-dev,
+               qt6-base-private-dev,
                qt6-declarative-dev,
                qt6-declarative-dev-tools,
                qt6-svg-dev,
@@ -198,6 +199,7 @@ Architecture: any
 # views, loaded from its applets: the two always come from one build.
 Depends: raye-shell (= ${binary:Version}),
          raye-theme,
+         ${raye:QtPrivateAbi},
          hyprland (>= 0.53),
          hyprlock,
          hypridle,
@@ -217,7 +219,8 @@ Description: Raye Linux desktop on Hyprland
  The Raye desktop on the Hyprland compositor, offered next to the Plasma
  one at sign-in: the same centred taskbar, Start menu, quick settings and
  notifications, the Windows keys, the lock screen and the Raye motion.
- Windows float and open centred, as on the Plasma desktop.
+ Windows float and open centred, as on the Plasma desktop, and Qt apps
+ get the Raye title bar.
 
 Package: plymouth-theme-raye
 Architecture: all
@@ -240,6 +243,7 @@ Description: Raye Linux boot menu
 Package: sddm-theme-raye
 Architecture: all
 Depends: fonts-inter,
+         qml6-module-qtcore,
          qml6-module-qtquick-controls,
          qml6-module-qtquick-effects,
          qml6-module-qtquick-layouts,

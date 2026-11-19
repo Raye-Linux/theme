@@ -1,7 +1,8 @@
 // The corner bar, bottom right of the sign-in view: 40 x 40 buttons with
 // 20 px icons, 4 px apart, right to left Power, Accessibility, Network,
-// then the keyboard layout code when there is more than one layout. Each
-// opens its flyout upward.
+// Desktop (only with more than one Raye desktop), then the keyboard
+// layout code when there is more than one layout. Each opens its flyout
+// upward.
 //
 // In:  networkIcon     a network icon name ("network-wired",
 //                      "network-wireless-3", "network-none"); empty hides
@@ -12,12 +13,14 @@
 //      canSleep canHibernate canShutDown canRestart updatePending
 //      keyboardOn keyboardAvailable   (accessibility flyout)
 //      showPower showAccessibility
+//      sessions        [{ key }] the desktops to pick from; shown when more
+//                      than one; session  the key in use
 //      emergencyRestart  Ctrl+click on Power asks for an emergency restart
 //                        instead of opening the flyout (security screen)
 // Out: sleepRequested() hibernateRequested() shutDownRequested()
 //      restartRequested() updateAndShutDownRequested()
 //      updateAndRestartRequested() keyboardToggled(on) layoutClicked()
-//      emergencyRestartRequested()
+//      emergencyRestartRequested() sessionPicked(key)
 // The parent places it (24 px from the right and bottom edges).
 import QtQuick
 
@@ -38,12 +41,15 @@ FocusScope {
     property bool keyboardOn: false
     property bool keyboardAvailable: true
     property bool emergencyRestart: false
+    property var sessions: []
+    property string session: ""
 
     readonly property alias powerFlyout: powerFlyout
     readonly property alias accessFlyout: accessFlyout
     readonly property alias networkFlyout: networkFlyout
+    readonly property alias sessionFlyout: sessionFlyout
     readonly property bool flyoutOpen: powerFlyout.visible || accessFlyout.visible
-                                       || networkFlyout.visible
+                                       || networkFlyout.visible || sessionFlyout.visible
 
     signal sleepRequested()
     signal hibernateRequested()
@@ -54,11 +60,13 @@ FocusScope {
     signal keyboardToggled(bool on)
     signal layoutClicked()
     signal emergencyRestartRequested()
+    signal sessionPicked(string key)
 
     function closeFlyouts() {
         powerFlyout.close()
         accessFlyout.close()
         networkFlyout.close()
+        sessionFlyout.close()
     }
 
     function toggle(f) {
@@ -83,6 +91,24 @@ FocusScope {
             text: bar.layoutCode
             accessibleName: Strings.tr.keyboardLayout + " " + bar.layoutCode
             onClicked: bar.layoutClicked()
+        }
+
+        CornerButton {
+            id: sessionButton
+            objectName: "sessionButton"
+            visible: !!bar.sessions && bar.sessions.length > 1
+            iconName: "desktop"
+            accessibleName: Strings.tr.desktopNamed.arg(sessionFlyout.label(bar.session))
+            checked: sessionFlyout.visible
+            onClicked: bar.toggle(sessionFlyout)
+
+            SessionFlyout {
+                id: sessionFlyout
+                anchorItem: sessionButton
+                choices: bar.sessions
+                current: bar.session
+                onSessionPicked: key => bar.sessionPicked(key)
+            }
         }
 
         CornerButton {

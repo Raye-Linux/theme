@@ -31,6 +31,10 @@ FocusScope {
     property var sessions: typeof sessionModel !== "undefined" ? sessionModel : null
     property var themeConfig: typeof config !== "undefined" ? config : null
     property bool primary: typeof primaryScreen !== "undefined" ? !!primaryScreen : true
+    // where the desktop of each account is kept; only under SDDM, the
+    // tests and the preview pass their own or none
+    property var sessionStore: typeof sddm !== "undefined" && sessionMemory.status === Loader.Ready
+                               ? sessionMemory.item : null
     // the pointer is on this screen, this screen's view has the keys
     property bool pointerHere: pointer.hovered
     property bool keysHere: Window.active
@@ -180,6 +184,7 @@ FocusScope {
         keyboardModel: root.keyboardModel
         sessions: root.sessions
         themeConfig: root.themeConfig
+        store: root.sessionStore
         onFailed: {
             column.fail()
             root.activity()
@@ -300,6 +305,12 @@ FocusScope {
         canRestart: adapter.canRestart
         keyboardOn: root.keyboardOn
         keyboardAvailable: keyboard.available
+        sessions: adapter.showSessions ? adapter.sessionChoices : []
+        session: adapter.sessionKey
+        onSessionPicked: key => {
+            adapter.chooseSession(key)
+            root.focusInput()
+        }
         onSleepRequested: adapter.sleep()
         onHibernateRequested: adapter.hibernate()
         onShutDownRequested: adapter.shutDown()
@@ -445,5 +456,10 @@ FocusScope {
         id: batteryProbe
         active: root.statusProbes
         source: "BatteryProbe.qml"
+    }
+    Loader {
+        id: sessionMemory
+        active: typeof sddm !== "undefined"
+        source: "SessionMemory.qml"
     }
 }

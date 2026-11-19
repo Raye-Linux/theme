@@ -4,7 +4,8 @@
 // picks; Tab and Shift+Tab move too.
 //
 // In:  anchorItem  the button it opens from (right edges line up)
-//      rows        [{ id, text, icon, checkable, checked, enabled }]
+//      rows        [{ id, text, icon, checkable, checked, selected, enabled }]
+//                  (selected: the one picked of a list, read out as checked)
 //      message     a plain line above the rows (e.g. "Sign in to connect
 //                  to a network")
 // Out: triggered(id)  a row was picked; a plain row also closes the
@@ -20,6 +21,9 @@ T.Popup {
     property Item anchorItem: null
     property var rows: []
     property string message: ""
+    // give the keys back to the button on close; off when the owner sends
+    // them elsewhere after a pick
+    property bool focusBack: true
     property int currentRow: -1
     readonly property int rowCount: rows ? rows.length : 0
 
@@ -85,7 +89,7 @@ T.Popup {
         content.forceActiveFocus()
     }
     onClosed: {
-        if (anchorItem)
+        if (anchorItem && focusBack)
             anchorItem.forceActiveFocus()
     }
 
@@ -175,8 +179,8 @@ T.Popup {
                     checkable: false
                     Accessible.role: modelData.checkable ? Accessible.CheckBox : Accessible.MenuItem
                     Accessible.name: modelData.text
-                    Accessible.checkable: modelData.checkable === true
-                    Accessible.checked: modelData.checked === true
+                    Accessible.checkable: modelData.checkable === true || modelData.selected !== undefined
+                    Accessible.checked: modelData.checked === true || modelData.selected === true
 
                     onClicked: flyout.pick(index)
                     onHoveredChanged: if (hovered) flyout.currentRow = index

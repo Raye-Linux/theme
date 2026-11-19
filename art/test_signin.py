@@ -60,7 +60,7 @@ def test_every_icon_is_a_20px_svg_in_the_grid():
         assert f"network-wireless-{level}.svg" in icons
     for name in ("power", "sleep", "restart", "accessibility", "keyboard",
                  "text-larger", "contrast", "network-wired", "network-none",
-                 "eye-reveal", "eye-hide", "arrow-right"):
+                 "eye-reveal", "eye-hide", "arrow-right", "desktop", "check"):
         assert f"{name}.svg" in icons
     for name, text in icons.items():
         root = ET.fromstring(text)

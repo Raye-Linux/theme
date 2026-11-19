@@ -11,9 +11,15 @@
 //      canSleep, canHibernate, canShutDown, canRestart
 //      picture (the lock picture from theme.conf, "" = the Raye one)
 //      busy (a sign-in runs), signedIn, message (from PAM)
+//      sessionChoices [{ key, index, file }] the Raye desktops ("plasma",
+//      "hyprland"), showSessions (more than one), sessionKey (the one the
+//      account signs in to, "" = SDDM's last session)
 //      failed(), succeeded()
 // Do:  login(password), loginAs(name, password), sleep(), hibernate(),
-//      shutDown(), restart(), nextLayout()
+//      shutDown(), restart(), nextLayout(), chooseSession(key)
+//
+// store (QtCore Settings or a stand-in) keeps the desktop each account
+// last signed in to; SDDM itself only keeps the last one of all.
 //
 // The password only passes through login(); nothing here keeps it.
 import QtQuick
@@ -27,6 +33,7 @@ Item {
     property var keyboardModel: null
     property var sessions: null
     property var themeConfig: null
+    property var store: null
 
     property var accounts: []
     readonly property int count: accounts.length
@@ -63,7 +70,69 @@ Item {
 
     visible: false
 
-    onCurrentIndexChanged: message = ""
+    onCurrentIndexChanged: {
+        message = ""
+        pickedKey = ""
+    }
+
+    // --- sessions ------------------------------------------------------
+    property var sessionChoices: []
+    readonly property bool showSessions: sessionChoices.length > 1
+    // a desktop picked on screen for the account shown
+    property string pickedKey: ""
+    readonly property string sessionKey: {
+        var c = sessionFor(userLogin)
+        return c ? c.key : ""
+    }
+
+    function remembered(user) {
+        if (!store || !user)
+            return ""
+        return String(store.value("sessions/" + user, "") || "")
+    }
+
+    function sessionFor(user) {
+        var i
+        for (i = 0; pickedKey !== "" && i < sessionChoices.length; ++i)
+            if (sessionChoices[i].key === pickedKey)
+                return sessionChoices[i]
+        return Status.pickSession(sessionChoices, remembered(user), sessions ? sessions.lastIndex : -1)
+    }
+
+    function chooseSession(key) {
+        for (var i = 0; i < sessionChoices.length; ++i)
+            if (sessionChoices[i].key === key)
+                pickedKey = key
+    }
+
+    Instantiator {
+        id: sessionReader
+        model: adapter.sessions && typeof adapter.sessions.rowCount === "function" ? adapter.sessions : 0
+        delegate: QtObject {
+            required property var model
+            readonly property string file: model.file ? String(model.file) : ""
+            readonly property string name: model.name ? String(model.name) : ""
+        }
+        onObjectAdded: readSessionsLater.restart()
+        onObjectRemoved: readSessionsLater.restart()
+    }
+
+    Timer {
+        id: readSessionsLater
+        interval: 0
+        onTriggered: {
+            var list = []
+            for (var i = 0; i < sessionReader.count; ++i) {
+                var o = sessionReader.objectAt(i)
+                list.push(o ? { file: o.file, name: o.name } : null)
+            }
+            adapter.sessionChoices = Status.sessionChoices(list)
+        }
+    }
+
+    // the user and session of the sign-in under way, remembered once it works
+    property string signingUser: ""
+    property string signingSession: ""
 
     function sessionIndex() {
         var count = sessions && typeof sessions.rowCount === "function" ? sessions.rowCount() : -1
@@ -79,9 +148,12 @@ Item {
         var user = String(name || "").trim()
         if (!greeter || busy || signedIn || user === "")
             return
+        var choice = sessionFor(user)
         busy = true
         message = ""
-        greeter.login(user, password, sessionIndex())
+        signingUser = user
+        signingSession = choice ? choice.file : ""
+        greeter.login(user, password, choice ? choice.index : sessionIndex())
     }
 
     function login(password) {
@@ -163,6 +235,8 @@ Item {
             adapter.failed()
         }
         function onLoginSucceeded() {
+            if (adapter.store && adapter.signingUser !== "" && adapter.signingSession !== "")
+                adapter.store.setValue("sessions/" + adapter.signingUser, adapter.signingSession)
             adapter.busy = false
             adapter.signedIn = true
             adapter.succeeded()

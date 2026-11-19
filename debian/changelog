@@ -8,6 +8,14 @@ raye-theme (1.0~beta2) resolute; urgency=medium
   * New package raye-hyprland: the Raye desktop on Hyprland, chosen at
     sign-in next to Plasma, with the same taskbar, Start, quick settings and
     notifications, the Windows keys, a Raye lock screen and Raye motion.
+  * The sign-in screen has a Desktop button when both Raye and Raye
+    (Hyprland) are installed, and remembers the desktop of each account.
+  * The bare Hyprland entries are no longer offered at sign-in.
+  * Qt apps get the Raye title bar on Hyprland, with working Minimize,
+    Maximize and Close.
+  * Win+N and the clock open the notification centre on Hyprland.
+  * The Hyprland desktop shows the wallpaper picked for Plasma.
+  * The boot screen keeps backslashes in the keyboard name.
 
  -- techoraye <190692880+techoraye@users.noreply.github.com>  Thu, 19 Nov 2026 10:00:00 +0000
 

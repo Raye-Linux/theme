@@ -142,4 +142,35 @@ TestCase {
         verify(Logic.changesClients("closewindow"))
         verify(!Logic.changesClients("activelayout"))
     }
+
+    function test_window_of_a_title_bar() {
+        const a = client("0xa", "org.kde.dolphin", "Home", ws1, { pid: 200 })
+        const b = client("0xb", "org.kde.dolphin", "Pictures", ws1, { pid: 200 })
+        const c = client("0xc", "konsole", "Home", ws1, { pid: 300 })
+        const all = [a, b, c]
+        // the app's window with that title
+        compare(Logic.windowOf(all, 200, "Pictures", "0xc").address, "0xb")
+        // two with the same title: the one with the focus
+        const b2 = client("0xd", "org.kde.dolphin", "Home", ws1, { pid: 200 })
+        compare(Logic.windowOf([a, b2, c], 200, "Home", "0xd").address, "0xd")
+        // a title that changed on the way: the app's focused window
+        compare(Logic.windowOf(all, 200, "Downloads", "0xa").address, "0xa")
+        // never another app's window, and nothing for an unknown app
+        compare(Logic.windowOf(all, 200, "Downloads", "0xc"), null)
+        compare(Logic.windowOf(all, 999, "Home", "0xc"), null)
+        // a window already put away is not picked again
+        const gone = client("0xe", "org.kde.dolphin", "Music", minWs, { pid: 200 })
+        compare(Logic.windowOf([gone], 200, "Music", ""), null)
+    }
+
+    function test_do_not_disturb_and_focus() {
+        const now = new Date(2026, 10, 19, 10, 0, 0)
+        verify(!Logic.dndActive(undefined, now, false))
+        verify(!Logic.dndActive(new Date(2026, 10, 19, 9, 0, 0), now, false))
+        verify(Logic.dndActive(new Date(2126, 0, 1), now, false))
+        verify(Logic.dndActive(undefined, now, true))
+        compare(Logic.focusRemaining(new Date(NaN), now), 0)
+        compare(Logic.focusRemaining(new Date(2026, 10, 19, 10, 25, 0), now), 1500)
+        compare(Logic.focusRemaining(new Date(2026, 10, 19, 9, 0, 0), now), 0)
+    }
 }

@@ -178,6 +178,7 @@ endif
 ifneq (,$(filter hyprland,$(TREES)))
 	ls debian/raye-hyprland/usr/bin/raye-hypr-shell
 	ls debian/raye-hyprland/usr/share/wayland-sessions/raye-hyprland.desktop
+	ls debian/raye-hyprland/usr/lib/*/qt6/plugins/wayland-decoration-client/rayetitlebar.so
 endif
 
 # raye-shell puts links to its OSD files in place of the stock ones; the
@@ -196,6 +197,13 @@ RAYE_LOCK = $(if $(wildcard debian/raye-shell/$(LOCKSCREEN)/LockScreen.qml),Lock
 
 override_dh_installdeb:
 	dh_installdeb -DRAYE_OSD="$(RAYE_OSD)" -DRAYE_LOCK="$(RAYE_LOCK)"
+
+# raye-hyprland's title bar plugin uses QtWayland's private API: it only
+# loads into the Qt it was built with
+QT_PRIVATE_ABI := $(shell dpkg-query -W -f='$${Version}' qt6-base-private-dev 2>/dev/null | sed 's/[+~-].*//')
+
+override_dh_gencontrol:
+	dh_gencontrol -- -Vraye:QtPrivateAbi="qt6-base-private-abi (= $(QT_PRIVATE_ABI))"
 
 override_dh_auto_clean:
 	rm -rf debian/build

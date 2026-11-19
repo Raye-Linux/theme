@@ -37,6 +37,9 @@ public Q_SLOTS:
     void Desktop() { Q_EMIT desktop(); }
     void Task(int number) { Q_EMIT task(number); }
     void CloseDesktop() { Q_EMIT closeDesktop(); }
+    // the Minimize button of a Raye title bar (Hyprland ignores the
+    // client's own minimize request)
+    void Minimize(qlonglong pid, const QString &title) { Q_EMIT minimize(pid, title); }
 
 Q_SIGNALS:
     void toggle(const QString &what);
@@ -44,4 +47,5 @@ Q_SIGNALS:
     void desktop();
     void task(int number);
     void closeDesktop();
+    void minimize(qlonglong pid, const QString &title);
 };

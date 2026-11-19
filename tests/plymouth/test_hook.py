@@ -166,6 +166,12 @@ def test_render_escapes_what_would_end_the_string(system, fakebin, tmp_path):
     assert 'T_KEYBOARD = "Keyboard: A \\"q\\" \\\\ bc";' in r.stdout
 
 
+def test_render_keeps_backslash_sequences(system, fakebin, tmp_path):
+    r = run_hook(system, tmp_path, fakebin, "render", "en", "US\\nB\\t")
+    assert r.returncode == 0
+    assert 'T_KEYBOARD = "Keyboard: US\\\\nB\\\\t";' in r.stdout
+
+
 def test_render_unknown_language_falls_back_to_english(system, fakebin, tmp_path):
     r = run_hook(system, tmp_path, fakebin, "render", "../../etc/passwd", "")
     assert r.returncode == 0

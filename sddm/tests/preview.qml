@@ -6,7 +6,7 @@
 //
 // states: lock, signin, typed, caps, error, message, welcome, power,
 // access, network, keyboard, passwordless, noaccounts, secondary,
-// highcontrast
+// highcontrast, desktops (two Raye desktops), desktopmenu (their flyout)
 import QtQuick
 import QtQuick.Window
 import org.raye.signin
@@ -37,7 +37,7 @@ Window {
             greeter: greeter,
             users: state === "noaccounts" ? null : (state === "passwordless" ? kiosk : users),
             keyboardModel: keyboardModel,
-            sessions: { lastIndex: 0 },
+            sessions: state.indexOf("desktop") === 0 ? desktops : { lastIndex: 0 },
             themeConfig: { background: "" },
             primary: state !== "secondary",
             statusProbes: true
@@ -67,6 +67,13 @@ Window {
         ListElement { name: "alex"; realName: "Alex Martin"; icon: ""; needsPassword: true }
         ListElement { name: "camille"; realName: "Camille Roy"; icon: ""; needsPassword: true }
         ListElement { name: "sam"; realName: "Sam Lee"; icon: ""; needsPassword: true }
+    }
+
+    ListModel {
+        id: desktops
+        property int lastIndex: 1
+        ListElement { file: "/usr/share/wayland-sessions/plasma.desktop"; name: "Plasma (Wayland)" }
+        ListElement { file: "/usr/share/wayland-sessions/raye-hyprland.desktop"; name: "Raye (Hyprland)" }
     }
 
     ListModel {
@@ -130,6 +137,10 @@ Window {
             break
         case "network":
             later.action = function () { bar.networkFlyout.open() }
+            later.start()
+            break
+        case "desktopmenu":
+            later.action = function () { bar.sessionFlyout.open() }
             later.start()
             break
         case "keyboard":

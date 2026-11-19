@@ -145,6 +145,20 @@ function minimizeCommands(window) {
     return ["dispatch movetoworkspacesilent " + MINIMIZED + "," + addr(window.address)]
 }
 
+// The window a title bar's Minimize button belongs to: the app is known
+// by its process, the window by its title, else by the focus.
+function windowOf(clients, pid, title, activeAddress) {
+    const own = clients.filter(c => c.pid === pid && isShown(c) && !isMinimized(c))
+    const named = own.filter(c => c.title === title)
+    if (named.length === 1)
+        return named[0]
+    const pool = named.length > 1 ? named : own
+    const active = pool.find(c => c.address === activeAddress)
+    if (active)
+        return active
+    return named.length > 1 ? named[0] : null
+}
+
 function closeCommands(window) {
     return ["dispatch closewindow " + addr(window.address)]
 }
@@ -272,4 +286,21 @@ function parseEvent(line) {
 
 function changesClients(name) {
     return CLIENT_EVENTS.indexOf(name) >= 0
+}
+
+// --- notification centre ---------------------------------------------------
+
+// Do not disturb is on: until a time still ahead, or an app asked for it.
+// The clock applet's rule, for the centre on Hyprland.
+function dndActive(inhibitedUntil, now, byApplication) {
+    if (byApplication)
+        return true
+    return inhibitedUntil instanceof Date && !isNaN(inhibitedUntil.getTime()) && inhibitedUntil > now
+}
+
+// Seconds left of a focus session, 0 when over or off.
+function focusRemaining(until, now) {
+    if (!(until instanceof Date) || isNaN(until.getTime()))
+        return 0
+    return Math.max(0, Math.ceil((until.getTime() - now.getTime()) / 1000))
 }

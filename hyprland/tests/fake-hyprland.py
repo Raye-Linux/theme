@@ -5,7 +5,8 @@ Wayland compositor (a headless one in the tests, for pictures):
     fake-hyprland.py DIR [clients.json]
 
 serves DIR/.socket.sock (j/clients, j/activewindow, j/monitors, dispatch)
-and DIR/.socket2.sock, and prints every request it gets."""
+and DIR/.socket2.sock, and prints every request it gets. clients.json is
+read again on each request, so a preview can add a window it started."""
 
 import json
 import os
@@ -14,7 +15,7 @@ import sys
 import threading
 
 DIR = sys.argv[1]
-CLIENTS = json.load(open(sys.argv[2])) if len(sys.argv) > 2 else []
+CLIENTS_FILE = sys.argv[2] if len(sys.argv) > 2 else None
 WIDTH = int(os.environ.get("FAKE_WIDTH", "1280"))
 HEIGHT = int(os.environ.get("FAKE_HEIGHT", "800"))
 
@@ -25,7 +26,18 @@ MONITORS = [{
 }]
 
 
+def clients():
+    if not CLIENTS_FILE:
+        return []
+    try:
+        with open(CLIENTS_FILE) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return []
+
+
 def answer(q):
+    CLIENTS = clients()
     if q == "j/clients":
         return json.dumps(CLIENTS)
     if q == "j/activewindow":

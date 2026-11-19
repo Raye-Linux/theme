@@ -383,6 +383,18 @@ def icon_task_manager():
                stroke("M5 10.5 H7.25 L8.75 7 L11 13 L12.5 10.5 H15"))
 
 
+def icon_desktop():
+    # two windows, the one in front with its title bar
+    return svg(stroke("M5.75 6 V4.75 A1.75 1.75 0 0 1 7.5 3 H16.25 A1.75 1.75 0 0 1 18 4.75 "
+                      "V11.25 A1.75 1.75 0 0 1 16.25 13 H15"),
+               stroke(rect_path(2, 7, 13, 10, 1.75)),
+               stroke("M2 10 H15"))
+
+
+def icon_check():
+    return svg(stroke("M4.25 10.5 L8.25 14.25 L15.75 6"))
+
+
 def icons():
     """File name in icons/ -> SVG text."""
     out = {
@@ -403,6 +415,8 @@ def icons():
         "sign-out.svg": icon_sign_out(),
         "key.svg": icon_key(),
         "task-manager.svg": icon_task_manager(),
+        "desktop.svg": icon_desktop(),
+        "check.svg": icon_check(),
     }
     for n in WIFI_LEVELS:
         out[f"network-wireless-{n}.svg"] = icon_wifi(n)

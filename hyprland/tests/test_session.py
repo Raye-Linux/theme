@@ -171,3 +171,93 @@ def test_whole_session_config_parses(tmp_path):
     conf = run_session(tmp_path)
     code, out = verify(conf / "hyprland.conf")
     assert code == 0 and "config ok" in out, out
+
+
+def env_lines():
+    out = {}
+    for line in CONF.read_text().splitlines():
+        m = re.match(r"\s*env\s*=\s*([A-Z_]+)\s*,\s*(.*)$", line)
+        if m:
+            out[m.group(1)] = m.group(2).strip()
+    return out
+
+
+def test_qt_apps_draw_raye_title_bars():
+    env = env_lines()
+    assert env.get("QT_WAYLAND_DECORATION") == "raye"
+    # Hyprland answers "server side" and draws nothing: Qt must not ask
+    hidden = env.get("QT_WAYLAND_DISABLED_INTERFACES", "").split(",")
+    assert "zxdg_decoration_manager_v1" in hidden
+    assert "org_kde_kwin_server_decoration_manager" in hidden
+
+
+def test_maximize_button_is_not_suppressed():
+    # suppress_event = maximize would make the title bar's Maximize do nothing
+    assert not re.search(r"suppress_event\s*=.*maximize", CONF.read_text())
+
+
+# --- the stock Hyprland sign-in entries ------------------------------------
+
+DEBIAN = TOP.parent / "debian"
+
+
+@pytest.fixture
+def divert_root(tmp_path):
+    """A fake system with dpkg-divert pointed at it."""
+    if not shutil.which("dpkg-divert"):
+        pytest.skip("dpkg-divert is not installed")
+    root = tmp_path / "root"
+    admin = tmp_path / "admin"
+    sessions = root / "usr/share/wayland-sessions"
+    sessions.mkdir(parents=True)
+    admin.mkdir()
+    (admin / "diversions").write_text("")
+    for name in ("hyprland.desktop", "hyprland-uwsm.desktop", "raye-hyprland.desktop", "sway.desktop"):
+        (sessions / name).write_text("[Desktop Entry]\nName=" + name + "\n")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    real = shutil.which("dpkg-divert")
+    wrapper = bin_dir / "dpkg-divert"
+    wrapper.write_text(f'#!/bin/sh\nexec {real} --instdir "{root}" --admindir "{admin}" "$@"\n')
+    wrapper.chmod(0o755)
+    env = dict(os.environ, PATH=f"{bin_dir}:{os.environ['PATH']}")
+    return root, sessions, env
+
+
+def maintainer(script, arg, env):
+    return subprocess.run(["sh", str(DEBIAN / script), arg], capture_output=True, text=True, env=env)
+
+
+def test_install_hides_the_stock_sessions(divert_root):
+    root, sessions, env = divert_root
+    r = maintainer("raye-hyprland.preinst", "install", env)
+    assert r.returncode == 0, r.stderr
+    left = sorted(p.name for p in sessions.glob("*.desktop"))
+    assert left == ["raye-hyprland.desktop", "sway.desktop"]
+    assert (sessions / "hyprland.desktop.stock").exists()
+    # an upgrade leaves things as they are
+    assert maintainer("raye-hyprland.preinst", "upgrade", env).returncode == 0
+    assert sorted(p.name for p in sessions.glob("*.desktop")) == left
+
+
+def test_remove_gives_them_back(divert_root):
+    root, sessions, env = divert_root
+    assert maintainer("raye-hyprland.preinst", "install", env).returncode == 0
+    r = maintainer("raye-hyprland.postrm", "remove", env)
+    assert r.returncode == 0, r.stderr
+    assert sorted(p.name for p in sessions.glob("*.desktop")) == [
+        "hyprland-uwsm.desktop", "hyprland.desktop", "raye-hyprland.desktop", "sway.desktop"]
+    assert not list(sessions.glob("*.stock"))
+    # a second remove (purge after remove) finds nothing to do
+    assert maintainer("raye-hyprland.postrm", "purge", env).returncode == 0
+
+
+def test_postrm_leaves_other_packages_diversions(divert_root):
+    root, sessions, env = divert_root
+    subprocess.run(["dpkg-divert", "--package", "someone-else", "--add", "--rename", "--divert",
+                    "/usr/share/wayland-sessions/hyprland.desktop.other",
+                    "/usr/share/wayland-sessions/hyprland.desktop"], env=env, check=True,
+                   capture_output=True)
+    r = maintainer("raye-hyprland.postrm", "remove", env)
+    assert r.returncode == 0, r.stderr
+    assert (sessions / "hyprland.desktop.other").exists()

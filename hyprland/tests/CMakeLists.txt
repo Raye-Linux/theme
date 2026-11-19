@@ -19,3 +19,14 @@ set_tests_properties(hyprland-ipc PROPERTIES TIMEOUT 60)
 add_test(NAME hyprland-session
     COMMAND ${Python3_EXECUTABLE} -m pytest -q -p no:cacheprovider ${CMAKE_CURRENT_SOURCE_DIR}/test_session.py)
 set_tests_properties(hyprland-session PROPERTIES TIMEOUT 300 ENVIRONMENT "PYTHONDONTWRITEBYTECODE=1")
+
+add_executable(tst_titlebar tst_titlebar.cpp)
+target_link_libraries(tst_titlebar PRIVATE rayetitlebar-logic Qt6::Test)
+add_test(NAME hyprland-titlebar COMMAND tst_titlebar)
+set_tests_properties(hyprland-titlebar PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+add_executable(tst_views tst_views.cpp ../shell/src/views.cpp)
+set_target_properties(tst_views PROPERTIES AUTOMOC ON)
+target_include_directories(tst_views PRIVATE ../shell/src)
+target_link_libraries(tst_views PRIVATE Qt6::Test Qt6::Gui Qt6::Qml KF6::ConfigCore)
+add_test(NAME hyprland-wallpaper COMMAND tst_views)

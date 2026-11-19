@@ -107,3 +107,52 @@ function picture(value) {
         return ""
     return "file://" + s
 }
+
+// The Raye desktops among SDDM's sessions, by file name: Plasma, and
+// Plasma's shell on Hyprland. Other sessions are not offered here.
+var RAYE_SESSIONS = ["plasma", "hyprland"]
+var SESSION_FILES = { "plasma.desktop": "plasma", "raye-hyprland.desktop": "hyprland" }
+
+function sessionKey(file) {
+    if (typeof file !== "string")
+        return ""
+    var base = file.slice(file.lastIndexOf("/") + 1)
+    return SESSION_FILES.hasOwnProperty(base) ? SESSION_FILES[base] : ""
+}
+
+// [{ file, name }] in SDDM's order -> [{ key, index, file }], Plasma
+// first; index is the row SDDM's login() wants
+function sessionChoices(sessions) {
+    var out = []
+    if (!sessions)
+        return out
+    for (var k = 0; k < RAYE_SESSIONS.length; ++k) {
+        for (var i = 0; i < sessions.length; ++i) {
+            var s = sessions[i]
+            if (s && sessionKey(s.file) === RAYE_SESSIONS[k]) {
+                var file = String(s.file)
+                out.push({ key: RAYE_SESSIONS[k], index: i, file: file.slice(file.lastIndexOf("/") + 1) })
+                break
+            }
+        }
+    }
+    return out
+}
+
+// The desktop an account signs in to: the one it used last, else SDDM's
+// last session when it is a Raye one, else the first. null: SDDM's last
+// session is another desktop, keep it.
+function pickSession(choices, remembered, lastIndex) {
+    if (!choices || choices.length === 0)
+        return null
+    var i
+    for (i = 0; remembered && i < choices.length; ++i)
+        if (choices[i].file === remembered)
+            return choices[i]
+    if (typeof lastIndex !== "number" || lastIndex < 0)
+        return choices[0]
+    for (i = 0; i < choices.length; ++i)
+        if (choices[i].index === lastIndex)
+            return choices[i]
+    return null
+}

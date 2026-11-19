@@ -1,0 +1,22 @@
+#!/bin/sh
+# The sign-in screen offers Raye's two desktops, "Raye" and "Raye
+# (Hyprland)". The hyprland package's own entries (a bare Hyprland
+# without the Raye shell) are moved aside to <file>.stock, where no
+# login manager reads them.
+set -e
+
+DIR=/usr/share/wayland-sessions
+STOCK="hyprland.desktop hyprland-uwsm.desktop"
+
+case "$1" in
+    install|upgrade)
+        for f in $STOCK; do
+            dpkg-divert --package raye-hyprland --add --rename \
+                --divert "$DIR/$f.stock" "$DIR/$f"
+        done
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

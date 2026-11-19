@@ -22,6 +22,7 @@ Item {
     readonly property bool startOpen: start.open
     readonly property string startMode: start.mode
     readonly property bool quickOpen: quick.open
+    readonly property bool centreOpen: centre.open
     readonly property int unreadCount: history.unreadNotificationsCount
     // the network, volume and battery state, shared by the pill and the panel
     readonly property var system: systemLoader.item
@@ -77,7 +78,9 @@ Item {
         model: Qt.application.screens
         delegate: Wallpaper {
             required property var modelData
+            required property int index
             screen: modelData
+            screenIndex: index
         }
     }
 
@@ -97,8 +100,14 @@ Item {
         id: quick
         system: hyprShell.system
     }
+    CentrePopup {
+        id: centre
+        now: hyprShell.now
+        badgeModel: history
+    }
     Toasts {
-        centreOpen: false
+        centreOpen: centre.open
+        doNotDisturb: centre.doNotDisturb
     }
 
     function toggle(what, panel) {
@@ -112,18 +121,20 @@ Item {
         case "search":
         case "quicklinks":
             quick.close()
+            centre.close()
             start.toggle(what === "search" ? "search" : "start", panel ? panel.startButton : null)
             break
         case "quick":
             start.close()
+            centre.close()
             quick.toggle()
             break
         case "centre":
-            // the centre (calendar and history) is not on Hyprland yet:
-            // the clock opens the calendar app
             start.close()
             quick.close()
-            Launcher.openUrl("raye-calendar:?day=" + Qt.formatDate(new Date(), "yyyy-MM-dd"))
+            if (panel)
+                centre.screen = panel.screen
+            centre.toggle()
             break
         }
     }
@@ -189,6 +200,11 @@ Item {
         function onSnap(direction) { hyprShell.snap(direction) }
         function onDesktop() { hyprShell.showDesktop() }
         function onCloseDesktop() { hyprShell.closeDesktop() }
+        function onMinimize(pid, title) {
+            const w = Logic.windowOf(Hyprland.clients, pid, title, Hyprland.activeAddress)
+            if (w)
+                Hyprland.request(Logic.batch(Logic.minimizeCommands(w)))
+        }
         function onTask(number) {
             const p = hyprShell.activePanel()
             if (p && p.taskBarItem)
