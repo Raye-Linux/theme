@@ -290,10 +290,8 @@ FocusScope {
         }
         Behavior on opacity {
             SequentialAnimation {
-                NumberAnimation {
-                    duration: panel.shown ? ShellTokens.durationSlow : ShellTokens.durationFast
-                    easing: panel.shown ? Motion.entrance : Motion.exit
-                }
+                // a straight fade, under the slide
+                NumberAnimation { duration: ShellTokens.durationFast }
                 ScriptAction { script: if (!panel.shown) panel.closed() }
             }
         }

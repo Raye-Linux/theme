@@ -38,11 +38,23 @@ QHash<QWindow *, QHash<const BlurBehind *, QRegion>> &shapes()
     return all;
 }
 
-void tellWindow(QWindow *window)
+// what each window was last told, so a frame of a slide that leaves the
+// shape where it was sends nothing
+QHash<QWindow *, QRegion> &sent()
+{
+    static QHash<QWindow *, QRegion> all;
+    return all;
+}
+
+// again: libplasma may have turned the blur off behind our back
+void tellWindow(QWindow *window, bool again = true)
 {
     QRegion region;
     for (const QRegion &shape : shapes().value(window))
         region += shape;
+    if (!again && sent().contains(window) && sent().value(window) == region)
+        return;
+    sent().insert(window, region);
     if (region.isEmpty()) {
         shapes().remove(window);
         s_setBlur(window, false, QRegion());
@@ -62,10 +74,15 @@ BlurBehind::BlurBehind(QObject *parent)
     : QObject(parent)
     , m_globals(KSharedConfig::openConfig(u"kdeglobals"_s))
 {
+    m_globals->reparseConfiguration();
+    m_transparency = transparencyEffects(m_globals);
     m_watcher = KConfigWatcher::create(m_globals);
     connect(m_watcher.data(), &KConfigWatcher::configChanged, this, [this](const KConfigGroup &group) {
-        if (group.name() == u"Raye"_s)
+        if (group.name() == u"Raye"_s) {
+            m_transparency = transparencyEffects(m_globals);
+            m_again = true;
             schedule();
+        }
     });
 }
 
@@ -178,6 +195,7 @@ bool BlurBehind::eventFilter(QObject *watched, QEvent *event)
         case QEvent::Show:
         case QEvent::Expose:
         case QEvent::Resize:
+            m_again = true;
             schedule();
             break;
         default:
@@ -192,29 +210,41 @@ void BlurBehind::schedule()
     if (m_pending)
         return;
     m_pending = true;
-    QTimer::singleShot(0, this, &BlurBehind::apply);
+    // a moving panel is caught by afterAnimating, before its frame is drawn;
+    // anything else by the next turn of the event loop
+    QTimer::singleShot(0, this, &BlurBehind::flush);
+}
+
+void BlurBehind::flush()
+{
+    if (m_pending)
+        apply();
 }
 
 void BlurBehind::apply()
 {
     m_pending = false;
+    const bool again = m_again;
+    m_again = false;
     ++m_requests;
     QWindow *window = m_item ? m_item->window() : nullptr;
     if (m_window && m_window != window) {
         if (shapes().contains(m_window) && shapes()[m_window].remove(this))
             tellWindow(m_window);
         m_window->removeEventFilter(this);
+        disconnect(m_frames);
     }
     if (window && window != m_window) {
         window->installEventFilter(this);
         connect(window, &QObject::destroyed, this, [window] {
             shapes().remove(window);
+            sent().remove(window);
         });
+        if (auto *quick = qobject_cast<QQuickWindow *>(window))
+            m_frames = connect(quick, &QQuickWindow::afterAnimating, this, &BlurBehind::flush);
     }
     m_window = window;
-    m_globals->reparseConfiguration();
-    const bool want = m_enabled && m_item && m_item->isVisible() && window && transparencyEffects(m_globals)
-        && s_canBlur();
+    const bool want = m_enabled && m_item && m_item->isVisible() && window && m_transparency && s_canBlur();
     if (!want) {
         if (window && shapes().contains(window) && shapes()[window].remove(this))
             tellWindow(window);
@@ -223,6 +253,6 @@ void BlurBehind::apply()
     }
     const QRectF r = m_item->mapRectToScene(QRectF(0, 0, m_item->width(), m_item->height()));
     shapes()[window].insert(this, roundedRegion(r.toAlignedRect(), m_radius));
-    tellWindow(window);
+    tellWindow(window, again || !m_active);
     setActive(true);
 }

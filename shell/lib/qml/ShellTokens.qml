@@ -107,8 +107,10 @@ QtObject {
     // the Raye eye on the Start button blinks when pressed
     readonly property int blinkClosed: Tokens.durationFaster
     readonly property int blinkOpen: Tokens.durationFast
-    // a flyout slides this far in as it opens
+    // a flyout slides this far in as it opens; the Windows 10 Start comes
+    // up from the taskbar, a longer way
     readonly property int flyoutSlide: 40
+    readonly property int startSlide: windows10 ? 120 : flyoutSlide
     readonly property int menuSlide: 8
     readonly property int tooltipDelay: 500
     // the next tooltip, while one was just shown

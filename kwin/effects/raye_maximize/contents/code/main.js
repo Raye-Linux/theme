@@ -4,7 +4,9 @@
     window: for a quarter of a second the window is soft, shown twice, and
     off its place. Here only the real window is drawn, at its real size and
     place, and it opens out from the size it had. Nothing is ever scaled.
-    Going back down is immediate.
+    Going back down, the window slides a short way into its place from the
+    middle of the frame it left. A window dropped on a snap zone opens out
+    from the top left of the zone, where the snap preview showed it.
 
     SPDX-License-Identifier: GPL-3.0-or-later
 */
@@ -23,6 +25,21 @@ function anchor(oldStart, oldEnd, newStart, newEnd, start, end) {
         return start;
     }
     return toEnd <= toMiddle ? end : 0;
+}
+
+// the farthest a restored window travels, in logical pixels
+const SETTLE_PX = 64;
+
+// the slide of a restored window: a quarter of the way from the middle of
+// the frame it left, or null when it is already there
+function settle(oldGeometry, newGeometry) {
+    if (!oldGeometry) {
+        return null;
+    }
+    const clamp = v => Math.max(-SETTLE_PX, Math.min(SETTLE_PX, Math.round(v / 4)));
+    const dx = clamp((oldGeometry.x + oldGeometry.width / 2) - (newGeometry.x + newGeometry.width / 2));
+    const dy = clamp((oldGeometry.y + oldGeometry.height / 2) - (newGeometry.y + newGeometry.height / 2));
+    return dx === 0 && dy === 0 ? null : { value1: dx, value2: dy };
 }
 
 // the opening-out, or null when the window got no bigger
@@ -55,13 +72,24 @@ class RayeMaximize {
     }
 
     loadConfig() {
-        this.duration = animationTime(200);
+        this.duration = animationTime(250);
+        this.settleDuration = animationTime(167);
+        this.fadeDuration = animationTime(83);
     }
 
     manage(window) {
         window.windowMaximizedStateAboutToChange.connect(this.aboutToChange.bind(this));
         window.windowMaximizedStateChanged.connect(this.changed.bind(this));
         window.windowFrameGeometryChanged.connect(this.geometryChanged.bind(this));
+        if (window.windowFinishUserMovedResized) {
+            window.windowFinishUserMovedResized.connect(this.dropped.bind(this));
+        }
+    }
+
+    // let go after a drag: if KWin then gives it a bigger frame (a snap
+    // zone), it opens out from where the preview stood
+    dropped(window) {
+        window.rayeDropped = Date.now();
     }
 
     aboutToChange(window) {
@@ -87,30 +115,84 @@ class RayeMaximize {
         this.start(window);
     }
 
-    geometryChanged(window) {
+    geometryChanged(window, oldGeometry) {
         if (window.rayeMaximizeWaiting) {
             window.rayeMaximizeWaiting = false;
             this.start(window);
+            return;
+        }
+        if (!window.rayeDropped) {
+            return;
+        }
+        // the zone's size comes once the app has drawn at it: wait a little
+        const recent = Date.now() - window.rayeDropped < 600;
+        if (!recent || window.rayeMaximizeFrom || !oldGeometry) {
+            delete window.rayeDropped;
+            return;
+        }
+        const g = window.geometry;
+        if (g.width === oldGeometry.width && g.height === oldGeometry.height) {
+            return;
+        }
+        delete window.rayeDropped;
+        const r = reveal(oldGeometry, g);
+        if (r && this.duration > 1) {
+            this.clip(window, r.from, LEFT | TOP);
         }
     }
 
-    start(window) {
-        const r = reveal(window.rayeMaximizeFrom, window.geometry);
-        delete window.rayeMaximizeFrom;
-        if (!r || this.duration <= 0) {
-            return;
-        }
+    clip(window, from, anchor) {
         window.rayeMaximize = animate({
             window: window,
             duration: this.duration,
             animations: [{
                 type: Effect.Clip,
-                from: r.from,
+                from: from,
                 to: { value1: 1.0, value2: 1.0 },
-                sourceAnchor: r.anchor,
-                targetAnchor: r.anchor,
-                curve: QEasingCurve.OutCubic
+                sourceAnchor: anchor,
+                targetAnchor: anchor,
+                curve: QEasingCurve.OutQuint
             }]
+        });
+    }
+
+    start(window) {
+        const from = window.rayeMaximizeFrom;
+        delete window.rayeMaximizeFrom;
+        delete window.rayeDropped;
+        if (this.duration <= 1) {
+            return;
+        }
+        const r = reveal(from, window.geometry);
+        if (r) {
+            this.clip(window, r.from, r.anchor);
+            return;
+        }
+        // pulled off the top by its title bar: it follows the pointer
+        if (window.move || window.resize) {
+            return;
+        }
+        // smaller: restored, it settles in
+        const animations = [{
+            type: Effect.Opacity,
+            from: 0.7,
+            to: 1.0,
+            duration: this.fadeDuration,
+            curve: QEasingCurve.Linear
+        }];
+        const offset = settle(from, window.geometry);
+        if (offset) {
+            animations.push({
+                type: Effect.Translation,
+                from: offset,
+                to: { value1: 0, value2: 0 },
+                curve: QEasingCurve.OutQuint
+            });
+        }
+        window.rayeMaximize = animate({
+            window: window,
+            duration: this.settleDuration,
+            animations: animations
         });
     }
 }

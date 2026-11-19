@@ -1,6 +1,7 @@
 // The shell's menu: Raye acrylic, 8 px corners, 4 px padding, rows of 32
-// px; it fades in while sliding 8 px. It opens in a window of its own,
-// so it can leave the taskbar or the flyout it belongs to.
+// px. It opens in a window of its own, so it can leave the taskbar or the
+// flyout it belongs to; KWin slides that window in (raye_popups), so the
+// menu itself only fades, quickly.
 //
 //   RayeMenu {
 //       id: menu
@@ -53,12 +54,9 @@ T.Menu {
     }
 
     enter: Transition {
-        ParallelAnimation {
-            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: ShellTokens.durationFast; easing: Motion.entrance }
-            NumberAnimation { target: menu.contentItem; property: "y"; from: menu.topPadding + ShellTokens.menuSlide; to: menu.topPadding; duration: ShellTokens.durationFast; easing: Motion.entrance }
-        }
+        NumberAnimation { property: "opacity"; from: 0; to: 1; duration: ShellTokens.durationFaster }
     }
     exit: Transition {
-        NumberAnimation { property: "opacity"; from: 1; to: 0; duration: ShellTokens.durationFaster; easing: Motion.exit }
+        NumberAnimation { property: "opacity"; from: 1; to: 0; duration: ShellTokens.durationFaster }
     }
 }

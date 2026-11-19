@@ -2,14 +2,18 @@
 # own ~/.config/kwinrc wins key by key, so these only decide what a new
 # account starts with. Settings and the shell write the user's file.
 #
-# Motion follows Windows 11: windows open in 200 ms from 94 %, popups
+# Motion follows Windows 11: windows settle in over 250 ms from 94 % and
+# fade in within 83 ms, close in 167 ms (raye_windows), popups
 # from the taskbar slide in 250 ms and leave in 167 ms, menus and
 # tooltips fade in 167 ms and close at once (raye_popups). The user's
 # "Animation speed" (kdeglobals AnimationDurationFactor) scales all of
 # it, and 0 turns it off.
 
 [Plugins]
-scaleEnabled=true
+# Raye's open and close replaces the stock zoom, which ran fade and zoom
+# on one curve
+scaleEnabled=false
+raye_windowsEnabled=true
 glideEnabled=false
 squashEnabled=true
 magiclampEnabled=false
@@ -41,8 +45,10 @@ minimizeallEnabled=true
 #     something already off, while reading as though Raye had replaced it.
 # tests/config/test_kwin_plugins.py fails if any of that comes back.
 
-[Effect-scale]
-Duration=200
+[Effect-raye_windows]
+OpenDuration=250
+FadeInDuration=83
+CloseDuration=167
 InScale=0.94
 OutScale=0.96
 

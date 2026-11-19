@@ -1,0 +1,20 @@
+{
+    "KPackageStructure": "KWin/Effect",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Raye Linux"
+            }
+        ],
+        "Category": "Appearance",
+        "Description": "Windows fade in quickly as they settle into place, and close a little faster than they open",
+        "Description[fr]": "Les fenêtres apparaissent en fondu rapide en prenant leur place, et se ferment un peu plus vite qu'elles ne s'ouvrent",
+        "EnabledByDefault": true,
+        "Id": "raye_windows",
+        "License": "GPL",
+        "Name": "Raye open and close",
+        "Name[fr]": "Ouverture et fermeture Raye"
+    },
+    "X-KDE-Ordering": 60,
+    "X-Plasma-API": "javascript"
+}

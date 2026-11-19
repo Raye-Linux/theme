@@ -43,9 +43,10 @@ def test_no_bouncy_window_effects():
 
 
 def test_windows_open_and_close_quickly():
-    scale = read("kwinrc")["Effect-scale"]
-    assert int(scale["Duration"]) <= 200
-    assert 0.9 <= float(scale["InScale"]) < 1
+    fx = read("kwinrc")["Effect-raye_windows"]
+    assert int(fx["OpenDuration"]) <= 250
+    assert int(fx["CloseDuration"]) < int(fx["OpenDuration"])
+    assert 0.9 <= float(fx["InScale"]) < 1
 
 
 def test_tray_tooltips_wait_like_the_shell():

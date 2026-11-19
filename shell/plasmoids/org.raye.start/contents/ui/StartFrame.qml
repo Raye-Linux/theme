@@ -187,24 +187,22 @@ FocusScope {
         }
     ]
     transitions: [
+        // the move on the Windows curves, the fade straight: on the exit
+        // curve the panel stayed whole, then vanished in one frame
         Transition {
             to: "shown"
-            NumberAnimation {
-                target: content
-                properties: "y,opacity"
-                duration: ShellTokens.durationNormal
-                easing: Motion.entrance
+            ParallelAnimation {
+                NumberAnimation { target: content; property: "y"; duration: ShellTokens.durationNormal; easing: Motion.entrance }
+                NumberAnimation { target: content; property: "opacity"; duration: ShellTokens.durationFast }
             }
         },
         Transition {
             from: "shown"
             to: ""
             SequentialAnimation {
-                NumberAnimation {
-                    target: content
-                    properties: "y,opacity"
-                    duration: ShellTokens.durationFast
-                    easing: Motion.exit
+                ParallelAnimation {
+                    NumberAnimation { target: content; property: "y"; duration: ShellTokens.durationFast; easing: Motion.exit }
+                    NumberAnimation { target: content; property: "opacity"; duration: ShellTokens.durationFast }
                 }
                 ScriptAction { script: frame.closed() }
             }
@@ -216,7 +214,7 @@ FocusScope {
         objectName: "startContent"
         width: frame.width
         height: frame.height
-        y: ShellTokens.flyoutSlide
+        y: ShellTokens.startSlide
         opacity: 0
 
         // the panel itself: its shadow and acrylic go with what is on them

@@ -84,10 +84,8 @@ FocusScope {
         opacity: centre.shown ? 1 : 0
         Behavior on opacity {
             SequentialAnimation {
-                NumberAnimation {
-                    duration: centre.shown ? ShellTokens.durationNormal : ShellTokens.durationFast
-                    easing: centre.shown ? Motion.entrance : Motion.exit
-                }
+                // a straight fade, under the slide
+                NumberAnimation { duration: ShellTokens.durationFast }
                 ScriptAction { script: if (!centre.shown) centre.closed() }
             }
         }

@@ -295,7 +295,7 @@
     "exit":   { "ms": 167, "curve": "InCubic", "short": 83, "short.curve": "Linear" },
     "kwin": {
       "about": "What config/kwinrc sets (owned by the motion package).",
-      "Effect-scale": { "Duration": 200, "InScale": 0.94, "OutScale": 0.96 },
+      "Effect-raye_windows": { "OpenDuration": 250, "FadeInDuration": 83, "CloseDuration": 167, "InScale": 0.94, "OutScale": 0.96 },
       "Effect-slidingpopups": { "SlideInTime": 250, "SlideOutTime": 167 },
       "raye_popups": { "in": 167, "in.curve": "OutQuint", "slide": 6, "out": 83, "out.curve": "Linear" },
       "maximize": 250, "minimize": 250,

@@ -442,7 +442,7 @@ Item {
             SequentialAnimation {
                 ParallelAnimation {
                     NumberAnimation { target: offset; property: "x"; duration: ShellTokens.durationNormal > 0 ? Logic.SLIDE_OUT : 0; easing: Motion.exit }
-                    NumberAnimation { target: slide; property: "opacity"; duration: ShellTokens.durationNormal > 0 ? Logic.SLIDE_OUT : 0; easing: Motion.exit }
+                    NumberAnimation { target: slide; property: "opacity"; duration: ShellTokens.durationNormal > 0 ? Logic.SLIDE_OUT : 0 }
                 }
                 ScriptAction {
                     script: {

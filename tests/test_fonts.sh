@@ -160,7 +160,8 @@ expect_kwin() {   # group, key, value
 }
 expect_kwin Plugins raye_popupsEnabled true
 expect_kwin Plugins fadingpopupsEnabled false
-expect_kwin Plugins scaleEnabled true
+expect_kwin Plugins scaleEnabled false
+expect_kwin Plugins raye_windowsEnabled true
 expect_kwin Plugins glideEnabled false
 expect_kwin Plugins magiclampEnabled false
 expect_kwin Plugins squashEnabled true
@@ -178,9 +179,9 @@ expect_kwin Plugins contrastEnabled true
 # moved on. Installing the font turned the skip into a red in one run.
 # The absence of the key is checked where it belongs, by
 # tests/config/test_kwin_plugins.py.
-expect_kwin Effect-scale Duration 200
-expect_kwin Effect-scale InScale 0.94
-expect_kwin Effect-scale OutScale 0.96
+expect_kwin Effect-raye_windows OpenDuration 250
+expect_kwin Effect-raye_windows CloseDuration 167
+expect_kwin Effect-raye_windows InScale 0.94
 expect_kwin Effect-slidingpopups SlideInTime 250
 expect_kwin Effect-slidingpopups SlideOutTime 167
 expect_kwin Effect-blur BlurStrength 11
@@ -197,7 +198,7 @@ kw = json.load(open(f"{repo}/tokens/raye-tokens.json"))["motion"]["kwin"]
 cp = configparser.ConfigParser(interpolation=None, strict=True)
 cp.optionxform = str
 cp.read(f"{repo}/config/kwinrc")
-for group in ("Effect-scale", "Effect-slidingpopups", "Effect-blur"):
+for group in ("Effect-raye_windows", "Effect-slidingpopups", "Effect-blur"):
     for key, value in kw[group].items():
         assert float(cp[group][key]) == float(value), (group, key)
 js = open(f"{repo}/kwin/effects/raye_popups/contents/code/main.js").read()

@@ -598,6 +598,119 @@ private Q_SLOTS:
         QCOMPARE(blurCalls().constLast().window, &window);
     }
 
+    // A panel that slides moves its blur on the frame it is drawn in. Left
+    // to the next turn of the event loop, the shape went out a frame late
+    // and the frost trailed the panel by a few pixels at each step.
+    void blurMovesOnTheFrameItIsDrawn()
+    {
+        blurCalls().clear();
+        BlurBehind::setCompositor(
+            [] {
+                return true;
+            },
+            [](QWindow *w, bool on, const QRegion &r) {
+                blurCalls().append({w, on, r});
+            });
+        auto restore = qScopeGuard([] {
+            BlurBehind::setCompositor(nullptr, nullptr);
+        });
+
+        QQuickWindow window;
+        window.resize(200, 200);
+        QQuickItem slide(window.contentItem());
+        slide.setY(40);
+        QQuickItem surface(&slide);
+        surface.setSize(QSizeF(100, 50));
+        BlurBehind blur;
+        blur.setItem(&surface);
+        QTRY_VERIFY(blur.active());
+
+        slide.setY(12);
+        // what QQuickWindow does between moving the items and drawing them
+        Q_EMIT window.afterAnimating();
+        QCOMPARE(blurCalls().constLast().region.boundingRect(), QRect(0, 12, 100, 50));
+    }
+
+    // Nothing is sent again when the shape did not change: a slide used to
+    // send the compositor a new region at every frame, also when two moves
+    // cancelled out.
+    void sameShapeIsNotSentTwice()
+    {
+        blurCalls().clear();
+        BlurBehind::setCompositor(
+            [] {
+                return true;
+            },
+            [](QWindow *w, bool on, const QRegion &r) {
+                blurCalls().append({w, on, r});
+            });
+        auto restore = qScopeGuard([] {
+            BlurBehind::setCompositor(nullptr, nullptr);
+        });
+
+        QQuickWindow window;
+        window.resize(200, 200);
+        QQuickItem slide(window.contentItem());
+        QQuickItem surface(&slide);
+        surface.setSize(QSizeF(100, 50));
+        BlurBehind blur;
+        blur.setItem(&surface);
+        QTRY_VERIFY(blur.active());
+        QTest::qWait(20);
+        const qsizetype before = blurCalls().size();
+
+        slide.setY(10);
+        surface.setY(-10);
+        QTest::qWait(30);
+        QCOMPARE(blurCalls().size(), before);
+
+        slide.setY(20);
+        QTRY_COMPARE(blurCalls().size(), before + 1);
+    }
+
+    // kdeglobals is read when it changes (KConfigWatcher), never on a move:
+    // reading the file at every frame of a slide made menus stutter.
+    void aMoveDoesNotReadTheConfigAgain()
+    {
+        blurCalls().clear();
+        BlurBehind::setCompositor(
+            [] {
+                return true;
+            },
+            [](QWindow *w, bool on, const QRegion &r) {
+                blurCalls().append({w, on, r});
+            });
+        const QString dir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+        QDir().mkpath(dir);
+        QFile globals(dir + u"/kdeglobals"_s);
+        auto restore = qScopeGuard([&globals] {
+            BlurBehind::setCompositor(nullptr, nullptr);
+            globals.remove();
+        });
+
+        QQuickWindow window;
+        window.resize(200, 200);
+        QQuickItem slide(window.contentItem());
+        QQuickItem surface(&slide);
+        surface.setSize(QSizeF(100, 50));
+        BlurBehind blur;
+        blur.setItem(&surface);
+        QTRY_VERIFY(blur.active());
+
+        // written behind its back, with no change notice
+        QVERIFY(globals.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        globals.write("[Raye]\nTransparencyEffects=false\n");
+        globals.close();
+
+        for (int y = 1; y <= 5; ++y) {
+            slide.setY(y * 4);
+            QTest::qWait(10);
+        }
+        QTRY_COMPARE(blurCalls().constLast().region.boundingRect(), QRect(0, 20, 100, 50));
+        QVERIFY(blurCalls().constLast().enable);
+        QVERIFY(blur.active());
+    }
+
     // along the taskbar the second tooltip comes at once, then after a
     // pause the half second wait is back
     void nextTooltipComesQuickly()

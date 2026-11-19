@@ -57,6 +57,6 @@ T.ToolTip {
     onClosed: TooltipWarmth.hidden()
 
     exit: Transition {
-        NumberAnimation { property: "opacity"; from: 1; to: 0; duration: ShellTokens.durationFaster; easing: Motion.exit }
+        NumberAnimation { property: "opacity"; from: 1; to: 0; duration: ShellTokens.durationFaster }
     }
 }

@@ -189,7 +189,7 @@ Item {
 
             ParallelAnimation {
                 id: entrance
-                NumberAnimation { target: frame; property: "opacity"; from: 0; to: 1; duration: ShellTokens.durationFast; easing: Motion.entrance }
+                NumberAnimation { target: frame; property: "opacity"; from: 0; to: 1; duration: ShellTokens.durationFaster }
                 NumberAnimation { target: column; property: "y"; from: frame.padding + ShellTokens.menuSlide; to: frame.padding; duration: ShellTokens.durationFast; easing: Motion.entrance }
             }
         }

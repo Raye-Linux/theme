@@ -68,6 +68,7 @@ Q_SIGNALS:
 private:
     void schedule();
     void apply();
+    void flush();
     void watchAncestors();
     void setActive(bool active);
 
@@ -78,6 +79,10 @@ private:
     bool m_enabled = true;
     bool m_active = false;
     bool m_pending = false;
+    // the next apply() sends the shape even if it did not change
+    bool m_again = true;
+    bool m_transparency = true;
+    QMetaObject::Connection m_frames;
     int m_requests = 0;
     KSharedConfig::Ptr m_globals;
     KConfigWatcher::Ptr m_watcher;

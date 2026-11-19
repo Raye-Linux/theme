@@ -1567,6 +1567,52 @@ private Q_SLOTS:
         QVERIFY2(mid <= 12, qPrintable(QString::number(mid)));
     }
 
+    // Closing fades as it drops away. On the exit curve the panel stayed
+    // fully there for most of the time and then vanished in one frame.
+    void closeFadesAsItGoes()
+    {
+        auto v = view(u"frame"_s, {{u"withBackend"_s, true}});
+        QVERIFY(v);
+        QQuickItem *content = child(v->item, u"startContent"_s);
+        QTRY_COMPARE(content->opacity(), 1.0);
+        QTest::qWait(50);
+
+        QList<Sample> frames;
+        QElapsedTimer clock;
+        auto conn = connect(v->window, &QQuickWindow::frameSwapped, this, [&] {
+            frames << Sample{clock.elapsed(), content->y(), content->opacity()};
+        }, Qt::QueuedConnection);
+        QSignalSpy closed(v->item, SIGNAL(closed()));
+        clock.start();
+        v->item->setProperty("shown", false);
+        QTRY_COMPARE(closed.count(), 1);
+        disconnect(conn);
+
+        // a straight fade: no frame takes away much of it at once
+        qreal biggest = 0;
+        for (int i = 1; i < frames.size(); ++i)
+            biggest = qMax(biggest, frames[i - 1].opacity - frames[i].opacity);
+        fprintf(stderr, "close: %lld ms, %lld frames, biggest step %.2f\n",
+                frames.isEmpty() ? 0 : frames.constLast().ms, qsizetype(frames.size()), biggest);
+        QVERIFY(frames.size() >= 4);
+        QVERIFY2(biggest < 0.4, qPrintable(u"one frame took %1 of the panel away"_s.arg(biggest)));
+    }
+
+    // The Windows 10 Start rises from the taskbar, a longer way than the
+    // Windows 11 one
+    void windows10RisesFurther()
+    {
+        StartConfig config(u"[Appearance]\nLook=windows10\n"_s);
+        auto v = view(u"frame"_s, {{u"withBackend"_s, true}});
+        QVERIFY(v);
+        QQuickItem *content = child(v->item, u"startContent"_s);
+        QTRY_COMPARE(content->opacity(), 1.0);
+        QSignalSpy closed(v->item, SIGNAL(closed()));
+        v->item->setProperty("shown", false);
+        QTRY_COMPARE(closed.count(), 1);
+        QVERIFY2(content->y() >= 100, qPrintable(QString::number(content->y())));
+    }
+
     // Made ahead of time (main.qml does it after login), a little at a
     // time; opening then has nothing left to build
     void preparedBeforeOpening()

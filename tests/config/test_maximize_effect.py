@@ -49,7 +49,7 @@ def test_metadata():
 def test_nothing_is_scaled_or_crossfaded():
     js = (FX / "contents/code/main.js").read_text()
     code = "\n".join(l for l in js.splitlines() if not l.strip().startswith(("//", "*", "/*")))
-    for bad in ("CrossFadePrevious", "Effect.Size", "Effect.Scale", "Effect.Translation"):
+    for bad in ("CrossFadePrevious", "Effect.Size", "Effect.Scale"):
         assert bad not in code, bad
 
 
@@ -65,8 +65,8 @@ Item {
         function signal(name) { return { connect: function (f) { handlers[name] = f; } }; }
         var effects = { stackingOrder: [], windowAdded: signal("added") };
         var effect = { configChanged: signal("config") };
-        var Effect = { Clip: 9 };
-        var QEasingCurve = { OutCubic: 7 };
+        var Effect = { Clip: 9, Translation: 4, Opacity: 7 };
+        var QEasingCurve = { OutCubic: 7, OutQuint: 8, Linear: 0 };
         function animate(s) { calls.push(s); return calls.length; }
         function animationTime(ms) { return ms; }
         function cancel() {}
@@ -74,7 +74,8 @@ Item {
                      req.responseText)(effects, effect, Effect, QEasingCurve, animate, animationTime, cancel);
         function win(g) {
             var w = { visible: true, geometry: g, h: {} };
-            ["windowMaximizedStateAboutToChange", "windowMaximizedStateChanged", "windowFrameGeometryChanged"]
+            ["windowMaximizedStateAboutToChange", "windowMaximizedStateChanged", "windowFrameGeometryChanged",
+             "windowFinishUserMovedResized"]
                 .forEach(function (n) { w[n] = { connect: function (f) { w.h[n] = f; } }; });
             handlers.added(w);
             return w;
@@ -86,12 +87,44 @@ Item {
         a.geometry = { x: 0, y: 0, width: 1920, height: 1032 };
         a.h.windowMaximizedStateChanged(a);
         out.max = calls.slice();
-        // restored: no animation
+        // restored: it settles into its place, never scaled
         calls.length = 0;
         a.h.windowMaximizedStateAboutToChange(a);
         a.geometry = { x: 560, y: 216, width: 800, height: 600 };
         a.h.windowMaximizedStateChanged(a);
-        out.restore = calls.length;
+        out.restore = calls.slice();
+        // restored to a corner: it comes from that side
+        calls.length = 0;
+        var c = win({ x: 0, y: 0, width: 1920, height: 1032 });
+        c.h.windowMaximizedStateAboutToChange(c);
+        c.geometry = { x: 40, y: 30, width: 600, height: 400 };
+        c.h.windowMaximizedStateChanged(c);
+        out.corner = calls.slice();
+        // pulled off the top by its title bar: it stays under the pointer
+        calls.length = 0;
+        var f = win({ x: 0, y: 0, width: 1920, height: 1032 });
+        f.h.windowMaximizedStateAboutToChange(f);
+        f.move = true;
+        f.geometry = { x: 500, y: 0, width: 800, height: 600 };
+        f.h.windowMaximizedStateChanged(f);
+        out.dragged = calls.length;
+        // dropped on the left half of the screen, from a 700x500 frame: it
+        // opens out from the top left of its place, where the preview put it
+        calls.length = 0;
+        var d = win({ x: 600, y: 300, width: 700, height: 500 });
+        d.h.windowFinishUserMovedResized(d);
+        var old = d.geometry;
+        d.geometry = { x: 0, y: 0, width: 960, height: 1032 };
+        d.h.windowFrameGeometryChanged(d, old);
+        out.drop = calls.slice();
+        // a plain move, no new size: nothing
+        calls.length = 0;
+        var e = win({ x: 100, y: 100, width: 700, height: 500 });
+        e.h.windowFinishUserMovedResized(e);
+        old = e.geometry;
+        e.geometry = { x: 140, y: 100, width: 700, height: 500 };
+        e.h.windowFrameGeometryChanged(e, old);
+        out.move = calls.length;
         // the new size arrives after the state: it waits for it
         var b = win({ x: 0, y: 0, width: 960, height: 1032 });
         b.h.windowMaximizedStateAboutToChange(b);
@@ -130,7 +163,34 @@ def test_maximise_opens_out_the_real_window(tmp_path):
     assert anim[0]["to"] == {"value1": 1.0, "value2": 1.0}
     # it was in the middle: it opens from the middle
     assert anim[0]["sourceAnchor"] == 0 == anim[0]["targetAnchor"]
-    assert r["restore"] == 0
+    assert r["max"][0]["duration"] == 250
+
+
+def test_restore_settles_in(tmp_path):
+    r = run_effect(tmp_path)
+    assert len(r["restore"]) == 1
+    types = {a["type"]: a for a in r["restore"][0]["animations"]}
+    # centred: nothing to travel, a quick fade from most of the way there
+    assert set(types) == {7}
+    assert 0.5 <= types[7]["from"] < 1
+    assert len(r["corner"]) == 1
+    types = {a["type"]: a for a in r["corner"][0]["animations"]}
+    move = types[4]["from"]
+    # it comes from the middle of the screen, a short way
+    assert move["value1"] > 0 and move["value2"] > 0
+    assert abs(move["value1"]) <= 64 and abs(move["value2"]) <= 64
+    assert r["dragged"] == 0
+
+
+def test_a_dropped_window_opens_out_in_its_zone(tmp_path):
+    r = run_effect(tmp_path)
+    assert len(r["drop"]) == 1
+    anim = r["drop"][0]["animations"][0]
+    assert anim["type"] == 9
+    assert anim["sourceAnchor"] == 1 | 2 == anim["targetAnchor"]
+    assert abs(anim["from"]["value1"] - 700 / 960) < 1e-6
+    assert abs(anim["from"]["value2"] - 500 / 1032) < 1e-6
+    assert r["move"] == 0
 
 
 def test_a_late_size_is_waited_for(tmp_path):
