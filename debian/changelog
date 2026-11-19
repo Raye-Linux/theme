@@ -2,6 +2,8 @@ raye-theme (1.0~beta1) resolute; urgency=medium
 
   * Web apps installed from a browser show their own icon and name on the
     taskbar.
+  * A Windows 10 look: taskbar on the left with a search box, square corners,
+    and a Start menu with an app list and resizable tile groups.
 
  -- techoraye <190692880+techoraye@users.noreply.github.com>  Thu, 19 Nov 2026 06:00:00 +0000
 
