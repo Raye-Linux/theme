@@ -575,6 +575,30 @@ private Q_SLOTS:
         QCOMPARE(calls(v.get()).last(), u"activate 2"_s);
     }
 
+    // Fitts: a button takes the clicks down to the screen's bottom edge, up
+    // to the bar's top and across half the gap to each neighbour
+    void clicksReachTheEdges()
+    {
+        auto v = view({}, {app(u"Files"_s, u"org.kde.dolphin"_s, {{u"IsLauncher"_s, true}, {u"IsWindow"_s, false}}),
+                           app(u"Firefox"_s, u"firefox"_s, {{u"IsActive"_s, true}}),
+                           app(u"Kate"_s, u"org.kde.kate"_s)});
+        QVERIFY(v);
+        const auto at = [&](int index, qreal dx) {
+            return QPoint(int(button(v.get(), index)->mapToScene(QPointF(dx, 0)).x()), 0);
+        };
+        // the last row of pixels of the screen, under Firefox
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, at(1, 20) + QPoint(0, 47));
+        // the top of the bar, over Kate
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, at(2, 20));
+        // the gap between Files and Firefox: each side goes to its own button
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, at(0, 41) + QPoint(0, 24));
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, at(1, -1) + QPoint(0, 24));
+        QCOMPARE(calls(v.get()), (QStringList{u"minimize 1"_s, u"activate 2"_s, u"launch 0"_s, u"minimize 1"_s}));
+        // pointing at the bottom edge lights the button
+        QTest::mouseMove(v->window, at(2, 20) + QPoint(0, 47));
+        QTRY_VERIFY(button(v.get(), 2)->property("hovered").toBool());
+    }
+
     // Dragging a button: it stays under the pointer to the pixel, the others
     // slide over once each as the pointer passes their middle, and what is
     // let go is the order that was shown. Slow and fast, both ways.

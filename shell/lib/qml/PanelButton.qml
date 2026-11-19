@@ -21,11 +21,23 @@ T.AbstractButton {
     property string toolTipText: ""
     // on the taskbar (its own shade) or on a flyout (the page colours)
     property bool onTaskbar: true
+    // room around the button that still takes its clicks (see EdgeReach)
+    property real reachLeft: 0
+    property real reachTop: 0
+    property real reachRight: 0
+    property real reachBottom: 0
 
     implicitWidth: ShellTokens.buttonSize
     implicitHeight: ShellTokens.buttonSize
     hoverEnabled: true
     focusPolicy: Qt.TabFocus
+    containmentMask: EdgeReach {
+        target: control
+        left: control.reachLeft
+        top: control.reachTop
+        right: control.reachRight
+        bottom: control.reachBottom
+    }
     Accessible.name: toolTipText !== "" ? toolTipText : text
 
     background: Rectangle {

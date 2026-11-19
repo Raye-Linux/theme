@@ -112,7 +112,7 @@ Item {
 
         Text {
             objectName: "longDate"
-            anchors { left: parent.left; leftMargin: 16; right: chevron.left; rightMargin: 8; verticalCenter: parent.verticalCenter }
+            anchors { left: parent.left; leftMargin: 16; right: clockLink.left; rightMargin: 8; verticalCenter: parent.verticalCenter }
             // "Sunday, November 1" in the language of the session, without the year
             text: {
                 const f = Qt.locale().dateFormat(Locale.LongFormat).replace(/[,.\s]*y+[,.\s]*/g, " ").trim()
@@ -121,6 +121,15 @@ Item {
             elide: Text.ElideRight
             color: ShellTokens.text
             font: ShellTokens.bodyStrong
+        }
+        // alarms, timers and the world clock live in the Clock app
+        FlyoutButton {
+            id: clockLink
+            objectName: "clockLink"
+            anchors { right: chevron.visible ? chevron.left : parent.right; rightMargin: chevron.visible ? 4 : 12; verticalCenter: parent.verticalCenter }
+            icon.name: "alarm-symbolic"
+            toolTipText: i18nd("raye_shell_clock", "Alarms & clock")
+            onClicked: card.controller.openClock()
         }
         FlyoutButton {
             id: chevron

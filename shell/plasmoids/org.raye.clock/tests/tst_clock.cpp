@@ -414,6 +414,14 @@ private Q_SLOTS:
 
         click(v.get(), v->item);
         QCOMPARE(calls(v.get()), QStringList{u"clicked"_s});
+
+        // the screen's bottom edge, under the button, is the clock too
+        const QPoint below = v->item->mapToScene(QPointF(v->item->width() / 2, 46)).toPoint();
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, below);
+        QCOMPARE(calls(v.get()).size(), 1);
+        v->item->setProperty("reachBottom", 48);
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, below);
+        QCOMPARE(calls(v.get()), (QStringList{u"clicked"_s, u"clicked"_s}));
     }
 
     // --- Centre.qml -------------------------------------------------------
@@ -462,6 +470,12 @@ private Q_SLOTS:
         QCOMPARE(child(v->item, u"focusButton"_s)->property("text").toString(), u"End session"_s);
         click(v.get(), child(v->item, u"focusButton"_s));
         QCOMPARE(calls(v.get()).last(), u"stopFocus"_s);
+        // alarms are in the Clock app, one click away
+        QQuickItem *alarms = child(v->item, u"clockLink"_s);
+        QVERIFY(alarms && alarms->isVisible());
+        QCOMPARE(alarms->property("toolTipText").toString(), u"Alarms & clock"_s);
+        click(v.get(), alarms);
+        QCOMPARE(calls(v.get()).last(), u"openClock"_s);
 
         // the months move; the title follows
         const QString title = child(v->item, u"monthTitle"_s)->property("text").toString();

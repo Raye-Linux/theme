@@ -3,7 +3,8 @@
     of the window at its old size to the new one and fades it into the real
     window: for a quarter of a second the window is soft, shown twice, and
     off its place. Here only the real window is drawn, at its real size and
-    place, and it opens out from the size it had. Nothing is ever scaled.
+    place, and it opens out from the frame it had, title bar first: each
+    edge goes from where it was to where it is going. Nothing is ever scaled.
     Going back down, the window slides a short way into its place from the
     middle of the frame it left. A window dropped on a snap zone opens out
     from the top left of the zone, where the snap preview showed it.
@@ -14,18 +15,7 @@
 "use strict";
 
 // AnimationEffect::Anchor; 0 is the middle
-const LEFT = 1, TOP = 2, RIGHT = 4, BOTTOM = 8;
-
-// which edge of the new frame the old one stood against, on one axis
-function anchor(oldStart, oldEnd, newStart, newEnd, start, end) {
-    const toStart = Math.abs(oldStart - newStart);
-    const toEnd = Math.abs(oldEnd - newEnd);
-    const toMiddle = Math.abs((oldStart + oldEnd) - (newStart + newEnd)) / 2;
-    if (toStart <= toEnd && toStart <= toMiddle) {
-        return start;
-    }
-    return toEnd <= toMiddle ? end : 0;
-}
+const LEFT = 1, TOP = 2;
 
 // the farthest a restored window travels, in logical pixels
 const SETTLE_PX = 64;
@@ -52,14 +42,33 @@ function reveal(oldGeometry, newGeometry) {
     if (fx > 0.98 && fy > 0.98) {
         return null;
     }
+    return { value1: fx, value2: fy };
+}
+
+// One axis of a maximise. KWin keeps a clip on the new frame's top left
+// and does not move it with the window, so the window is shifted back by
+// where it stood and the clip covers up to its old far edge: the first
+// frame is exactly the old one.
+function axis(oldStart, oldSize, newStart, newSize) {
+    const shift = Math.max(0, Math.round(oldStart - newStart));
+    return { shift: shift, size: Math.min(1, (shift + oldSize) / newSize) };
+}
+
+// the maximise opening-out, or null when the window got no bigger
+function opening(oldGeometry, newGeometry) {
+    if (!reveal(oldGeometry, newGeometry)) {
+        return null;
+    }
+    const x = axis(oldGeometry.x, oldGeometry.width, newGeometry.x, newGeometry.width);
+    const y = axis(oldGeometry.y, oldGeometry.height, newGeometry.y, newGeometry.height);
     return {
-        from: { value1: fx, value2: fy },
-        anchor: anchor(oldGeometry.x, oldGeometry.x + oldGeometry.width,
-                       newGeometry.x, newGeometry.x + newGeometry.width, LEFT, RIGHT)
-              | anchor(oldGeometry.y, oldGeometry.y + oldGeometry.height,
-                       newGeometry.y, newGeometry.y + newGeometry.height, TOP, BOTTOM)
+        from: { value1: x.size, value2: y.size },
+        shift: x.shift || y.shift ? { value1: x.shift, value2: y.shift } : null
     };
 }
+
+// a new size later than this is not the maximise's any more
+const WAIT_MS = 1000;
 
 class RayeMaximize {
     constructor() {
@@ -98,7 +107,7 @@ class RayeMaximize {
             delete window.rayeMaximize;
         }
         window.rayeMaximizeFrom = Object.assign({}, window.geometry);
-        window.rayeMaximizeWaiting = false;
+        window.rayeMaximizeWaiting = 0;
     }
 
     changed(window) {
@@ -109,7 +118,7 @@ class RayeMaximize {
         }
         // the new size may come with the next frame of the window
         if (window.geometry.width === from.width && window.geometry.height === from.height) {
-            window.rayeMaximizeWaiting = true;
+            window.rayeMaximizeWaiting = Date.now();
             return;
         }
         this.start(window);
@@ -117,9 +126,13 @@ class RayeMaximize {
 
     geometryChanged(window, oldGeometry) {
         if (window.rayeMaximizeWaiting) {
-            window.rayeMaximizeWaiting = false;
-            this.start(window);
-            return;
+            const late = Date.now() - window.rayeMaximizeWaiting > WAIT_MS;
+            window.rayeMaximizeWaiting = 0;
+            if (!late) {
+                this.start(window);
+                return;
+            }
+            delete window.rayeMaximizeFrom;
         }
         if (!window.rayeDropped) {
             return;
@@ -135,24 +148,33 @@ class RayeMaximize {
             return;
         }
         delete window.rayeDropped;
-        const r = reveal(oldGeometry, g);
-        if (r && this.duration > 1) {
-            this.clip(window, r.from, LEFT | TOP);
+        const from = reveal(oldGeometry, g);
+        if (from && this.duration > 1) {
+            this.open(window, from, null);
         }
     }
 
-    clip(window, from, anchor) {
+    open(window, from, shift) {
+        const animations = [{
+            type: Effect.Clip,
+            from: from,
+            to: { value1: 1.0, value2: 1.0 },
+            sourceAnchor: LEFT | TOP,
+            targetAnchor: LEFT | TOP,
+            curve: QEasingCurve.OutQuint
+        }];
+        if (shift) {
+            animations.push({
+                type: Effect.Translation,
+                from: shift,
+                to: { value1: 0, value2: 0 },
+                curve: QEasingCurve.OutQuint
+            });
+        }
         window.rayeMaximize = animate({
             window: window,
             duration: this.duration,
-            animations: [{
-                type: Effect.Clip,
-                from: from,
-                to: { value1: 1.0, value2: 1.0 },
-                sourceAnchor: anchor,
-                targetAnchor: anchor,
-                curve: QEasingCurve.OutQuint
-            }]
+            animations: animations
         });
     }
 
@@ -163,9 +185,9 @@ class RayeMaximize {
         if (this.duration <= 1) {
             return;
         }
-        const r = reveal(from, window.geometry);
+        const r = opening(from, window.geometry);
         if (r) {
-            this.clip(window, r.from, r.anchor);
+            this.open(window, r.from, r.shift);
             return;
         }
         // pulled off the top by its title bar: it follows the pointer

@@ -35,6 +35,7 @@ set(_raye_shell_lib_qml
     ShellTokens.qml
     AcrylicSurface.qml
     PanelButton.qml
+    EdgeReach.qml
     RayeMenu.qml
     RayeMenuItem.qml
     RayeMenuSeparator.qml

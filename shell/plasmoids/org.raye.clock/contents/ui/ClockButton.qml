@@ -23,6 +23,11 @@ T.AbstractButton {
     property real focusFraction: -1
     property bool selected: false
     property string longDate: ""
+    // room around the button that still takes its clicks (see EdgeReach)
+    property real reachLeft: 0
+    property real reachTop: 0
+    property real reachRight: 0
+    property real reachBottom: 0
 
     readonly property string timeText: Logic.timeText(now.getHours(), now.getMinutes(), now.getSeconds(), twentyFour, showSeconds)
     readonly property string dateText: now.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
@@ -32,6 +37,13 @@ T.AbstractButton {
     implicitHeight: ShellTokens.buttonSize
     hoverEnabled: true
     focusPolicy: Qt.TabFocus
+    containmentMask: EdgeReach {
+        target: clock
+        left: clock.reachLeft
+        top: clock.reachTop
+        right: clock.reachRight
+        bottom: clock.reachBottom
+    }
     Accessible.role: Accessible.Button
     Accessible.name: longDate + " " + timeText
     Accessible.description: unreadCount > 0 ? i18ndp("raye_shell_clock", "%1 new notification", "%1 new notifications", unreadCount)

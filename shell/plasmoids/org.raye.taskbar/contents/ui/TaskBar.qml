@@ -233,6 +233,9 @@ FocusScope {
                 anchors.verticalCenter: parent.verticalCenter
                 width: taskBar.windows10 ? taskBar.layout.pitch - (taskBar.labels ? 2 : 0) : taskBar.layout.buttonWidth
                 height: taskBar.windows10 ? taskBar.height : taskBar.small ? ShellTokens.buttonSmallSize : ShellTokens.buttonSize
+                // the panel window ends the reach: generous on purpose
+                reachX: Math.max(0, (taskBar.layout.pitch - width) / 2)
+                reachY: ShellTokens.taskbarHeight
                 visible: index < taskBar.visibleCount
                 Behavior on x {
                     enabled: !taskBar.settling
@@ -315,6 +318,10 @@ FocusScope {
             anchors.verticalCenter: parent.verticalCenter
             width: taskBar.small ? ShellTokens.buttonSmallSize : ShellTokens.buttonSize
             height: width
+            reachLeft: Math.max(0, (taskBar.layout.pitch - width) / 2)
+            reachRight: reachLeft
+            reachTop: ShellTokens.taskbarHeight
+            reachBottom: ShellTokens.taskbarHeight
             selected: overflow.opened
             toolTipText: i18nd("raye_shell_taskbar", "Show more apps")
             onClicked: overflow.opened ? overflow.close() : overflow.open()

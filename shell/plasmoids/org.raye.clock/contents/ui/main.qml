@@ -179,6 +179,10 @@ PlasmoidItem {
             root.closeCentre()
             Launcher.openUrl("raye-calendar:?" + (isNew ? "new=" : "day=") + day)
         }
+        function openClock() {
+            root.closeCentre()
+            Launcher.launch("org.raye.clock.desktop")
+        }
         function stopFocus() {
             ShellSettings.focusUntil = new Date(NaN)
             notificationSettings.notificationsInhibitedUntil = undefined
@@ -361,10 +365,18 @@ PlasmoidItem {
             focusFraction: Logic.focusFraction(root.focusRemaining, Plasmoid.configuration.focusMinutes)
             selected: centreWindow.visible || (clockMenuLoader.item !== null && clockMenuLoader.item.opened)
             longDate: root.longDate
+            // the bottom edge of the screen, and the corner when the strip
+            // that shows the desktop is off
+            reachTop: ShellTokens.taskbarHeight
+            reachBottom: ShellTokens.taskbarHeight
+            reachRight: corner.visible ? 0 : ShellTokens.taskbarHeight
             onClicked: root.toggleCentre()
 
             MouseArea {
                 anchors.fill: parent
+                anchors.topMargin: -clockButton.reachTop
+                anchors.bottomMargin: -clockButton.reachBottom
+                anchors.rightMargin: -clockButton.reachRight
                 acceptedButtons: Qt.RightButton
                 onClicked: mouse => {
                     clockMenuLoader.active = true

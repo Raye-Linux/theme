@@ -35,6 +35,12 @@ Item {
     readonly property int buttonWidth: windows10 ? Logic.w10.buttonWidth : Logic.buttonSize
     readonly property int buttonHeight: windows10 ? height : Logic.buttonSize
 
+    // Fitts: every button takes the clicks down to the screen's edge and
+    // half way to the next one; left aligned, the eye has the corner
+    readonly property real gapReach: windows10 ? 0 : Logic.buttonGap / 2
+    readonly property real barReach: ShellTokens.taskbarHeight
+    readonly property bool atLeftEdge: windows10 || settings.alignment === "left"
+
     readonly property Item startButton: startButton
     readonly property Item taskViewButton: taskViewButton
 
@@ -65,6 +71,10 @@ Item {
             objectName: "startButton"
             width: row.buttonWidth
             height: row.buttonHeight
+            reachLeft: row.atLeftEdge ? row.leadingSpace + row.barReach : row.gapReach
+            reachRight: row.gapReach
+            reachTop: row.barReach
+            reachBottom: row.barReach
             selected: row.expanded && row.mode === "start"
             toolTipText: row.expanded || row.quickLinksOpen ? "" : i18nd("raye_shell_start", "Start")
             Accessible.role: Accessible.ButtonMenu
@@ -115,6 +125,13 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             hoverEnabled: true
             focusPolicy: Qt.TabFocus
+            containmentMask: EdgeReach {
+                target: searchBox
+                left: row.gapReach
+                right: row.gapReach
+                top: row.barReach
+                bottom: row.barReach
+            }
             Accessible.role: Accessible.EditableText
             Accessible.name: i18nd("raye_shell_start", "Search")
             onClicked: row.searchClicked()
@@ -156,6 +173,10 @@ Item {
         PanelButton {
             id: searchLabel
             objectName: "searchLabel"
+            reachLeft: row.gapReach
+            reachRight: row.gapReach
+            reachTop: row.barReach
+            reachBottom: row.barReach
             visible: row.searchStyle === "iconlabel"
             width: Logic.searchLabelWidth
             selected: row.expanded && row.mode === "search"
@@ -186,6 +207,10 @@ Item {
         PanelButton {
             id: searchIcon
             objectName: "searchIcon"
+            reachLeft: row.gapReach
+            reachRight: row.gapReach
+            reachTop: row.barReach
+            reachBottom: row.barReach
             visible: row.searchStyle === "icon"
             width: row.buttonWidth
             height: row.buttonHeight
@@ -205,6 +230,10 @@ Item {
         PanelButton {
             id: taskViewButton
             objectName: "taskViewButton"
+            reachLeft: row.gapReach
+            reachRight: row.gapReach
+            reachTop: row.barReach
+            reachBottom: row.barReach
             visible: row.taskViewShown
             width: row.buttonWidth
             height: row.buttonHeight

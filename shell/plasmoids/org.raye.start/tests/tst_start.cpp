@@ -445,6 +445,35 @@ private Q_SLOTS:
         QCOMPARE(calls(v.get()), (QStringList{u"start"_s, u"search"_s, u"taskView"_s, u"quickLinks"_s}));
     }
 
+    // Fitts: the bottom edge of the screen opens what is above it; left
+    // aligned, the corner opens Start
+    void rowReachesTheEdges()
+    {
+        auto v = view(u"row"_s, {{u"leadingSpace"_s, 300}});
+        QVERIFY(v);
+        QQuickItem *eye = child(v->item, u"startButton"_s);
+        QTRY_COMPARE(eye->mapToItem(v->item, QPointF(0, 0)).x(), 300.0);
+        const int bottom = 47;
+        const auto x = [&](const char *name, qreal dx) {
+            return int(child(v->item, QString::fromLatin1(name))->mapToScene(QPointF(dx, 0)).x());
+        };
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, QPoint(x("startButton", 20), bottom));
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, QPoint(x("searchBox", 100), bottom));
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, QPoint(x("taskViewButton", 20), 0));
+        // the 4 px between the eye and the search box
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, QPoint(x("startButton", 41), 24));
+        // centred: the empty taskbar left of the group is not Start
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, QPoint(2, bottom));
+        QCOMPARE(calls(v.get()), (QStringList{u"start"_s, u"search"_s, u"taskView"_s, u"start"_s}));
+
+        QMetaObject::invokeMethod(v->fixture.get(), "setOption", Q_ARG(QVariant, u"alignment"_s), Q_ARG(QVariant, u"left"_s));
+        QMetaObject::invokeMethod(v->fixture.get(), "setOption", Q_ARG(QVariant, u"leadingSpace"_s), Q_ARG(QVariant, 8));
+        QTRY_COMPARE(eye->mapToItem(v->item, QPointF(0, 0)).x(), 8.0);
+        QTest::mouseClick(v->window, Qt::LeftButton, {}, QPoint(0, bottom));
+        QCOMPARE(calls(v.get()).size(), 5);
+        QCOMPARE(calls(v.get()).last(), u"start"_s);
+    }
+
     void blink()
     {
         auto v = view(u"row"_s);

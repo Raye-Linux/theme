@@ -34,6 +34,10 @@ Item {
     property bool flashing: true
     // the keyboard is on this button (Meta+T, then the arrows)
     property bool keyboardCurrent: false
+    // room around the button that still takes its clicks: down to the
+    // screen's edge and half way to the next button
+    property real reachX: 0
+    property real reachY: 0
 
     readonly property string indicator: Logic.indicator({ isLauncher: isLauncher, isStartup: isStartup,
                                                           isActive: isActive, isMinimized: isMinimized })
@@ -209,6 +213,10 @@ Item {
     MouseArea {
         id: mouse
         anchors.fill: parent
+        anchors.leftMargin: -button.reachX
+        anchors.rightMargin: -button.reachX
+        anchors.topMargin: -button.reachY
+        anchors.bottomMargin: -button.reachY
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
         // the plain arrow, also while a button is dragged to a new place
@@ -265,7 +273,7 @@ Item {
 
     // a file dragged over the button brings its window up after 500 ms
     DropArea {
-        anchors.fill: parent
+        anchors.fill: mouse
         keys: ["text/uri-list"]
         onEntered: holdTimer.restart()
         onExited: holdTimer.stop()

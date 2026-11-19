@@ -60,6 +60,9 @@ msgstr "Afficher le calendrier"
 msgid "Hide the calendar"
 msgstr "Masquer le calendrier"
 
+msgid "Alarms & clock"
+msgstr "Alarmes et horloge"
+
 msgid "Previous month"
 msgstr "Mois précédent"
 

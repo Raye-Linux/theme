@@ -8,6 +8,13 @@ Item {
     id: corner
 
     width: ShellTokens.showDesktopWidth
+    // up to the screen's corner
+    containmentMask: EdgeReach {
+        target: corner
+        top: ShellTokens.taskbarHeight
+        right: ShellTokens.taskbarHeight
+        bottom: ShellTokens.taskbarHeight
+    }
     Accessible.role: Accessible.Button
     Accessible.name: i18nd("raye_shell_clock", "Show desktop")
 

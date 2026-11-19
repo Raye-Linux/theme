@@ -56,6 +56,7 @@ Window {
         function stopFocus() { fixture.record("stopFocus") }
         function requestAgenda(from, to) { fixture.record("agenda " + from + " " + to) }
         function openCalendar(day, isNew) { fixture.record("open " + day + (isNew ? " new" : "")) }
+        function openClock() { fixture.record("openClock") }
     }
 
     Loader {

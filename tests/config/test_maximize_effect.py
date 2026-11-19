@@ -70,8 +70,10 @@ Item {
         function animate(s) { calls.push(s); return calls.length; }
         function animationTime(ms) { return ms; }
         function cancel() {}
-        new Function("effects", "effect", "Effect", "QEasingCurve", "animate", "animationTime", "cancel",
-                     req.responseText)(effects, effect, Effect, QEasingCurve, animate, animationTime, cancel);
+        var now = 1000;
+        var clock = { now: function () { return now; } };
+        new Function("effects", "effect", "Effect", "QEasingCurve", "animate", "animationTime", "cancel", "Date",
+                     req.responseText)(effects, effect, Effect, QEasingCurve, animate, animationTime, cancel, clock);
         function win(g) {
             var w = { visible: true, geometry: g, h: {} };
             ["windowMaximizedStateAboutToChange", "windowMaximizedStateChanged", "windowFrameGeometryChanged",
@@ -133,6 +135,18 @@ Item {
         b.geometry = { x: 0, y: 0, width: 1920, height: 1032 };
         b.h.windowFrameGeometryChanged(b);
         out.late = calls.slice();
+        // a window that cannot get bigger: no new size comes, and a resize
+        // by hand two seconds later is not taken for it
+        calls.length = 0;
+        var s = win({ x: 300, y: 200, width: 500, height: 400 });
+        s.h.windowMaximizedStateAboutToChange(s);
+        s.h.windowMaximizedStateChanged(s);
+        now += 2000;
+        s.resize = true;
+        old = s.geometry;
+        s.geometry = { x: 300, y: 200, width: 700, height: 500 };
+        s.h.windowFrameGeometryChanged(s, old);
+        out.stale = calls.length;
         return JSON.stringify(out);
     }
     Component.onCompleted: { console.log("RESULT " + run()); Qt.quit(); }
@@ -156,13 +170,19 @@ def run_effect(tmp_path):
 def test_maximise_opens_out_the_real_window(tmp_path):
     r = run_effect(tmp_path)
     assert len(r["max"]) == 1
-    anim = r["max"][0]["animations"]
-    assert len(anim) == 1 and anim[0]["type"] == 9
-    assert abs(anim[0]["from"]["value1"] - 800 / 1920) < 1e-6
-    assert abs(anim[0]["from"]["value2"] - 600 / 1032) < 1e-6
-    assert anim[0]["to"] == {"value1": 1.0, "value2": 1.0}
-    # it was in the middle: it opens from the middle
-    assert anim[0]["sourceAnchor"] == 0 == anim[0]["targetAnchor"]
+    anim = {a["type"]: a for a in r["max"][0]["animations"]}
+    assert set(anim) == {9, 4}
+    clip, move = anim[9], anim[4]
+    # KWin clips from the new frame's top left and the window is shifted
+    # back to where it was: what shows first is exactly the old frame,
+    # title bar included, then each edge goes to its new place
+    assert clip["sourceAnchor"] == 1 | 2 == clip["targetAnchor"]
+    assert abs(clip["from"]["value1"] - (560 + 800) / 1920) < 1e-6
+    assert abs(clip["from"]["value2"] - (216 + 600) / 1032) < 1e-6
+    assert clip["to"] == {"value1": 1.0, "value2": 1.0}
+    assert move["from"] == {"value1": 560, "value2": 216}
+    assert move["to"] == {"value1": 0, "value2": 0}
+    assert clip["curve"] == move["curve"]
     assert r["max"][0]["duration"] == 250
 
 
@@ -200,3 +220,8 @@ def test_a_late_size_is_waited_for(tmp_path):
     # the left half grows to the right: anchored left and top
     assert late["sourceAnchor"] == 1 | 2
     assert abs(late["from"]["value1"] - 0.5) < 1e-6
+
+
+def test_a_size_that_never_came_is_forgotten(tmp_path):
+    r = run_effect(tmp_path)
+    assert r["stale"] == 0
