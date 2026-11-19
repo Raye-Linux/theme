@@ -9,6 +9,8 @@ Build-Depends: debhelper-compat (= 13),
                extra-cmake-modules,
                fonts-inter,
                gettext,
+# raye-hyprland's tests parse its settings with Hyprland's own parser
+               hyprland <!nocheck>,
                grub-common,
                libkdecorations3-dev,
                libkf6colorscheme-dev,
@@ -189,6 +191,33 @@ Description: Raye Linux desktop shell
  The taskbar, the Start menu, quick settings, the clock and its
  notifications, the window switcher and the on-screen displays for
  volume and brightness.
+
+Package: raye-hyprland
+Architecture: any
+# The taskbar, Start, quick settings and toasts are raye-shell's own QML
+# views, loaded from its applets: the two always come from one build.
+Depends: raye-shell (= ${binary:Version}),
+         raye-theme,
+         hyprland (>= 0.53),
+         hyprlock,
+         hypridle,
+         xdg-desktop-portal-hyprland,
+         qml6-module-org-kde-layershell,
+         grim,
+         slurp,
+         wl-clipboard,
+         libnotify-bin,
+         wireplumber,
+         ${misc:Depends},
+         ${shlibs:Depends}
+Recommends: brightnessctl,
+            playerctl,
+            xdg-user-dirs
+Description: Raye Linux desktop on Hyprland
+ The Raye desktop on the Hyprland compositor, offered next to the Plasma
+ one at sign-in: the same centred taskbar, Start menu, quick settings and
+ notifications, the Windows keys, the lock screen and the Raye motion.
+ Windows float and open centred, as on the Plasma desktop.
 
 Package: plymouth-theme-raye
 Architecture: all

@@ -1,0 +1,145 @@
+import QtQuick
+import QtTest
+
+import "../shell/qml/hyprlogic.js" as Logic
+
+TestCase {
+    name: "HyprLogic"
+
+    function client(address, cls, title, ws, extra) {
+        const c = { address: address, class: cls, initialClass: cls, title: title,
+                    workspace: ws, mapped: true, hidden: false, pid: 100, urgent: false }
+        for (const k in (extra || {}))
+            c[k] = extra[k]
+        return c
+    }
+    readonly property var ws1: ({ id: 1, name: "1" })
+    readonly property var minWs: ({ id: -98, name: "special:raye-minimized" })
+    readonly property var scratch: ({ id: -99, name: "special:magic" })
+    readonly property var files: ({ id: "org.kde.dolphin.desktop", name: "Files", icon: "system-file-manager" })
+    readonly property var web: ({ id: "firefox.desktop", name: "Firefox", icon: "firefox" })
+
+    function test_pinned_app_without_window_is_a_launcher() {
+        const rows = Logic.taskRows([], "", ["org.kde.dolphin.desktop"], {}, true)
+        compare(rows.length, 1)
+        verify(rows[0].IsLauncher)
+        compare(rows[0].LauncherUrlWithoutIcon, "applications:org.kde.dolphin.desktop")
+        compare(rows[0].ChildCount, 0)
+    }
+
+    function test_window_joins_its_pin() {
+        const rows = Logic.taskRows([client("0xa", "org.kde.dolphin", "Home", ws1)], "0xa",
+                                    ["org.kde.dolphin.desktop"], { "0xa": files }, true)
+        compare(rows.length, 1)
+        verify(!rows[0].IsLauncher)
+        verify(rows[0].IsActive)
+        verify(rows[0].HasLauncher)
+        compare(rows[0].display, "Home")
+        compare(rows[0].decoration, "system-file-manager")
+    }
+
+    function test_two_windows_group_with_child_count() {
+        const cs = [client("0xa", "firefox", "One", ws1), client("0xb", "firefox", "Two", ws1)]
+        const apps = { "0xa": web, "0xb": web }
+        const grouped = Logic.taskRows(cs, "0xb", [], apps, true)
+        compare(grouped.length, 1)
+        compare(grouped[0].ChildCount, 2)
+        compare(grouped[0].display, "Firefox")
+        const separate = Logic.taskRows(cs, "0xb", [], apps, false)
+        compare(separate.length, 2)
+        verify(!separate[0].IsActive)
+        verify(separate[1].IsActive)
+    }
+
+    function test_unpinned_follow_pins_in_order_seen() {
+        const cs = [client("0x2", "firefox", "Web", ws1), client("0x1", "org.kde.konsole", "sh", ws1)]
+        const rows = Logic.taskRows(cs, "", ["org.kde.dolphin.desktop"], { "0x2": web }, true,
+                                    { "0x1": 1, "0x2": 2 })
+        compare(rows.map(r => r.AppId), ["org.kde.dolphin", "org.kde.konsole", "firefox"])
+    }
+
+    function test_minimized_window_keeps_button() {
+        const rows = Logic.taskRows([client("0xa", "firefox", "Web", minWs)], "", [], { "0xa": web }, true)
+        compare(rows.length, 1)
+        verify(rows[0].IsMinimized)
+    }
+
+    function test_scratchpad_and_unmapped_windows_are_not_shown() {
+        const rows = Logic.taskRows([client("0xa", "firefox", "Web", scratch),
+                                     client("0xb", "firefox", "Web", ws1, { mapped: false })], "", [], {}, true)
+        compare(rows.length, 0)
+    }
+
+    function test_urgent_window_asks_for_attention() {
+        const rows = Logic.taskRows([client("0xa", "firefox", "Web", ws1, { urgent: true })], "", [], {}, true)
+        verify(rows[0].IsDemandingAttention)
+    }
+
+    function test_activate_brings_minimized_back_first() {
+        compare(Logic.activateCommands({ address: "0xa", minimized: true }, 3),
+                ["dispatch movetoworkspacesilent 3,address:0xa",
+                 "dispatch focuswindow address:0xa",
+                 "dispatch alterzorder top,address:0xa"])
+        compare(Logic.activateCommands({ address: "0xa", minimized: false }, 3).length, 2)
+    }
+
+    function test_minimize_and_close() {
+        compare(Logic.minimizeCommands({ address: "0xa" }),
+                ["dispatch movetoworkspacesilent special:raye-minimized,address:0xa"])
+        compare(Logic.closeCommands({ address: "0xa" }), ["dispatch closewindow address:0xa"])
+    }
+
+    function test_batch() {
+        compare(Logic.batch(["dispatch a"]), "dispatch a")
+        compare(Logic.batch(["dispatch a", "dispatch b"]), "[[BATCH]]dispatch a;dispatch b")
+    }
+
+    function test_show_desktop_round_trip() {
+        const cs = [client("0xa", "a", "", ws1), client("0xb", "b", "", { id: 2, name: "2" }),
+                    client("0xc", "c", "", minWs)]
+        const away = Logic.showDesktop(cs, 1, [])
+        compare(away.hidden, ["0xa"])
+        compare(away.commands, ["dispatch movetoworkspacesilent special:raye-minimized,address:0xa"])
+        const back = Logic.showDesktop(cs, 1, away.hidden)
+        compare(back.hidden, [])
+        compare(back.commands, ["dispatch movetoworkspacesilent 1,address:0xa"])
+    }
+
+    function test_work_area_leaves_out_the_taskbar() {
+        const a = Logic.workArea({ x: 0, y: 0, width: 2560, height: 1600, scale: 2, transform: 0,
+                                   reserved: [0, 0, 0, 48] })
+        compare(a.width, 1280)
+        compare(a.height, 752)
+    }
+
+    function test_snap_steps_follow_windows() {
+        compare(Logic.snapStep("", "left"), { mode: "left", action: "snap" })
+        compare(Logic.snapStep("left", "up"), { mode: "top-left", action: "snap" })
+        compare(Logic.snapStep("top-left", "down"), { mode: "left", action: "snap" })
+        compare(Logic.snapStep("left", "right"), { mode: "", action: "restore" })
+        compare(Logic.snapStep("", "up"), { mode: "maximized", action: "maximize" })
+        compare(Logic.snapStep("maximized", "down"), { mode: "", action: "restore" })
+        compare(Logic.snapStep("", "down"), { mode: "", action: "minimize" })
+        compare(Logic.snapStep("maximized", "up"), { mode: "maximized", action: "none" })
+    }
+
+    function test_snap_commands_place_the_half() {
+        const area = { x: 0, y: 0, width: 1280, height: 752 }
+        const cmds = Logic.snapCommands({ mode: "right", action: "snap" }, { address: "0xa" }, area, null, false)
+        compare(cmds, ["dispatch setfloating address:0xa",
+                       "dispatch resizewindowpixel exact 640 752,address:0xa",
+                       "dispatch movewindowpixel exact 640 0,address:0xa"])
+        const fromMax = Logic.snapCommands({ mode: "left", action: "snap" }, { address: "0xa" }, area, null, true)
+        compare(fromMax[0], "dispatch fullscreenstate 0 -1")
+        const restore = Logic.snapCommands({ mode: "", action: "restore" }, { address: "0xa" }, area,
+                                           { x: 10, y: 20, width: 800, height: 600 }, false)
+        compare(restore[2], "dispatch movewindowpixel exact 10 20,address:0xa")
+    }
+
+    function test_events() {
+        compare(Logic.parseEvent("openwindow>>a,1,firefox,Web"), { name: "openwindow", data: "a,1,firefox,Web" })
+        compare(Logic.parseEvent("junk"), null)
+        verify(Logic.changesClients("closewindow"))
+        verify(!Logic.changesClients("activelayout"))
+    }
+}

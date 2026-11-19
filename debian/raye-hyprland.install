@@ -1,0 +1,10 @@
+#!/bin/sh
+# Raye on Hyprland (hyprland/): the session, its settings and the shell host.
+exec debian/install-built <<'LIST'
+usr/bin/raye-hypr-shell
+usr/bin/raye-hyprland-session
+usr/bin/raye-hypr-screenshot
+usr/libexec/raye-hyprland-start
+usr/share/raye/hyprland/*
+usr/share/wayland-sessions/raye-hyprland.desktop
+LIST

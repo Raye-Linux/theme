@@ -1,0 +1,52 @@
+#!/bin/sh
+# What the Raye session starts once Hyprland is up (exec-once in
+# hyprland.conf), and the keyboard settings it hands to Hyprland.
+#
+#   raye-hyprland-start               start the shell and the session's helpers
+#   raye-hyprland-start --keyboard F  an `input {}` block for /etc/default/keyboard
+set -eu
+
+# /etc/default/keyboard: XKBLAYOUT="fr,us" XKBVARIANT="," XKBOPTIONS="..."
+keyboard() {
+    layout=us variant= options= model=
+    if [ -r "$1" ]; then
+        layout=$(sed -n 's/^XKBLAYOUT="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$1" | tail -n1)
+        variant=$(sed -n 's/^XKBVARIANT="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$1" | tail -n1)
+        options=$(sed -n 's/^XKBOPTIONS="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$1" | tail -n1)
+        model=$(sed -n 's/^XKBMODEL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$1" | tail -n1)
+    fi
+    # only what a layout list can hold: letters, digits, commas, dashes,
+    # colons and underscores
+    clean() { printf '%s' "$1" | tr -cd 'A-Za-z0-9,:_()-'; }
+    printf 'input {\n'
+    printf '    kb_layout = %s\n' "$(clean "${layout:-us}")"
+    printf '    kb_variant = %s\n' "$(clean "$variant")"
+    printf '    kb_model = %s\n' "$(clean "$model")"
+    printf '    kb_options = %s\n' "$(clean "$options")"
+    printf '}\n'
+}
+
+if [ "${1:-}" = "--keyboard" ]; then
+    keyboard "${2:-/etc/default/keyboard}"
+    exit 0
+fi
+
+run() { command -v "$1" >/dev/null 2>&1 && "$@" & }
+
+systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE \
+    HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORMTHEME 2>/dev/null || true
+
+run raye-hypr-shell
+run hypridle -c /usr/share/raye/hyprland/hypridle.conf
+# the Raye prompt that asks for the password when an app needs root
+for agent in /usr/lib/*/libexec/raye-polkit-agent /usr/libexec/raye-polkit-agent; do
+    if [ -x "$agent" ]; then
+        "$agent" &
+        break
+    fi
+done
+# apps that start with the session (~/.config/autostart, /etc/xdg/autostart)
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl --user start xdg-desktop-autostart.target 2>/dev/null || true
+fi
+wait

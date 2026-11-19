@@ -1,0 +1,50 @@
+#!/bin/sh
+# The Raye desktop on Hyprland, started by the sign-in screen.
+#
+# Hyprland reads ~/.config/raye-hyprland/hyprland.conf, made here the
+# first time: it sources Raye's defaults, the keyboard of the machine,
+# then the user's own file, so the user's lines win and a Raye update
+# reaches every account.
+set -eu
+
+conf=${XDG_CONFIG_HOME:-$HOME/.config}/raye-hyprland
+system=${RAYE_HYPRLAND_DATA:-/usr/share/raye/hyprland}
+mkdir -p "$conf"
+
+if [ ! -e "$conf/hyprland.conf" ]; then
+    cat > "$conf/hyprland.conf" <<CONF
+# Made once by Raye. Put your own settings in user.conf: this file and
+# Raye's own settings may be replaced by an update.
+source = $system/hyprland.conf
+source = $conf/keyboard.conf
+source = $conf/user.conf
+CONF
+fi
+[ -e "$conf/user.conf" ] || printf '# Your Hyprland settings. They win over Raye'"'"'s.\n' > "$conf/user.conf"
+
+# the keyboard the machine was set up with (the installer writes it there)
+"${RAYE_HYPRLAND_KEYBOARD:-/usr/libexec/raye-hyprland-start}" --keyboard \
+    "${RAYE_KEYBOARD_FILE:-/etc/default/keyboard}" > "$conf/keyboard.conf.new"
+mv "$conf/keyboard.conf.new" "$conf/keyboard.conf"
+
+# the lock screen speaks the session's language
+lock_text='PIN or password'
+lock_fail='That password is not right'
+case "${LANGUAGE:-${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}}" in
+fr*)
+    lock_text='Code PIN ou mot de passe'
+    lock_fail="Ce mot de passe n'est pas le bon"
+    ;;
+esac
+sed -e "s|PIN or password|$lock_text|" -e "s|That password is not right|$lock_fail|" \
+    "$system/hyprlock.conf" > "$conf/hyprlock.conf"
+
+export XDG_CURRENT_DESKTOP=Hyprland
+# the Raye categories: without a menu the app database (Start, the
+# taskbar's icons, "Open with") is empty. Same as the Plasma session.
+export XDG_MENU_PREFIX=raye-
+export XDG_SESSION_DESKTOP=raye-hyprland
+export XDG_SESSION_TYPE=wayland
+
+[ -n "${RAYE_HYPRLAND_DRY_RUN:-}" ] && exit 0
+exec start-hyprland -- --config "$conf/hyprland.conf"

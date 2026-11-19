@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=/usr/bin/raye-hyprland-session
+TryExec=/usr/bin/raye-hyprland-session
+DesktopNames=Hyprland
+Name=Raye (Hyprland)
+Name[fr]=Raye (Hyprland)
+Comment=The Raye desktop on the Hyprland compositor
+Comment[fr]=Le bureau Raye sur le compositeur Hyprland
+Keywords=raye;hyprland;wayland;

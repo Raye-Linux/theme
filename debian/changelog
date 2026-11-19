@@ -1,12 +1,20 @@
-raye-theme (1.0~beta1) resolute; urgency=medium
+raye-theme (1.0~beta2) resolute; urgency=medium
 
-  * Web apps installed from a browser show their own icon and name on the
-    taskbar.
   * A Windows 10 look: taskbar on the left with a search box, square corners,
     and a Start menu with an app list and resizable tile groups.
   * Windows open and close the Windows 11 way, restore and snapping animate,
     and Start, flyouts and menus fade smoothly without their frost lagging
     behind.
+  * New package raye-hyprland: the Raye desktop on Hyprland, chosen at
+    sign-in next to Plasma, with the same taskbar, Start, quick settings and
+    notifications, the Windows keys, a Raye lock screen and Raye motion.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Thu, 19 Nov 2026 10:00:00 +0000
+
+raye-theme (1.0~beta1) resolute; urgency=medium
+
+  * Web apps installed from a browser show their own icon and name on the
+    taskbar.
 
  -- techoraye <190692880+techoraye@users.noreply.github.com>  Thu, 19 Nov 2026 06:00:00 +0000
 

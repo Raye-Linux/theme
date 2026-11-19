@@ -31,6 +31,8 @@ BY_CTEST = {
                              "appicons", "test_app_icons.py"),
     "shell/taskbarsync/tests": ("shell/taskbarsync/tests/CMakeLists.txt",
                                 "taskbarsync-pins", "test_pins.py"),
+    "hyprland/tests": ("hyprland/tests/CMakeLists.txt",
+                       "hyprland-session", "test_session.py"),
     "style/cmake": ("style/CMakeLists.txt", "raye-import-tools",
                     "unittest discover -s ${CMAKE_CURRENT_SOURCE_DIR}/cmake"),
 }

@@ -1,0 +1,14 @@
+[
+  {"address": "0x5600a1", "mapped": true, "hidden": false, "at": [180, 90], "size": [920, 560],
+   "workspace": {"id": 1, "name": "1"}, "floating": true, "monitor": 0, "class": "org.kde.dolphin",
+   "title": "Home — Files", "initialClass": "org.kde.dolphin", "initialTitle": "Dolphin", "pid": 4100,
+   "xwayland": false, "pinned": false, "fullscreen": 0, "focusHistoryID": 0},
+  {"address": "0x5600b2", "mapped": true, "hidden": false, "at": [240, 140], "size": [800, 500],
+   "workspace": {"id": 1, "name": "1"}, "floating": true, "monitor": 0, "class": "org.kde.konsole",
+   "title": "Terminal", "initialClass": "org.kde.konsole", "initialTitle": "Konsole", "pid": 4200,
+   "xwayland": false, "pinned": false, "fullscreen": 0, "focusHistoryID": 1},
+  {"address": "0x5600c3", "mapped": true, "hidden": false, "at": [300, 160], "size": [800, 500],
+   "workspace": {"id": -98, "name": "special:raye-minimized"}, "floating": true, "monitor": 0,
+   "class": "org.kde.kate", "title": "notes.txt", "initialClass": "org.kde.kate", "initialTitle": "Kate",
+   "pid": 4300, "xwayland": false, "pinned": false, "fullscreen": 0, "focusHistoryID": 2}
+]
