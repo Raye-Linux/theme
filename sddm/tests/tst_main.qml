@@ -280,6 +280,33 @@ TestCase {
         var main = make({ sessions: createTemporaryObject(oneDesktop, test) })
         mouseClick(main, 600, 400)
         verify(!part(main, "sessionButton").visible)
+        verify(!part(main, "desktopChip").visible)
+    }
+
+    // the desktop under the password: its name, a slide when it changes,
+    // and a click opens the Desktop flyout
+    function test_desktopUnderThePassword() {
+        var main = make({ sessions: createTemporaryObject(twoDesktops, test) })
+        mouseClick(main, 600, 400)
+        var chip = part(main, "desktopChip")
+        tryVerify(function () { return chip.visible })
+        compare(chip.desktop, "plasma")
+        compare(chip.Accessible.name, "Desktop: Raye")
+        var bar = part(main, "cornerBar")
+        waitForRendering(main)
+        mouseClick(chip)
+        tryVerify(function () { return bar.sessionFlyout.opened })
+        keyClick(Qt.Key_Down)
+        keyClick(Qt.Key_Return)
+        tryVerify(function () { return !bar.sessionFlyout.visible })
+        compare(chip.desktop, "hyprland")
+        compare(chip.Accessible.name, "Desktop: Raye (Hyprland)")
+        // the old one leaves while the new one comes in
+        var outgoing = part(chip, "outgoing")
+        tryVerify(function () { return outgoing.key === "plasma" })
+        tryCompare(outgoing, "opacity", 0)
+        compare(part(chip, "incoming").key, "hyprland")
+        tryCompare(part(chip, "incoming"), "opacity", 1)
     }
 
     function test_desktopButtonPicksTheSession() {

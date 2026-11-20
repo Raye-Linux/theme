@@ -10,6 +10,10 @@ raye-theme (1.0~beta2) resolute; urgency=medium
     notifications, the Windows keys, a Raye lock screen and Raye motion.
   * The sign-in screen has a Desktop button when both Raye and Raye
     (Hyprland) are installed, and remembers the desktop of each account.
+  * The sign-in screen shows the desktop it opens under the password, with a
+    small picture that slides to the new one when another is picked (a
+    click opens the Desktop list), and opens the desktop chosen in
+    Settings > Personalization > Desktop environment.
   * The bare Hyprland entries are no longer offered at sign-in.
   * Qt apps get the Raye title bar on Hyprland, with working Minimize,
     Maximize and Close.

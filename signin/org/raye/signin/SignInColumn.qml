@@ -19,6 +19,8 @@
 //   submitted(password)     Enter, the arrow, or "Sign in"
 //   switchUserRequested()   signInOptionsRequested()
 //   backRequested()         Esc: back to the lock view
+//   desktopClicked()        the desktop under the password (desktop: the
+//                           key it shows, "" when there is no choice)
 // Do:
 //   fail(text)     wrong password: shake, clear, show the message (default
 //                  "The password is incorrect. Try again.") and an OK link
@@ -42,6 +44,9 @@ FocusScope {
     property string message: ""
     property bool showSwitchUser: false
     property bool showSignInOptions: false
+    // the desktop this sign-in opens, shown under the password when there
+    // is a choice ("" hides it)
+    property string desktop: ""
     property real bottomInset: 0
 
     property string errorText: ""
@@ -52,6 +57,8 @@ FocusScope {
     signal switchUserRequested()
     signal signInOptionsRequested()
     signal backRequested()
+    // the desktop under the password was clicked: open the Desktop flyout
+    signal desktopClicked()
 
     function fail(text) {
         errorText = text !== undefined && text !== "" ? text : Strings.tr.wrongPassword
@@ -240,6 +247,16 @@ FocusScope {
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: Math.round(14 * RayePalette.textScale)
             color: RayePalette.textSecondary
+        }
+
+        Item { width: 1; height: desktopChip.visible ? 8 : 0 }
+
+        DesktopChip {
+            id: desktopChip
+            objectName: "desktopChip"
+            anchors.horizontalCenter: parent.horizontalCenter
+            desktop: column.desktop
+            onClicked: column.desktopClicked()
         }
 
         Item { width: 1; height: optionsLink.visible || switchLink.visible ? 12 : 0 }

@@ -236,6 +236,8 @@ FocusScope {
         bottomInset: keyboard.occupied
         onSubmitted: password => root.submit(password)
         onBackRequested: root.back()
+        desktop: adapter.showSessions ? adapter.sessionKey : ""
+        onDesktopClicked: bar.toggle(bar.sessionFlyout)
     }
 
     // only when SDDM lists no account: where the name would be

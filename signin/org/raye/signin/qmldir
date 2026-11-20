@@ -15,6 +15,7 @@ Flyout 1.0 Flyout.qml
 PowerFlyout 1.0 PowerFlyout.qml
 AccessFlyout 1.0 AccessFlyout.qml
 SessionFlyout 1.0 SessionFlyout.qml
+DesktopChip 1.0 DesktopChip.qml
 Spinner 1.0 Spinner.qml
 StatusScreen 1.0 StatusScreen.qml
 MethodHint 1.0 MethodHint.qml

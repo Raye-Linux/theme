@@ -1,4 +1,5 @@
 // SddmAdapter turns SDDM's objects into plain properties and calls.
+import QtCore
 import QtQuick
 import QtTest
 import "../raye"
@@ -315,6 +316,24 @@ TestCase {
         compare(a.sessionKey, "plasma")
         a.currentIndex = 0
         compare(a.sessionKey, "hyprland")
+    }
+
+    // the file Settings > Personalization > Desktop environment writes
+    // (raye-settings' desktop-session helper, "set hyprland" for alex),
+    // read through the real QtCore Settings the sign-in screen uses
+    Component {
+        id: helperFileComponent
+        Settings { location: Qt.resolvedUrl("data/raye-signin.conf") }
+    }
+
+    function test_theDesktopChosenInSettingsIsUsed() {
+        var store = createTemporaryObject(helperFileComponent, test)
+        compare(String(store.value("sessions/alex", "")), "raye-hyprland.desktop")
+        var a = withSessions({ store: store })
+        a.currentIndex = 0
+        compare(a.sessionKey, "hyprland")
+        a.login("pw")
+        compare(a.greeter.calls[0][3], 1)
     }
 
     function test_successRemembersTheDesktop() {
