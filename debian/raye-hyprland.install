@@ -6,6 +6,7 @@ usr/bin/raye-hyprland-session
 usr/bin/raye-hypr-screenshot
 usr/lib/*/qt6/plugins/wayland-decoration-client/rayetitlebar.so
 usr/libexec/raye-hyprland-start
+usr/lib/systemd/user/raye-hyprland-session.target
 usr/share/raye/hyprland/*
 usr/share/wayland-sessions/raye-hyprland.desktop
 LIST

@@ -47,4 +47,9 @@ export XDG_SESSION_DESKTOP=raye-hyprland
 export XDG_SESSION_TYPE=wayland
 
 [ -n "${RAYE_HYPRLAND_DRY_RUN:-}" ] && exit 0
-exec start-hyprland -- --config "$conf/hyprland.conf"
+# not exec: once Hyprland ends, the session's apps started through
+# raye-hyprland-session.target (XDG autostart) end with it
+rc=0
+start-hyprland -- --config "$conf/hyprland.conf" || rc=$?
+systemctl --user stop raye-hyprland-session.target 2>/dev/null || true
+exit "$rc"

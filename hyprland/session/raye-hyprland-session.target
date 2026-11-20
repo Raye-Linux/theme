@@ -1,0 +1,10 @@
+[Unit]
+Description=The Raye desktop on Hyprland
+Documentation=file:///usr/share/raye/hyprland/hyprland.conf
+# xdg-desktop-autostart.target and graphical-session.target refuse to be
+# started by hand: they come in as dependencies of this one, which
+# raye-hyprland-start starts once Hyprland is up and raye-hyprland-session
+# stops when Hyprland ends.
+BindsTo=graphical-session.target
+Wants=graphical-session-pre.target xdg-desktop-autostart.target
+After=graphical-session-pre.target

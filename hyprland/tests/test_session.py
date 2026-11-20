@@ -261,3 +261,50 @@ def test_postrm_leaves_other_packages_diversions(divert_root):
     r = maintainer("raye-hyprland.postrm", "remove", env)
     assert r.returncode == 0, r.stderr
     assert (sessions / "hyprland.desktop.other").exists()
+
+
+# --- XDG autostart on Hyprland (2026-11-20, Beta 2 ISO test on VM 130) ---
+# raye-hyprland-start asked systemd for xdg-desktop-autostart.target
+# directly. That target says RefuseManualStart=yes, so systemd refused
+# ("may be requested by dependency only"), the error went to /dev/null and
+# no autostart app ever ran on Hyprland: not Settings' desktop-restore (the
+# apps of a Plasma -> Hyprland switch did not come back), not the polkit or
+# geoclue helpers. A target of our own pulls it in as a dependency, and the
+# session takes it down when Hyprland ends.
+TARGET = TOP / "session" / "raye-hyprland-session.target"
+
+
+def test_autostart_comes_through_a_target_of_our_own():
+    text = TARGET.read_text()
+    assert re.search(r"^Wants=.*\bxdg-desktop-autostart\.target\b", text, re.M)
+    assert re.search(r"^BindsTo=.*\bgraphical-session\.target\b", text, re.M)
+    assert not re.search(r"^RefuseManualStart=yes", text, re.M)
+    code = [l for l in START.read_text().splitlines() if not l.lstrip().startswith("#")]
+    assert any("start raye-hyprland-session.target" in l for l in code)
+    # systemd refuses this one; asking for it is the defect
+    assert not any("start xdg-desktop-autostart.target" in l for l in code)
+
+
+def test_target_is_installed_as_a_user_unit():
+    cmake = (TOP / "CMakeLists.txt").read_text()
+    assert re.search(r"session/raye-hyprland-session\.target[^)]*SYSTEMDUSERUNITDIR", cmake)
+    install = (TOP.parent / "debian" / "raye-hyprland.install").read_text()
+    assert "usr/lib/systemd/user/raye-hyprland-session.target" in install
+
+
+def test_session_takes_the_target_down_when_hyprland_ends(tmp_path):
+    bindir = tmp_path / "bin"
+    bindir.mkdir()
+    log = tmp_path / "calls"
+    for name, rc in (("start-hyprland", 3), ("systemctl", 0)):
+        p = bindir / name
+        p.write_text("#!/bin/sh\necho \"%s $*\" >> %s\nexit %d\n" % (name, log, rc))
+        p.chmod(0o755)
+    env = dict(os.environ, HOME=str(tmp_path), XDG_CONFIG_HOME=str(tmp_path / ".config"),
+               RAYE_HYPRLAND_DATA=str(TOP / "config"), RAYE_HYPRLAND_KEYBOARD=str(START),
+               PATH="%s:%s" % (bindir, os.environ["PATH"]), LANG="en_US.UTF-8")
+    run = subprocess.run(["sh", str(SESSION)], env=env, timeout=30)
+    calls = log.read_text().splitlines()
+    assert calls[0].startswith("start-hyprland ")
+    assert "systemctl --user stop raye-hyprland-session.target" in calls[1:]
+    assert run.returncode == 3      # Hyprland's own exit status is kept

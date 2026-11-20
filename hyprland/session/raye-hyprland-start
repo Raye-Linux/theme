@@ -45,8 +45,10 @@ for agent in /usr/lib/*/libexec/raye-polkit-agent /usr/libexec/raye-polkit-agent
         break
     fi
 done
-# apps that start with the session (~/.config/autostart, /etc/xdg/autostart)
+# apps that start with the session (~/.config/autostart, /etc/xdg/autostart).
+# xdg-desktop-autostart.target refuses a manual start: it comes in through
+# raye-hyprland-session.target, which raye-hyprland-session stops at the end.
 if command -v systemctl >/dev/null 2>&1; then
-    systemctl --user start xdg-desktop-autostart.target 2>/dev/null || true
+    systemctl --user start raye-hyprland-session.target 2>/dev/null || true
 fi
 wait

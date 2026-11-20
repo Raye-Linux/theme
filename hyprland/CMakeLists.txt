@@ -76,6 +76,7 @@ install(FILES config/hyprland.conf config/hyprlock.conf config/hypridle.conf
 install(FILES session/raye-hyprland.desktop DESTINATION ${KDE_INSTALL_DATADIR}/wayland-sessions)
 install(PROGRAMS session/raye-hyprland-session DESTINATION ${KDE_INSTALL_BINDIR})
 install(PROGRAMS session/raye-hyprland-start DESTINATION libexec)
+install(FILES session/raye-hyprland-session.target DESTINATION ${KDE_INSTALL_SYSTEMDUSERUNITDIR})
 install(PROGRAMS tools/raye-hypr-screenshot DESTINATION ${KDE_INSTALL_BINDIR})
 
 if(BUILD_TESTING)
