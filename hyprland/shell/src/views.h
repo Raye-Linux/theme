@@ -1,5 +1,7 @@
 // Where the Raye views the shell reuses are: the files of the installed
 // taskbar, Start, quick settings and clock applets, and the wallpaper.
+// A compiled applet has no QML on disk: its views are copied to
+// raye/hyprland/views/<id>/contents/ui (RAYE_HYPR_VIEWS in CMakeLists.txt).
 // RAYE_PLASMOIDS_DIR points at another folder of applets (the source tree
 // in tests).
 //

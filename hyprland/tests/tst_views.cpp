@@ -7,6 +7,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QTemporaryDir>
 #include <QTest>
 
@@ -39,7 +40,43 @@ class TestViews : public QObject
         return m_dir.filePath(QStringLiteral("Lake"));
     }
 
+    void touch(const QString &path)
+    {
+        QDir().mkpath(QFileInfo(path).absolutePath());
+        QFile f(path);
+        if (!f.open(QIODevice::WriteOnly))
+            qFatal("cannot write %s", qPrintable(path));
+    }
+
 private Q_SLOTS:
+    // org.raye.clock is a compiled applet: its QML lives in the plugin, not
+    // under plasma/plasmoids, so raye-hyprland installs a copy of its views
+    // in raye/hyprland/views. Without that copy the Hyprland taskbar had no
+    // clock, and the clock's centre and toasts never showed either.
+    void viewsOfACompiledApplet()
+    {
+        const QString data = m_dir.filePath(QStringLiteral("data"));
+        const QString home = m_dir.filePath(QStringLiteral("home"));
+        QDir().mkpath(home);
+        qunsetenv("RAYE_PLASMOIDS_DIR");
+        qputenv("XDG_DATA_HOME", home.toUtf8());
+        qputenv("XDG_DATA_DIRS", data.toUtf8());
+        Views views;
+        const QString file = QStringLiteral("ClockButton.qml");
+        QVERIFY(views.url(QStringLiteral("org.raye.clock"), file).isEmpty());
+
+        const QString copy = data + QStringLiteral("/raye/hyprland/views/org.raye.clock/contents/ui/") + file;
+        touch(copy);
+        QCOMPARE(views.url(QStringLiteral("org.raye.clock"), file), QUrl::fromLocalFile(copy));
+        // a file the copy does not have is still empty
+        QVERIFY(views.url(QStringLiteral("org.raye.clock"), QStringLiteral("Nope.qml")).isEmpty());
+
+        // an applet installed as a package wins over the copy
+        const QString package = data + QStringLiteral("/plasma/plasmoids/org.raye.clock/contents/ui/") + file;
+        touch(package);
+        QCOMPARE(views.url(QStringLiteral("org.raye.clock"), file), QUrl::fromLocalFile(package));
+    }
+
     void imageOfTheFirstScreen()
     {
         const QString first = write(QStringLiteral("first.jpg"), "x");

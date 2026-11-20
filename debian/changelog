@@ -28,6 +28,10 @@ raye-theme (1.0~beta2) resolute; urgency=medium
     edge and into the corners; "Alarms & clock" button in the calendar.
   * Hyprland: apps that start with the session start again (the request
     for them was refused), so the apps of a switch from Plasma come back.
+  * Hyprland: the taskbar has its clock again, 12 or 24 hours as the region
+    picked in Settings writes it, and the notification centre and pop-ups
+    show; no more "hyprland-guiutils not installed" banner.
+  * The taskbar helper no longer starts, and fails, in the sign-in screen.
 
  -- techoraye <190692880+techoraye@users.noreply.github.com>  Thu, 19 Nov 2026 10:00:00 +0000
 

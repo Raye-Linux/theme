@@ -46,6 +46,10 @@ QUrl Views::url(const QString &applet, const QString &file) const
             path.clear();
     } else {
         path = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("plasma/plasmoids/") + relative);
+        // a compiled applet (org.raye.clock) keeps its QML in its plugin:
+        // raye-hyprland installs a copy of those views here
+        if (path.isEmpty())
+            path = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("raye/hyprland/views/") + relative);
     }
     return path.isEmpty() ? QUrl() : QUrl::fromLocalFile(path);
 }

@@ -288,6 +288,20 @@ function changesClients(name) {
     return CLIENT_EVENTS.indexOf(name) >= 0
 }
 
+// --- clock -----------------------------------------------------------------
+
+// 24 hours or 12: "auto" follows the language's own clock (localeFormat,
+// the locale's short time format: "h:mm AP" or "HH:mm"), "true"/"false"
+// force it. The clock applet's rule (clocklogic.js use24h), kept the same
+// by tst_hyprlogic.qml.
+function use24h(setting, localeFormat) {
+    if (setting === "true" || setting === true)
+        return true
+    if (setting === "false" || setting === false)
+        return false
+    return !/a/i.test(String(localeFormat || "").replace(/'[^']*'/g, ""))
+}
+
 // --- notification centre ---------------------------------------------------
 
 // Do not disturb is on: until a time still ahead, or an app asked for it.

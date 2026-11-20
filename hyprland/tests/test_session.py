@@ -308,3 +308,117 @@ def test_session_takes_the_target_down_when_hyprland_ends(tmp_path):
     assert calls[0].startswith("start-hyprland ")
     assert "systemctl --user stop raye-hyprland-session.target" in calls[1:]
     assert run.returncode == 3      # Hyprland's own exit status is kept
+
+
+# --- the views the shell borrows from raye-shell's applets ------------------
+
+SHELL_QML = TOP / "shell" / "qml"
+PLASMOIDS = TOP.parent / "shell" / "plasmoids"
+
+
+def views_installed():
+    """The applets whose views raye-hyprland copies to raye/hyprland/views."""
+    cmake = (TOP / "CMakeLists.txt").read_text()
+    found = re.search(r"set\(RAYE_HYPR_VIEWS ([^)]*)\)", cmake)
+    return set(found.group(1).split()) if found else set()
+
+
+def test_every_view_of_a_compiled_applet_is_installed():
+    """A compiled applet (shell/plasmoids/<id>/CMakeLists.txt) keeps its QML
+    in its plugin, so Views.url finds nothing under plasma/plasmoids. Until
+    2026-11-20 org.raye.clock was one: the Hyprland taskbar had no clock,
+    and its centre and toasts never loaded either."""
+    asked = set()
+    for qml in SHELL_QML.glob("*.qml"):
+        asked |= set(re.findall(r'Views\.url\("([^"]+)",\s*"([^"]+)"\)', qml.read_text()))
+    assert ("org.raye.clock", "ClockButton.qml") in asked
+    copied = views_installed()
+    for applet, file in sorted(asked):
+        assert (PLASMOIDS / applet / "contents" / "ui" / file).is_file(), (applet, file)
+        if (PLASMOIDS / applet / "CMakeLists.txt").exists():
+            assert applet in copied, (
+                f"{applet} is compiled: {file} is not on disk unless raye-hyprland copies its views")
+
+
+def test_views_are_installed_where_views_url_looks():
+    cmake = (TOP / "CMakeLists.txt").read_text()
+    assert re.search(r"DESTINATION \$\{KDE_INSTALL_DATADIR\}/raye/hyprland/views/\$\{_view\}/contents/ui", cmake)
+    assert 'QStringLiteral("raye/hyprland/views/")' in (TOP / "shell" / "src" / "views.cpp").read_text()
+    install = (TOP.parent / "debian" / "raye-hyprland.install").read_text()
+    assert "usr/share/raye/hyprland/*" in install
+
+
+# --- hyprland-guiutils ----------------------------------------------------
+
+def test_no_banner_for_a_helper_ubuntu_does_not_ship():
+    """Hyprland 0.53 shows "hyprland-guiutils not installed" at every start
+    when the helper is missing, and Ubuntu has no such package. The check is
+    turned off with Hyprland's own option, unless the package is depended on."""
+    control = (TOP.parent / "debian" / "control").read_text()
+    stanza = control.split("Package: raye-hyprland\n", 1)[1].split("\n\n", 1)[0]
+    if "hyprland-guiutils" in stanza:
+        return
+    misc = re.search(r"^misc \{(.*?)^\}", CONF.read_text(), re.S | re.M).group(1)
+    assert re.search(r"^\s*disable_hyprland_guiutils_check\s*=\s*true\s*$", misc, re.M), misc
+
+
+def test_a_misspelt_option_is_caught():
+    """The option name is checked by the Hyprland of the build: an option it
+    does not know fails --verify-config, so the line above cannot be a typo
+    that does nothing."""
+    assert "disable_hyprland_guiutils_check" in CONF.read_text()
+    with tempfile.NamedTemporaryFile("w", suffix=".conf", delete=False) as f:
+        f.write(CONF.read_text().replace("disable_hyprland_guiutils_check", "disable_hyprland_guiutil_check"))
+    try:
+        code, out = verify(f.name)
+    finally:
+        os.unlink(f.name)
+    assert code != 0 or "does not exist" in out, out
+
+
+# --- the language and formats the user picked in Settings -----------------
+
+def run_with_env_dump(tmp_path, localerc=None, lang="en_US.UTF-8"):
+    bindir = tmp_path / "bin"
+    bindir.mkdir(exist_ok=True)
+    dump = tmp_path / "env"
+    (bindir / "start-hyprland").write_text("#!/bin/sh\nenv > %s\n" % dump)
+    (bindir / "systemctl").write_text("#!/bin/sh\nexit 0\n")
+    for p in bindir.iterdir():
+        p.chmod(0o755)
+    config = tmp_path / ".config"
+    config.mkdir(exist_ok=True)
+    if localerc is not None:
+        (config / "plasma-localerc").write_text(localerc)
+    env = {k: v for k, v in os.environ.items() if not k.startswith("LC_")}
+    env.update(HOME=str(tmp_path), XDG_CONFIG_HOME=str(config), RAYE_HYPRLAND_DATA=str(TOP / "config"),
+               RAYE_HYPRLAND_KEYBOARD=str(START), PATH="%s:%s" % (bindir, os.environ["PATH"]),
+               LANG=lang, LANGUAGE="")
+    subprocess.run(["sh", str(SESSION)], env=env, timeout=30, check=True)
+    return dict(l.split("=", 1) for l in dump.read_text().splitlines() if "=" in l)
+
+
+def test_formats_picked_in_settings_reach_hyprland(tmp_path):
+    """Raye Settings writes the region to plasma-localerc, which the Plasma
+    session exports; the Hyprland session reads it the same way, so the
+    clock is 12 or 24 hours as the user's region writes it."""
+    env = run_with_env_dump(tmp_path, "[Formats]\nLANG=en_US.UTF-8\nLC_TIME=de_DE.UTF-8\n"
+                                      "LC_NUMERIC=fr_CA.UTF-8\n\n[Translations]\nLANGUAGE=fr:en_US\n")
+    assert env["LC_TIME"] == "de_DE.UTF-8"
+    assert env["LC_NUMERIC"] == "fr_CA.UTF-8"
+    assert env["LANG"] == "en_US.UTF-8"
+    assert env["LANGUAGE"] == "fr:en_US"
+
+
+def test_without_localerc_the_system_locale_stays(tmp_path):
+    env = run_with_env_dump(tmp_path, None, lang="en_GB.UTF-8")
+    assert env["LANG"] == "en_GB.UTF-8"
+    assert "LC_TIME" not in env
+
+
+def test_localerc_cannot_inject(tmp_path):
+    env = run_with_env_dump(tmp_path, "[Formats]\nLC_TIME=de_DE.UTF-8; touch /tmp/x\n"
+                                      "LD_PRELOAD=/tmp/evil.so\n[Other]\nLC_NUMERIC=xx_XX\n")
+    assert "LC_TIME" not in env
+    assert "LD_PRELOAD" not in env
+    assert "LC_NUMERIC" not in env

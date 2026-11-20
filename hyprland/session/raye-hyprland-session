@@ -27,6 +27,22 @@ fi
     "${RAYE_KEYBOARD_FILE:-/etc/default/keyboard}" > "$conf/keyboard.conf.new"
 mv "$conf/keyboard.conf.new" "$conf/keyboard.conf"
 
+# The region and language picked in Raye Settings (plasma-localerc), as the
+# Plasma session exports them: the clock is 12 or 24 hours, and dates are
+# written, the way the user's region writes them. Only the known keys, and
+# only a plain locale name: the file is the user's, not a script.
+localerc=${XDG_CONFIG_HOME:-$HOME/.config}/plasma-localerc
+if [ -r "$localerc" ]; then
+    picked=$(awk '
+        /^\[/ { group = $0; next }
+        group == "[Formats]" && /^(LANG|LC_NUMERIC|LC_TIME|LC_MONETARY|LC_MEASUREMENT|LC_COLLATE|LC_CTYPE|LC_PAPER|LC_ADDRESS|LC_NAME|LC_TELEPHONE)=[A-Za-z0-9_.@-]+$/ { print }
+        group == "[Translations]" && /^LANGUAGE=[A-Za-z0-9_.@:-]+$/ { print }
+    ' "$localerc")
+    for pair in $picked; do
+        export "$pair"
+    done
+fi
+
 # the lock screen speaks the session's language
 lock_text='PIN or password'
 lock_fail='That password is not right'

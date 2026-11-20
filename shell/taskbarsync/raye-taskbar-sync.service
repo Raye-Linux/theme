@@ -1,6 +1,9 @@
 [Unit]
 Description=Raye taskbars on every screen
 After=plasma-plasmashell.service
+# not in the sign-in screen's session: KWin runs there as the sddm user and
+# would start this unit too, where Plasma never comes (tests/test_unit.py)
+ConditionUser=!@system
 
 [Service]
 Type=oneshot

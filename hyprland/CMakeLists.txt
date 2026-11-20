@@ -71,6 +71,18 @@ target_link_libraries(rayetitlebar PRIVATE rayetitlebar-logic Qt6::Gui Qt6::GuiP
     Qt6::WaylandClient Qt6::WaylandClientPrivate)
 install(TARGETS rayetitlebar DESTINATION ${KDE_INSTALL_QTPLUGINDIR}/wayland-decoration-client)
 
+# The views of raye-shell's COMPILED applets: their QML is built into the
+# plugin, so Views.url() would find nothing under plasma/plasmoids. A copy
+# of each one's contents/ui goes to raye/hyprland/views/<id>, from the same
+# source tree, so the two desktops still draw the same files. Without it
+# the Hyprland taskbar had no clock (tests/test_session.py checks the list).
+set(RAYE_HYPR_VIEWS org.raye.clock)
+foreach(_view IN LISTS RAYE_HYPR_VIEWS)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../shell/plasmoids/${_view}/contents/ui/
+            DESTINATION ${KDE_INSTALL_DATADIR}/raye/hyprland/views/${_view}/contents/ui
+            FILES_MATCHING PATTERN "*.qml" PATTERN "*.js")
+endforeach()
+
 install(FILES config/hyprland.conf config/hyprlock.conf config/hypridle.conf
         DESTINATION ${KDE_INSTALL_DATADIR}/raye/hyprland)
 install(FILES session/raye-hyprland.desktop DESTINATION ${KDE_INSTALL_DATADIR}/wayland-sessions)

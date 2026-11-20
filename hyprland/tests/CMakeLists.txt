@@ -7,7 +7,7 @@ find_program(QMLTESTRUNNER NAMES qmltestrunner
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 add_test(NAME hyprlogic COMMAND ${QMLTESTRUNNER} -input ${CMAKE_CURRENT_SOURCE_DIR}/tst_hyprlogic.qml)
-set_tests_properties(hyprlogic PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+set_tests_properties(hyprlogic PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QML_XHR_ALLOW_FILE_READ=1")
 
 add_executable(tst_hyprland tst_hyprland.cpp ../shell/src/hyprland.cpp)
 set_target_properties(tst_hyprland PROPERTIES AUTOMOC ON)

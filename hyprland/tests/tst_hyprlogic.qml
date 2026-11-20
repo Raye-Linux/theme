@@ -2,6 +2,8 @@ import QtQuick
 import QtTest
 
 import "../shell/qml/hyprlogic.js" as Logic
+// the Plasma clock's own rule, so the two taskbars never disagree
+import "../../shell/plasmoids/org.raye.clock/contents/ui/clocklogic.js" as Clock
 
 TestCase {
     name: "HyprLogic"
@@ -172,5 +174,39 @@ TestCase {
         compare(Logic.focusRemaining(new Date(NaN), now), 0)
         compare(Logic.focusRemaining(new Date(2026, 10, 19, 10, 25, 0), now), 1500)
         compare(Logic.focusRemaining(new Date(2026, 10, 19, 9, 0, 0), now), 0)
+    }
+
+    // the taskbar clock on Hyprland: 12 or 24 hours as the language writes
+    // its own clock, unless Settings forces one ("true"/"false")
+    function test_clock_follows_the_locale() {
+        verify(!Logic.use24h("auto", "h:mm AP"))
+        verify(!Logic.use24h("auto", "h:mm ap"))
+        verify(!Logic.use24h(undefined, "h:mm a"))
+        verify(Logic.use24h("auto", "HH:mm"))
+        verify(Logic.use24h("auto", "H 'h' mm"))
+        // a quoted "a" is text, not the AM/PM field
+        verify(Logic.use24h("auto", "HH 'am' mm"))
+        verify(Logic.use24h("true", "h:mm AP"))
+        verify(Logic.use24h(true, "h:mm AP"))
+        verify(!Logic.use24h("false", "HH:mm"))
+        verify(!Logic.use24h(false, "HH:mm"))
+    }
+
+    function test_clock_rule_is_the_plasma_clocks() {
+        const settings = ["auto", "", undefined, "true", "false", true, false, "24", "12"]
+        const formats = ["h:mm AP", "HH:mm", "h:mm a", "H:mm", "HH 'am' mm", "", Qt.locale("en_US").timeFormat(Locale.ShortFormat),
+                         Qt.locale("de_DE").timeFormat(Locale.ShortFormat), Qt.locale("fr_CA").timeFormat(Locale.ShortFormat)]
+        for (const s of settings)
+            for (const f of formats)
+                compare(Logic.use24h(s, f), Clock.use24h(s, f), "setting " + s + ", format " + f)
+    }
+
+    // what the shell hands the clock comes from that rule, never a test of its own
+    function test_shell_uses_the_rule() {
+        const xhr = new XMLHttpRequest()
+        xhr.open("GET", Qt.resolvedUrl("../shell/qml/Shell.qml"), false)
+        xhr.send()
+        verify(/twentyFour:\s*Logic\.use24h\(ShellSettings\.clockUse24h,\s*Qt\.locale\(\)\.timeFormat\(Locale\.ShortFormat\)\)/.test(xhr.responseText),
+               "Shell.qml does not take twentyFour from Logic.use24h")
     }
 }

@@ -15,10 +15,8 @@ Item {
     visible: false
 
     property date now: new Date()
-    readonly property bool twentyFour: ShellSettings.clockUse24h === "24"
-                                       || (ShellSettings.clockUse24h !== "12"
-                                           && Qt.locale().timeFormat(Locale.ShortFormat).indexOf("AP") < 0
-                                           && Qt.locale().timeFormat(Locale.ShortFormat).indexOf("ap") < 0)
+    // 12 or 24 hours: Settings' choice, else the region's own clock
+    readonly property bool twentyFour: Logic.use24h(ShellSettings.clockUse24h, Qt.locale().timeFormat(Locale.ShortFormat))
     readonly property bool startOpen: start.open
     readonly property string startMode: start.mode
     readonly property bool quickOpen: quick.open

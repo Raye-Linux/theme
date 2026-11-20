@@ -6,3 +6,4 @@ set_tests_properties(taskbarsync PROPERTIES TIMEOUT 60)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 add_test(NAME taskbarsync-pins COMMAND ${Python3_EXECUTABLE} -B ${CMAKE_CURRENT_SOURCE_DIR}/test_pins.py)
+add_test(NAME taskbarsync-unit COMMAND ${Python3_EXECUTABLE} -B ${CMAKE_CURRENT_SOURCE_DIR}/test_unit.py)
