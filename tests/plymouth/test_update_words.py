@@ -109,3 +109,42 @@ def test_a_reload_in_upgrade_mode_comes_back_as_an_upgrade(script):
     p.frames(FPS)
     assert script[1]["upgrade"].split("{")[0].strip() in words(p)[0]
     assert "40" in words(p)[0]
+
+
+# A slow step of an install (the start-up image of each kernel rebuilt, a
+# driver built, the boot menu written, the restore point) holds the same
+# number for minutes: the screen says why, then goes back to the usual note.
+# Reported 2026-11-20: "the first update is a black screen for a long time".
+
+def test_a_slow_step_says_it_can_take_a_few_minutes(script):
+    p = screen(script, "boot")
+    p.message("raye:mode:updates")
+    p.callback("SystemUpdate", "96")
+    p.message("raye:slow-step")
+    p.frames(FPS)
+    assert words(p) == (script[1]["updates"].replace("{n}", "96"), script[1]["slow_step_note"])
+    # the number keeps moving under the slow note
+    p.callback("SystemUpdate", "97")
+    p.frames(FPS)
+    assert words(p) == (script[1]["updates"].replace("{n}", "97"), script[1]["slow_step_note"])
+    p.message("raye:slow-step-done")
+    p.frames(FPS)
+    assert words(p) == (script[1]["updates"].replace("{n}", "97"), script[1]["updates_note"])
+
+
+def test_the_slow_note_ends_with_the_install(script):
+    p = screen(script, "boot")
+    p.message("raye:mode:updates")
+    p.message("raye:slow-step")
+    p.message("raye:mode:reboot")
+    p.frames(FPS)
+    assert words(p) == (script[1]["reboot"], "")
+
+
+def test_the_slow_note_tells_what_and_how_long():
+    for lang in ("en", "fr"):
+        words = dict(l.split("=", 1) for l in (THEME / f"strings-{lang}").read_text()
+                     .splitlines() if "=" in l and not l.startswith("#"))
+        assert words["slow_step_note"].strip()
+    en = (THEME / "strings-en").read_text()
+    assert "slow_step_note=Preparing the new version of the system." in en

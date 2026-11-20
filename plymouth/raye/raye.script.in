@@ -26,6 +26,7 @@ T_REBOOT = "@reboot@";
 T_UPDATES_A = "@updates_a@";
 T_UPDATES_B = "@updates_b@";
 T_NOTE = "@updates_note@";
+T_SLOW_NOTE = "@slow_step_note@";
 T_FINISHING = "@finishing_updates@";
 T_PREPARE = "@prepare_updates@";
 T_GO_BACK = "@go_back@";
@@ -360,6 +361,10 @@ global.progress = 0;
 global.status_line = "";
 global.status_note = "";
 global.finishing = 0;
+# raye:slow-step: the number holds for minutes (a start-up image, a
+# driver built, the boot menu written), the note says why until
+# raye:slow-step-done or the next mode
+global.slow = 0;
 # set by raye:mode:boot, reboot or shutdown: the install is over
 global.updates_over = 0;
 # "2:3" while the second of three devices is written, "" for one
@@ -374,11 +379,13 @@ fun firmware_line() {
 fun mode_status() {
     # the daemon hands the number over as text ("37"): draw it as it comes
     n = global.progress;
+    note = T_NOTE;
+    if (global.slow) note = T_SLOW_NOTE;
     if (global.mode == "shutdown") set_status(T_SHUTDOWN, "");
     else if (global.mode == "reboot") set_status(T_REBOOT, "");
     else if (global.mode == "prepare") set_status(T_PREPARE, T_NOTE);
-    else if (global.mode == "updates") set_status(T_UPDATES_A + n + T_UPDATES_B, T_NOTE);
-    else if (global.mode == "system-upgrade") set_status(T_UPGRADE_A + n + T_UPGRADE_B, T_NOTE);
+    else if (global.mode == "updates") set_status(T_UPDATES_A + n + T_UPDATES_B, note);
+    else if (global.mode == "system-upgrade") set_status(T_UPGRADE_A + n + T_UPGRADE_B, note);
     # no number: fwupd tells nothing while it writes
     else if (global.mode == "firmware-upgrade") set_status(firmware_line(), T_FIRMWARE_NOTE);
     else set_status("", "");
@@ -422,6 +429,9 @@ Plymouth.SetSystemUpdateFunction(system_update);
 #                              updates
 #   raye:mode:boot             the updates are in and the start-up goes
 #                              on to the sign-in screen: words away
+#   raye:slow-step             a step that holds the number for minutes:
+#                              the note says it can take a few minutes
+#   raye:slow-step-done        the usual note again
 #   raye:clear                 puts back what the mode says
 #   raye:tpm-failed            the TPM did not open the disk (from the
 #                              initramfs, see the hook): ask at once
@@ -457,10 +467,17 @@ fun message(str) {
         global.pending = 0;
         global.showing_message = 0;
         global.finishing = 0;
+        global.slow = 0;
         global.fw_step = "";
         mode_status();
     } else if (starts(str, "raye:firmware-step:")) {
         global.fw_step = String(str).SubString(19, String(str).Length());
+        if (!global.showing_message) mode_status();
+    } else if (str == "raye:slow-step") {
+        global.slow = 1;
+        if (!global.showing_message) mode_status();
+    } else if (str == "raye:slow-step-done") {
+        global.slow = 0;
         if (!global.showing_message) mode_status();
     } else if (str == "raye:clear") {
         hide_message(str);

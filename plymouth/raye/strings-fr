@@ -12,6 +12,7 @@ shutdown=Arrêt en cours
 reboot=Redémarrage en cours
 updates=Installation des mises à jour  {n} %
 updates_note=N'éteignez pas votre PC
+slow_step_note=Préparation de la nouvelle version du système. Cela peut prendre quelques minutes.
 finishing_updates=Fin des mises à jour
 prepare_updates=Préparation des mises à jour
 go_back=Retour à un état précédent

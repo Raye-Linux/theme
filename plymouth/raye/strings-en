@@ -12,6 +12,7 @@ shutdown=Shutting down
 reboot=Restarting
 updates=Working on updates  {n}%
 updates_note=Don't turn off your PC
+slow_step_note=Preparing the new version of the system. This can take a few minutes.
 finishing_updates=Finishing updates
 prepare_updates=Preparing updates
 go_back=Going back to an earlier state

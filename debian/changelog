@@ -33,6 +33,9 @@ raye-theme (1.0~beta2) resolute; urgency=medium
     show; no more "hyprland-guiutils not installed" banner.
   * The taskbar helper no longer starts, and fails, in the sign-in screen.
 
+  * The update screen says when a step takes a few minutes (the new
+    version of the system being prepared) instead of holding a number with
+    no word.
  -- techoraye <190692880+techoraye@users.noreply.github.com>  Thu, 19 Nov 2026 10:00:00 +0000
 
 raye-theme (1.0~beta1) resolute; urgency=medium
