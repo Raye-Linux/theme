@@ -24,6 +24,9 @@ Window {
     visible: true
 
     LayerShell.Window.scope: "raye-panel"
+    // the layer surface goes on THIS window's screen: without it layer-shell-qt
+    // could put every taskbar on the first screen (two stacked, none on the second)
+    LayerShell.Window.screen: screen
     LayerShell.Window.layer: LayerShell.Window.LayerTop
     LayerShell.Window.anchors: LayerShell.Window.AnchorBottom | LayerShell.Window.AnchorLeft
                                | LayerShell.Window.AnchorRight

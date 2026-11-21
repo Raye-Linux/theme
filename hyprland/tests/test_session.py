@@ -615,3 +615,13 @@ def test_hyprland_display_is_not_left_to_the_next_desktop(tmp_path):
     after = calls[start + 1:]
     unset = [c for c in after if "unset-environment" in c]
     assert unset and "HYPRLAND_INSTANCE_SIGNATURE" in unset[0] and "WAYLAND_DISPLAY" in unset[0], calls
+
+
+def test_layer_surfaces_follow_their_own_screen():
+    # each taskbar and wallpaper is made for one screen; without the layer
+    # screen set, both taskbars showed on the first screen and none on the second
+    import pathlib
+    qml = pathlib.Path(__file__).resolve().parent.parent / "shell" / "qml"
+    for name in ("Panel.qml", "Wallpaper.qml"):
+        text = qml.joinpath(name).read_text()
+        assert "LayerShell.Window.screen: screen" in text, name
