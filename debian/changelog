@@ -1,3 +1,13 @@
+raye-theme (1.0~beta2.3) resolute; urgency=medium
+
+  * Hyprland with two screens: the taskbar and wallpaper really go on each
+    screen (placed by the screen position; 1.0~beta2.2 still put both on
+    the first screen).
+  * Hyprland skips the apps KDE settings say not to start at sign-in, like
+    KGpg, the same as Plasma.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Sat, 21 Nov 2026 05:17:06 +0000
+
 raye-theme (1.0~beta2.2) resolute; urgency=medium
 
   * Hyprland with two screens: each screen gets its own taskbar and

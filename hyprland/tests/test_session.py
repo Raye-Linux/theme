@@ -624,4 +624,6 @@ def test_layer_surfaces_follow_their_own_screen():
     qml = pathlib.Path(__file__).resolve().parent.parent / "shell" / "qml"
     for name in ("Panel.qml", "Wallpaper.qml"):
         text = qml.joinpath(name).read_text()
-        assert "LayerShell.Window.screen: screen" in text, name
+        assert "x: screen ? screen.virtualX : 0" in text, name
+        assert "y: screen ? screen.virtualY : 0" in text, name
+        assert "LayerShell.Window.screen:" not in text, name

@@ -117,6 +117,25 @@ done
 # apps that start with the session (~/.config/autostart, /etc/xdg/autostart).
 # xdg-desktop-autostart.target refuses a manual start: it comes in through
 # raye-hyprland-session.target, which raye-hyprland-session stops at the end.
+# Plasma reads X-KDE-autostart-condition (rcfile:Group:Key:default) and skips
+# an app whose setting says no, like KGpg; systemd's autostart generator
+# ignores it, so on Hyprland those apps started anyway. Mask them for this
+# boot (--runtime) before the autostart target comes in.
+autostart_skip() {
+    command -v kreadconfig6 >/dev/null 2>&1 || return 0
+    for f in /etc/xdg/autostart/*.desktop; do
+        [ -e "$f" ] || continue
+        cond=$(sed -n 's/^X-KDE-autostart-condition=//p' "$f" | head -n 1)
+        [ -n "$cond" ] || continue
+        IFS=: read -r rc group key def <<EOF2
+$cond
+EOF2
+        val=$(kreadconfig6 --file "$rc" --group "$group" --key "$key" --default "${def:-true}" 2>/dev/null)
+        [ "$val" = false ] && systemctl --user mask --runtime "app-$(systemd-escape "$(basename "$f" .desktop)")@autostart.service" >/dev/null 2>&1
+    done
+    return 0
+}
+autostart_skip
 if command -v systemctl >/dev/null 2>&1; then
     systemctl --user start raye-hyprland-session.target 2>/dev/null || true
 fi

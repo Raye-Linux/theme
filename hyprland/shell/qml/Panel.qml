@@ -24,9 +24,11 @@ Window {
     visible: true
 
     LayerShell.Window.scope: "raye-panel"
-    // the layer surface goes on THIS window's screen: without it layer-shell-qt
-    // could put every taskbar on the first screen (two stacked, none on the second)
-    LayerShell.Window.screen: screen
+    // layer-shell-qt places the surface on the screen under the window's
+    // position: `screen` alone (and LayerShell.Window.screen, which takes a
+    // QScreen, not QML's screen info) left every taskbar on the first screen
+    x: screen ? screen.virtualX : 0
+    y: screen ? screen.virtualY : 0
     LayerShell.Window.layer: LayerShell.Window.LayerTop
     LayerShell.Window.anchors: LayerShell.Window.AnchorBottom | LayerShell.Window.AnchorLeft
                                | LayerShell.Window.AnchorRight
