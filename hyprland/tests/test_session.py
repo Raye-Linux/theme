@@ -560,3 +560,45 @@ def test_raye_main_file_is_brought_up_to_date(tmp_path):
     assert (conf / "monitors.conf").exists()
     lines = [l for l in text.splitlines() if l.startswith("source")]
     assert lines[-1].endswith("user.conf")
+
+
+# --- the saved passwords (KDE wallet) ---------------------------------------
+#
+# Owner's Dell, Beta 2: on Hyprland, KDE's raw "KDE Wallet Service - enter
+# the password for kdewallet" window. A password sign-in leaves the
+# wallet's key with the wallet service (pam_kwallet), which opens it only
+# once the session hands it its environment: Plasma does it with
+# plasma-kwallet-pam.service, the autostart file of pam_kwallet_init says
+# X-systemd-skip=true, so on Hyprland nobody did.
+
+def run_start(tmp_path, extra_env):
+    bindir = tmp_path / "bin"
+    bindir.mkdir()
+    log = tmp_path / "calls"
+    for name in ("systemctl", "raye-hypr-shell", "hypridle"):
+        p = bindir / name
+        p.write_text("#!/bin/sh\necho \"%s $*\" >> %s\nexit 0\n" % (name, log))
+        p.chmod(0o755)
+    init = tmp_path / "pam_kwallet_init"
+    init.write_text("#!/bin/sh\necho \"pam_kwallet_init $PAM_KWALLET5_LOGIN\" >> %s\n" % log)
+    init.chmod(0o755)
+    env = dict(os.environ, HOME=str(tmp_path), RAYE_PAM_KWALLET_INIT=str(init),
+               PATH="%s:%s" % (bindir, os.environ["PATH"]))
+    env.pop("PAM_KWALLET5_LOGIN", None)
+    env.update(extra_env)
+    subprocess.run(["sh", str(START)], env=env, timeout=30, check=True)
+    return log.read_text().splitlines() if log.exists() else []
+
+
+def test_a_password_sign_in_opens_the_wallet(tmp_path):
+    calls = run_start(tmp_path, {"PAM_KWALLET5_LOGIN": "/run/user/7/kwallet5.socket"})
+    assert "pam_kwallet_init /run/user/7/kwallet5.socket" in calls, calls
+    target = [i for i, c in enumerate(calls) if "start raye-hyprland-session.target" in c]
+    assert target, calls
+    # before the session's apps, so they find the wallet open
+    assert calls.index("pam_kwallet_init /run/user/7/kwallet5.socket") < target[0]
+
+
+def test_no_wallet_step_without_a_password_sign_in(tmp_path):
+    calls = run_start(tmp_path, {})
+    assert not any(c.startswith("pam_kwallet_init") for c in calls), calls

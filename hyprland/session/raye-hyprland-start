@@ -89,6 +89,22 @@ run() { command -v "$1" >/dev/null 2>&1 && "$@" & }
 systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE \
     HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORMTHEME 2>/dev/null || true
 
+# The saved passwords (KDE wallet): a password sign-in leaves the wallet's
+# key with the wallet service (pam_kwallet), which waits for the session's
+# environment before it opens the wallet. Plasma hands it over
+# (plasma-kwallet-pam.service); its autostart file says X-systemd-skip, so
+# on Hyprland nothing did, and the first app that wanted a saved password
+# opened KDE's own "enter the password for kdewallet" window. Before the
+# apps of the session, so they find the wallet open.
+if [ -n "${PAM_KWALLET5_LOGIN:-}" ]; then
+    for init in ${RAYE_PAM_KWALLET_INIT:-/usr/share/libpam-kwallet-common/pam_kwallet_init /usr/lib/*/libexec/pam_kwallet_init}; do
+        if [ -x "$init" ]; then
+            "$init" >/dev/null 2>&1 || true
+            break
+        fi
+    done
+fi
+
 run raye-hypr-shell
 run hypridle -c /usr/share/raye/hyprland/hypridle.conf
 # the Raye prompt that asks for the password when an app needs root
