@@ -21,6 +21,16 @@ TestCase {
     readonly property var files: ({ id: "org.kde.dolphin.desktop", name: "Files", icon: "system-file-manager" })
     readonly property var web: ({ id: "firefox.desktop", name: "Firefox", icon: "firefox" })
 
+    function test_one_taskbar_per_output() {
+        const a = { name: "eDP-1" }, b = { name: "HDMI-A-1" }
+        const got = Logic.uniqueScreens([a, b, { name: "eDP-1" }])
+        compare(got.length, 2)
+        compare(got[0], a)
+        compare(got[1], b)
+        compare(Logic.uniqueScreens([]).length, 0)
+        compare(Logic.uniqueScreens(null).length, 0)
+    }
+
     function test_pinned_app_without_window_is_a_launcher() {
         const rows = Logic.taskRows([], "", ["org.kde.dolphin.desktop"], {}, true)
         compare(rows.length, 1)

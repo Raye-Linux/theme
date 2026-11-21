@@ -22,6 +22,23 @@ function isShown(client) {
     return typeof ws.id === "number" ? ws.id > 0 : true
 }
 
+// One taskbar and one wallpaper per output: Qt can list the same output
+// twice for a moment while Hyprland sets the screens up, and a panel made
+// for each entry gave two taskbars stacked on one screen.
+function uniqueScreens(screens) {
+    const out = []
+    const seen = {}
+    for (let i = 0; i < (screens ? screens.length : 0); ++i) {
+        const s = screens[i]
+        const key = s && s.name ? s.name : "#" + i
+        if (seen[key])
+            continue
+        seen[key] = true
+        out.push(s)
+    }
+    return out
+}
+
 function stripDesktop(id) {
     id = String(id || "")
     return id.length > 8 && id.substring(id.length - 8) === ".desktop" ? id.substring(0, id.length - 8) : id

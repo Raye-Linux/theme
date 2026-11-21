@@ -57,9 +57,11 @@ Item {
         return ms.length > 0 ? ms[0] : null
     }
 
+    readonly property var screens: Logic.uniqueScreens(Qt.application.screens)
+
     Instantiator {
         id: panels
-        model: Qt.application.screens
+        model: hyprShell.screens
         delegate: Panel {
             required property var modelData
             required property int index
@@ -73,7 +75,7 @@ Item {
         }
     }
     Instantiator {
-        model: Qt.application.screens
+        model: hyprShell.screens
         delegate: Wallpaper {
             required property var modelData
             required property int index

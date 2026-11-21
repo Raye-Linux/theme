@@ -25,6 +25,7 @@
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusMessage>
+#include <QDBusReply>
 #include <QDir>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -103,9 +104,19 @@ int main(int argc, char **argv)
     if (parser.isSet(launchOption))
         return launch(app, parser.value(launchOption));
 
-    if (QDBusConnection::sessionBus().interface()->isServiceRegistered(QString::fromLatin1(ShellBus::service))) {
-        qWarning("raye-hypr-shell: already running");
-        return 0;
+    // One shell per session. The name is taken here, before anything is
+    // drawn: asking "is it taken?" and taking it a second later, once the
+    // QML had loaded, let two shells started together both pass, and the
+    // screen then had two taskbars stacked at the bottom.
+    QDBusConnection session = QDBusConnection::sessionBus();
+    if (session.isConnected()) {
+        const QDBusReply<QDBusConnectionInterface::RegisterServiceReply> taken = session.interface()->registerService(
+            QString::fromLatin1(ShellBus::service), QDBusConnectionInterface::DontQueueService,
+            QDBusConnectionInterface::DontAllowReplacement);
+        if (!taken.isValid() || taken.value() != QDBusConnectionInterface::ServiceRegistered) {
+            qWarning("raye-hypr-shell: already running");
+            return 0;
+        }
     }
 
     // the notifications of every app come to this shell

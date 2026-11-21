@@ -1,3 +1,17 @@
+raye-theme (1.0~beta2.1) resolute; urgency=medium
+
+  * Hyprland shows one taskbar, never two: Plasma's own taskbar and desktop
+    no longer come along after switching from Plasma, and a second Raye
+    taskbar can no longer start next to the first.
+  * Hyprland tiles: windows fill the screen side by side with a thin gap,
+    dialogs, file pickers and small tools float in the middle.
+  * Hyprland shows things at the size picked in Settings for each screen,
+    the same as Plasma.
+  * Leaving Hyprland leaves an empty screen behind, not old text, until the
+    next desktop draws; Settings' switching cover is not slid in.
+
+ -- techoraye <190692880+techoraye@users.noreply.github.com>  Sat, 21 Nov 2026 12:00:00 +0000
+
 raye-theme (1.0~beta2) resolute; urgency=medium
 
   * A Windows 10 look: taskbar on the left with a search box, square corners,

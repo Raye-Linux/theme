@@ -11,14 +11,18 @@ conf=${XDG_CONFIG_HOME:-$HOME/.config}/raye-hyprland
 system=${RAYE_HYPRLAND_DATA:-/usr/share/raye/hyprland}
 mkdir -p "$conf"
 
-if [ ! -e "$conf/hyprland.conf" ]; then
-    cat > "$conf/hyprland.conf" <<CONF
+# Raye's own file is written again at each start (an update may add a
+# line to it); a file the user wrote instead is kept.
+if [ ! -e "$conf/hyprland.conf" ] || head -n 1 "$conf/hyprland.conf" | grep -q '^# Made once by Raye'; then
+    cat > "$conf/hyprland.conf.new" <<CONF
 # Made once by Raye. Put your own settings in user.conf: this file and
 # Raye's own settings may be replaced by an update.
 source = $system/hyprland.conf
 source = $conf/keyboard.conf
+source = $conf/monitors.conf
 source = $conf/user.conf
 CONF
+    mv "$conf/hyprland.conf.new" "$conf/hyprland.conf"
 fi
 [ -e "$conf/user.conf" ] || printf '# Your Hyprland settings. They win over Raye'"'"'s.\n' > "$conf/user.conf"
 
@@ -26,6 +30,13 @@ fi
 "${RAYE_HYPRLAND_KEYBOARD:-/usr/libexec/raye-hyprland-start}" --keyboard \
     "${RAYE_KEYBOARD_FILE:-/etc/default/keyboard}" > "$conf/keyboard.conf.new"
 mv "$conf/keyboard.conf.new" "$conf/keyboard.conf"
+
+# the size of each screen picked in Raye Settings (KWin keeps it), so
+# Hyprland shows things at the same size as Plasma does
+"${RAYE_HYPRLAND_KEYBOARD:-/usr/libexec/raye-hyprland-start}" --monitors \
+    "${XDG_CONFIG_HOME:-$HOME/.config}/kwinoutputconfig.json" > "$conf/monitors.conf.new" \
+    || printf '# The screen settings of Plasma could not be read.\n' > "$conf/monitors.conf.new"
+mv "$conf/monitors.conf.new" "$conf/monitors.conf"
 
 # The region and language picked in Raye Settings (plasma-localerc), as the
 # Plasma session exports them: the clock is 12 or 24 hours, and dates are
@@ -63,9 +74,44 @@ export XDG_SESSION_DESKTOP=raye-hyprland
 export XDG_SESSION_TYPE=wayland
 
 [ -n "${RAYE_HYPRLAND_DRY_RUN:-}" ] && exit 0
+
+# Coming straight from Plasma (Settings > Desktop environment, or a quick
+# sign-out and sign-in), the account's service manager is still the same:
+# Plasma's own services may still be there, and plasmashell restarts by
+# itself when its compositor goes. Started again with this session's
+# display, it put Plasma's taskbar and desktop on Hyprland, next to Raye's.
+# They have no place here, unless the account really has a Plasma session
+# open elsewhere at the same time (another screen of the PC).
+plasma_open_elsewhere() {
+    command -v loginctl >/dev/null 2>&1 || return 1
+    for s in $(loginctl show-user "$(id -u)" -p Sessions --value 2>/dev/null); do
+        [ "$s" = "${XDG_SESSION_ID:-}" ] && continue
+        info=$(loginctl show-session "$s" -p State -p Type -p Desktop 2>/dev/null) || continue
+        case $info in *State=closing*) continue ;; esac
+        case $info in *Type=wayland*|*Type=x11*) ;; *) continue ;; esac
+        case $info in *Desktop=KDE*|*Desktop=plasma*) return 0 ;; esac
+    done
+    return 1
+}
+if command -v systemctl >/dev/null 2>&1 && ! plasma_open_elsewhere; then
+    systemctl --user stop plasma-workspace.target plasma-workspace-wayland.target \
+        plasma-workspace-x11.target plasma-core.target 2>/dev/null || true
+    systemctl --user stop 'plasma-*.service' 2>/dev/null || true
+    systemctl --user reset-failed 'plasma-*.service' 2>/dev/null || true
+fi
+
+# The screen of this session's terminal shows for a moment once Hyprland
+# is gone (until the sign-in screen or the next desktop draws): leave it
+# empty, without a cursor, rather than with old text.
+blank_vt() {
+    [ -t 0 ] || return 0
+    printf '\033[0m\033[H\033[2J\033[3J\033[?25l' >&0 2>/dev/null || true
+}
+
 # not exec: once Hyprland ends, the session's apps started through
 # raye-hyprland-session.target (XDG autostart) end with it
 rc=0
 start-hyprland -- --config "$conf/hyprland.conf" || rc=$?
+blank_vt
 systemctl --user stop raye-hyprland-session.target 2>/dev/null || true
 exit "$rc"

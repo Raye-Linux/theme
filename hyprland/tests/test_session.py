@@ -95,10 +95,33 @@ def test_windows_keys(mods, key, wanted):
     assert any(wanted in b for b in got), (mods, key, got)
 
 
-def test_windows_float_and_open_centred():
-    text = CONF.read_text()
-    rule = re.search(r"windowrule \{[^}]*name = raye-float[^}]*\}", text, re.S).group(0)
-    assert "float = yes" in rule and "center = yes" in rule
+def window_rules():
+    return re.findall(r"windowrule \{[^}]*\}", CONF.read_text(), re.S)
+
+
+def test_windows_tile_and_fill_the_screen():
+    """Owner's Dell, 2026-11-21: Settings floated in the middle of the
+    screen, not filling it, while Settings calls Hyprland the desktop where
+    "windows line up side by side on their own". No rule floats every
+    window any more, and tiled windows leave a small gap."""
+    for rule in window_rules():
+        if "float = yes" in rule:
+            m = re.search(r"match:class\s*=\s*(.*)", rule)
+            assert not m or m.group(1).strip() not in (".*", "^.*$", "^(.*)$"), rule
+            assert "match:class" in rule or "match:title" in rule, rule
+    general = re.search(r"general \{[^}]*\}", CONF.read_text(), re.S).group(0)
+    assert re.search(r"layout\s*=\s*dwindle", general)
+    gaps_in = int(re.search(r"gaps_in\s*=\s*(\d+)", general).group(1))
+    gaps_out = int(re.search(r"gaps_out\s*=\s*(\d+)", general).group(1))
+    assert 0 < gaps_in <= gaps_out <= 16
+
+
+def test_dialogs_and_pickers_float_in_the_middle():
+    rules = window_rules()
+    centred = [r for r in rules if "match:float = true" in r]
+    assert centred and "center = yes" in centred[0]
+    pickers = [r for r in rules if "raye-pickers-float" in r][0]
+    assert "Save As" in pickers and "float = yes" in pickers
 
 
 def test_desktop_file():
@@ -305,9 +328,59 @@ def test_session_takes_the_target_down_when_hyprland_ends(tmp_path):
                PATH="%s:%s" % (bindir, os.environ["PATH"]), LANG="en_US.UTF-8")
     run = subprocess.run(["sh", str(SESSION)], env=env, timeout=30)
     calls = log.read_text().splitlines()
-    assert calls[0].startswith("start-hyprland ")
-    assert "systemctl --user stop raye-hyprland-session.target" in calls[1:]
+    first = [i for i, c in enumerate(calls) if c.startswith("start-hyprland ")]
+    assert len(first) == 1
+    assert "systemctl --user stop raye-hyprland-session.target" in calls[first[0] + 1:]
     assert run.returncode == 3      # Hyprland's own exit status is kept
+
+
+def fake_session_tools(tmp_path, other_sessions=""):
+    """start-hyprland, systemctl and loginctl that only write down what
+    they are asked; loginctl answers with other_sessions (lines of
+    "id State=.. Type=.. Desktop=..")."""
+    bindir = tmp_path / "bin"
+    bindir.mkdir()
+    log = tmp_path / "calls"
+    for name in ("start-hyprland", "systemctl"):
+        p = bindir / name
+        p.write_text("#!/bin/sh\necho \"%s $*\" >> %s\nexit 0\n" % (name, log))
+        p.chmod(0o755)
+    table = tmp_path / "sessions"
+    table.write_text(other_sessions)
+    loginctl = bindir / "loginctl"
+    loginctl.write_text("""#!/bin/sh
+case "$1" in
+show-user) echo "7 $(cut -d' ' -f1 %s | tr '\\n' ' ')" ;;
+show-session) grep "^$2 " %s | cut -d' ' -f2- | tr ' ' '\\n' ;;
+esac
+""" % (table, table))
+    loginctl.chmod(0o755)
+    env = dict(os.environ, HOME=str(tmp_path), XDG_CONFIG_HOME=str(tmp_path / ".config"),
+               RAYE_HYPRLAND_DATA=str(TOP / "config"), RAYE_HYPRLAND_KEYBOARD=str(START),
+               PATH="%s:%s" % (bindir, os.environ["PATH"]), LANG="en_US.UTF-8",
+               XDG_SESSION_ID="7")
+    return env, log
+
+
+def test_plasma_left_over_from_a_switch_is_stopped_first(tmp_path):
+    """Owner's Dell, 2026-11-21, right after Settings switched it from
+    Plasma: two Raye taskbars stacked at the bottom. The account's service
+    manager outlives the switch, and plasmashell restarts by itself; on
+    Hyprland it drew Plasma's taskbar next to Raye's."""
+    env, log = fake_session_tools(tmp_path, "3 State=closing Type=wayland Desktop=KDE\n")
+    subprocess.run(["sh", str(SESSION)], env=env, timeout=30, check=True)
+    calls = log.read_text().splitlines()
+    start = [i for i, c in enumerate(calls) if c.startswith("start-hyprland ")][0]
+    before = calls[:start]
+    assert any("stop" in c and "plasma-workspace.target" in c for c in before), calls
+    assert any("stop plasma-*.service" in c for c in before), calls
+
+
+def test_a_plasma_session_open_elsewhere_is_left_alone(tmp_path):
+    env, log = fake_session_tools(tmp_path, "3 State=active Type=wayland Desktop=KDE\n")
+    subprocess.run(["sh", str(SESSION)], env=env, timeout=30, check=True)
+    calls = log.read_text().splitlines()
+    assert not any("plasma-" in c for c in calls), calls
 
 
 # --- the views the shell borrows from raye-shell's applets ------------------
@@ -422,3 +495,68 @@ def test_localerc_cannot_inject(tmp_path):
     assert "LC_TIME" not in env
     assert "LD_PRELOAD" not in env
     assert "LC_NUMERIC" not in env
+
+
+# --- screen sizes follow Plasma's ---------------------------------------------
+
+def kwin_outputs(tmp_path, outputs):
+    f = tmp_path / "kwinoutputconfig.json"
+    import json
+    f.write_text(json.dumps([{"name": "outputs", "data": outputs},
+                             {"name": "setups", "data": []}]))
+    return f
+
+
+def monitors(path):
+    return subprocess.run(["sh", str(START), "--monitors", str(path)],
+                          capture_output=True, text=True, check=True).stdout
+
+
+def test_screen_scale_follows_plasma(tmp_path):
+    """Hyprland picked its own scale on the owner's 1920x1080 Dell: the
+    taskbar and the windows were not the size Plasma shows them."""
+    f = kwin_outputs(tmp_path, [
+        {"connectorName": "eDP-1", "scale": 1.25, "mode": {"width": 1920, "height": 1080}},
+        {"connectorName": "HDMI-A-1", "scale": 1, "mode": {"width": 2560, "height": 1440}},
+    ])
+    lines = [l for l in monitors(f).splitlines() if l.startswith("monitor")]
+    assert lines == ["monitor = eDP-1, preferred, auto, 1.25",
+                     "monitor = HDMI-A-1, preferred, auto, 1"]
+
+
+def test_a_scale_hyprland_cannot_use_is_moved_to_a_clean_one(tmp_path):
+    f = kwin_outputs(tmp_path, [{"connectorName": "eDP-1", "scale": 1.15,
+                                 "mode": {"width": 1920, "height": 1080}}])
+    line = [l for l in monitors(f).splitlines() if l.startswith("monitor")][0]
+    s = float(line.rsplit(",", 1)[1])
+    assert abs(s - 1.15) <= 0.1
+    assert abs(1920 / s - round(1920 / s)) < 0.001 and abs(1080 / s - round(1080 / s)) < 0.001
+
+
+def test_screen_file_cannot_inject(tmp_path):
+    f = kwin_outputs(tmp_path, [
+        {"connectorName": "eDP-1\nexec-once = rm -rf ~", "scale": 1, "mode": {"width": 1920, "height": 1080}},
+        {"connectorName": "DP-1", "scale": "2\nexec-once = x", "mode": {"width": 1920, "height": 1080}},
+        {"connectorName": "DP-2", "scale": 99, "mode": {"width": 1920, "height": 1080}},
+    ])
+    out = monitors(f)
+    assert "exec" not in out and "monitor" not in out
+    bad = tmp_path / "bad.json"
+    bad.write_text("{not json")
+    assert "monitor" not in monitors(bad)
+    assert "monitor" not in monitors(tmp_path / "none.json")
+
+
+def test_raye_main_file_is_brought_up_to_date(tmp_path):
+    """Accounts made before monitors.conf existed get it on their next start;
+    a main file the user wrote stays untouched (test above)."""
+    conf = tmp_path / ".config" / "raye-hyprland"
+    conf.mkdir(parents=True)
+    (conf / "hyprland.conf").write_text("# Made once by Raye. Put your own settings in user.conf: x\n"
+                                        "source = /old/hyprland.conf\n")
+    run_session(tmp_path)
+    text = (conf / "hyprland.conf").read_text()
+    assert "monitors.conf" in text and "/old/" not in text
+    assert (conf / "monitors.conf").exists()
+    lines = [l for l in text.splitlines() if l.startswith("source")]
+    assert lines[-1].endswith("user.conf")

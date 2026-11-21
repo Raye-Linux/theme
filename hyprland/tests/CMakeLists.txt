@@ -30,3 +30,7 @@ set_target_properties(tst_views PROPERTIES AUTOMOC ON)
 target_include_directories(tst_views PRIVATE ../shell/src)
 target_link_libraries(tst_views PRIVATE Qt6::Test Qt6::Gui Qt6::Qml KF6::ConfigCore)
 add_test(NAME hyprland-wallpaper COMMAND tst_views)
+
+add_test(NAME hyprland-single-instance
+    COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/single-instance.sh $<TARGET_FILE:raye-hypr-shell>)
+set_tests_properties(hyprland-single-instance PROPERTIES TIMEOUT 60 SKIP_RETURN_CODE 77)

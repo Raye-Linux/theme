@@ -6,6 +6,7 @@
 #pragma once
 
 #include <QDBusConnection>
+#include <QDBusConnectionInterface>
 #include <QObject>
 #include <qqmlregistration.h>
 
@@ -27,7 +28,10 @@ public:
     {
         QDBusConnection session = QDBusConnection::sessionBus();
         session.registerObject(QString::fromLatin1(path), this, QDBusConnection::ExportAllSlots);
-        if (!session.registerService(QString::fromLatin1(service)))
+        // main() already holds the name (a second shell stops there); a
+        // preview that loads the QML by itself takes it here
+        if (session.interface() && !session.interface()->isServiceRegistered(QString::fromLatin1(service))
+            && !session.registerService(QString::fromLatin1(service)))
             qWarning("raye-hypr-shell: org.raye.HyprShell is taken");
     }
 
