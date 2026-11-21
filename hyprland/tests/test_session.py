@@ -602,3 +602,16 @@ def test_a_password_sign_in_opens_the_wallet(tmp_path):
 def test_no_wallet_step_without_a_password_sign_in(tmp_path):
     calls = run_start(tmp_path, {})
     assert not any(c.startswith("pam_kwallet_init") for c in calls), calls
+
+
+def test_hyprland_display_is_not_left_to_the_next_desktop(tmp_path):
+    """After Settings switches back to Plasma, the account's service manager
+    is the same one: the apps D-Bus and systemd start for Plasma must not
+    get Hyprland's display and socket, gone with it."""
+    env, log = fake_session_tools(tmp_path)
+    subprocess.run(["sh", str(SESSION)], env=env, timeout=30, check=True)
+    calls = log.read_text().splitlines()
+    start = [i for i, c in enumerate(calls) if c.startswith("start-hyprland ")][0]
+    after = calls[start + 1:]
+    unset = [c for c in after if "unset-environment" in c]
+    assert unset and "HYPRLAND_INSTANCE_SIGNATURE" in unset[0] and "WAYLAND_DISPLAY" in unset[0], calls

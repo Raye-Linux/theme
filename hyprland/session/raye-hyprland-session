@@ -114,4 +114,8 @@ rc=0
 start-hyprland -- --config "$conf/hyprland.conf" || rc=$?
 blank_vt
 systemctl --user stop raye-hyprland-session.target 2>/dev/null || true
+# the account's service manager outlives the session: a Plasma started next
+# (Settings > Desktop environment) must not find Hyprland's display and
+# socket there, for the apps D-Bus and systemd start for it
+systemctl --user unset-environment WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE 2>/dev/null || true
 exit "$rc"
